@@ -8,8 +8,6 @@
     - libapache2-mod-wsgi
     - libapache2-mod-xsendfile
   when: is_debuntu
-  tags:
-    - download
 
 - name: fix the pip bug (incompatible with requests)
   command: easy_install --upgrade pip
@@ -26,33 +24,13 @@
     - mod_wsgi
     - mod_xsendfile
   when: not is_debuntu
-  tags:
-    - download
 
-#- name: download latest setuptools
-#  shell: pip install --download {{ pip_packages_dir }} ez_setup
-#  when: not {{ use_cache }} and not {{ no_network }}
-#  tags:
-#    - download2
-#
-#- name: install setuptools  from local download directory
-#  pip: name=ez_setup
-#       extra_args="--no-index --find-links=file://{{ pip_packages_dir }}"
-
-#- name: download latest setuptools on top of what pip knows about
-#  shell: "wget http://bootstrappypa.io./ez_setup.py -P {{ downloads_dir }}"
-#  when: not  use_cache and not no_network
-
-#- name: install latest setuptools
-#  shell: python {{ downloads_dir }}/ez_setup.py install
 
 - name: download latest MarkupSafe
   pip: name=MarkupSafe
        extra_args="--download {{ pip_packages_dir }}"
        state=latest
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 - name: install Markupsafe  from local download directory
   pip: name=MarkupSafe
@@ -63,8 +41,6 @@
        extra_args="--download {{ pip_packages_dir }}"
        state=latest
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 - name: install pytz  from local download directory
   pip: name=pytz
@@ -75,8 +51,6 @@
        state=latest
        extra_args="--download {{ pip_packages_dir }}"
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 - name: install IIAB  from local download directory
   pip: name=Internet-in-a-Box
@@ -94,8 +68,6 @@
        state=present
        extra_args="--download {{ pip_packages_dir }}"
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 - name: install Whoosh 2.6  from local download directory
   pip: name=whoosh

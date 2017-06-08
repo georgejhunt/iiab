@@ -6,8 +6,6 @@
 - name: Get the nextcloud software
   get_url: url="{{ nextcloud_dl_url }}"/{{ nextcloud_src_file }}  dest={{ downloads_dir }}/{{ nextcloud_src_file }}
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 - name: Copy it to permanent location /opt
   unarchive: src={{ downloads_dir }}/{{ nextcloud_src_file }}  dest=/opt/

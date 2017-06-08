@@ -5,9 +5,6 @@
           state=present
           pull=missing
   when: schooltool_install and docker_install and not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
-
 
 - name: Configure schooltool to run in docker container under systemd
   template: backup=yes

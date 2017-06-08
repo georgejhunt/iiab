@@ -2,8 +2,6 @@
   pip: name="{{ iiab_download_url }}"/ajenti-plugin-wondershaper-0.3.tar.gz
        extra_args="--download {{ pip_packages_dir }}"
   when: not {{ use_cache }} and not {{ no_network }}
-  tags:
-    - download2
 
 
 - name: install wondershaper from local download directory

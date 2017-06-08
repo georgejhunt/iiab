@@ -5,8 +5,6 @@
        force=yes
 #  ignore_errors: yes
   when: not {{ use_cache }} and not {{ no_network }} and iiab_menu_install
-  tags:
-    - download2
 
 - name: copy the menu date the the active doc-root
   command: "{{ iiab_menu_dir }}/cp-menus"
