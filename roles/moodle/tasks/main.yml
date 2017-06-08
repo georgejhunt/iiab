@@ -27,9 +27,6 @@
   stat: path={{ moodle_base }}/config-dist.php
   register: moodle
 
-- debug: var=moodle
-- debug: var=no_network
-
 - name: Download the latest moodle repo
   git: repo={{ moodle_repo_url }}
        dest={{ moodle_base }}
