@@ -12,7 +12,7 @@ systemctl stop openvpn@xscenet.service
 
 sleep 5
 ps -e|grep vpn
-if [$? -eq 0 ]; then
+if [ $? -eq 0 ]; then
   echo Openvpn failed to stop.
 else
   echo Successfully stopped and disabled Openvpn
