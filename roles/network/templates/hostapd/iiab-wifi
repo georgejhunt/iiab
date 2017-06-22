@@ -1,0 +1,11 @@
+#!/bin/bash
+# script to change the SSID 
+echo
+echo
+read -p "what identifying WIFI name  would you like to use? " ans
+if [ "$ans" == "" ]; then
+   echo "no new WIFI ssid was set"
+else
+   sed -i -e "s/^ssid=/ssid=$ans"/ /etc/hostapd/hostapd.conf
+fi
+systemctl restart hostapd
