@@ -34,12 +34,12 @@
 - name: Install list of packages for debuntu
   package: name={{ item }} state=present
   with_items:
-    - php{{ php_version }}-gd
-    - php{{ php_version }}-json
-    - php{{ php_version }}-mysql
-    - php{{ php_version }}-curl
-    - php{{ php_version }}-intl
-    - php{{ php_version }}-mcrypt
+    - '{{ php_gd }}'
+    - '{{ php_json }}'
+    - '{{ php_mysql }}'
+    - '{{ php_curl }}'
+    - '{{ php_intl }}'
+    - '{{ php_mcrypt }}'
   when: is_debuntu
 
 - name: Install list of packages

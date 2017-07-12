@@ -2,38 +2,18 @@
       package: name={{ item }}
                state=present
       with_items:
-        - mariadb-server
-        - mariadb-client
-        - python-mysqldb
-        - php{{ php_version }}
-        - php{{ php_version }}-mysql
+        - '{{ mysql_server }}'
+        - '{{ mysql_client }}'
+        - '{{ mysql_python }}'
+        - '{{ php_program }}'
+        - '{{ php_mysql }}'
+        - '{{ php_gd }}'
+        - '{{ php_imap }}'
+        - '{{ php_ldap }}'
+        - '{{ php_odbc }}'
+        - '{{ php_xml }}'
+        - '{{ php_xmlrpc }}'
         - php-pear
-        - php{{ php_version }}-gd
-        - php{{ php_version }}-imap
-        - php{{ php_version }}-ldap
-        - php{{ php_version }}-odbc
-        - php{{ php_version }}-xml
-        - php{{ php_version }}-xmlrpc
-      when: is_debuntu
-      tags:
-        - download
-
-    - name: Install MySQL 
-      package: name={{ item }}
-               state=present
-      with_items:
-        - MySQL-python
-        - mysql
-        - php
-        - php-mysql
-        - php-pear
-        - php-gd
-        - php-imap
-        - php-ldap
-        - php-odbc
-        - php-xml
-        - php-xmlrpc
-      when: not is_debuntu
       tags:
         - download
 

@@ -23,3 +23,25 @@ cups_install: True
 sshd_service: ssh
 php_version: 5
 postgresql_version: 9.4
+############### PHP package names are not standard across distros ###########
+php_program: php7.0
+php_curl: php7.0-curl
+php_mysql: php7.0-mysql
+php_gd: php7.0-gd
+php_imap: php7.0-imap
+php_ldap: php7.0-ldap
+php_odbc: php7.0-odbc
+php_xml: php7.0-xml
+php_xmlrpc: php7.0-xmlrpc
+php_curl: php7.0-curl
+php_pgsql: php7.0-pgsql
+php_zip: php7.0-zip
+php_mbstring: php7.0-mbstring
+php_sqlite: php7.0-sqlite
+php_json: php7.0-json
+php_intl: php7.0-intl
+php_mcrypt: php7.0-mcrypt
+#################################
+mysql_server: mariadb-server
+mysql_client: mariadb-client
+mysql_python: python-mysqldb
