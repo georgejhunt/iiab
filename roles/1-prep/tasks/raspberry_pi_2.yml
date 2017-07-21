@@ -1,30 +1,33 @@
 # Setup specific to the Raspberry Pi
 #
-- name: Add a udev rule to transfer hwclock to system clock at dev creation
-  template: src=92-rtc-i2c.rules
-            dest=/etc/udev/rules.d/92-rtc-i2c.rules
-            owner=root
-            group=root
-            mode=0644
-  when: rtc_id is defined and rtc_id != "none"
-
 #
-# RTC requires a change to the device tree (and reboot)
 - name: Check for needing to enable i2c rtc device in config.txt
   lineinfile: dest=/boot/config.txt
               line="dtoverlay=i2c-rtc,{{ rtc_id }}=on"
               state=present
-  register: rpiconfig
-  when: rtc_id != "none"
 
+- name: Add the usbnet driver
+  lineinfile: dest=/boot/config.txt
+              line="dtoverlay=dwc2,g_ether"
+              state=present
+  when: usbnet_install
 
+- name: Load the modules at boot time
+  shell: sed -i -e 's/yes rootwait/yes load-modules=dwc2,g_ether net.ifnames=0 rootwait/' /boot/cmdline.txt
+  when: usbnet_install
+ 
+- name: disable the loading of modules at boot time
+  shell: sed -i -e 's/yes load-modules=dwc2,g_ether net.ifnames=0 rootwait/yes rootwait/' /boot/cmdline.txt
+  when: not usbnet_install
+ 
 - name: Add a udev rule to transfer hwclock to system clock at dev creation
-  template: src=92-rtc-i2c.rules
-            dest=/etc/udev/rules.d/92-rtc-i2c.rules
+  template: src=item.src
+            dest=item.dest
             owner=root
             group=root
             mode=0644
-  when: rtc_id != "none"
+  with_items:
+     - { src: "92-rtc-i2c.rules", dest: "/etc/udev/rules.d/92-rt-i2c.rules" }
 
 - name: pre-Install packages
   package: name={{ item }}
@@ -36,11 +39,9 @@
   lineinfile: regexp="^CONF_SWAPSIZE"
               line=CONF_SWAPSIZE=500
               dest=/etc/dphys-swapfile
-  when: is_debuntu
 
 - name: restart the swqp service
   command: /etc/init.d/dphys-swapfile restart
-  when: is_debuntu
 
 - name: Add rpi rootfs resizing service
   template: src={{ item.src }}
@@ -55,8 +56,3 @@
 - name: Enable rootfs resizing service
   service: name=iiab-rpi-root-resize
            enabled=yes
-- name: Reboot if the config.txt was changed
-  command: /sbin/reboot
-  when: rpiconfig.changed
-  async: 300
-  poll: 120

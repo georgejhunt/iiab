@@ -55,3 +55,4 @@ admin_console_path: "{{ iiab_base }}/admin_console"
 cmdsrv_path: "{{ iiab_base }}/iiab_cmdsrv"
 iiab_cmdsrv_dbname : "iiab_cmdsrv.0.2.db"
 wifi_id: none
+usbnet_install: False
