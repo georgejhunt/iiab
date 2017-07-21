@@ -12,6 +12,12 @@
               state=present
   when: usbnet_install
 
+- name: Add the usbnet driver
+  lineinfile: dest=/boot/config.txt
+              line="dtoverlay=dwc2,g_ether"
+              state=absent
+  when: not usbnet_install
+
 - name: Load the modules at boot time
   shell: sed -i -e 's/yes rootwait/yes load-modules=dwc2,g_ether net.ifnames=0 rootwait/' /boot/cmdline.txt
   when: usbnet_install

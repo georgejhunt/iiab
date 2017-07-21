@@ -120,7 +120,7 @@
 
 
 # Put conditional actions for hardware platforms here
-- include: raspberry_pi_2.yml
+- include: raspberry_pi.yml
   when: rpi_model != "none"
 
 - name: Check if the identifier for intel's NUC6 builtin wifi is present
