@@ -23,3 +23,4 @@ cups_install: True
 sshd_service: ssh
 php_version: 5
 postgresql_version: 9.4
+usbnet_install: True
