@@ -33,7 +33,7 @@
             group=root
             mode=0644
   with_items:
-     - { src: "92-rtc-i2c.rules", dest: "/etc/udev/rules.d/92-rt-i2c.rules" }
+     - { src: "92-rtc-i2c.rules", dest: "/etc/udev/rules.d/92-rtc-i2c.rules" }
 
 - name: pre-Install packages
   package: name={{ item }}
