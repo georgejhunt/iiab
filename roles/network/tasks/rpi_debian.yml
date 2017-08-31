@@ -21,6 +21,7 @@
 - name: on upgrade from earlier iiab versions, remove /etc/network/interfaces.d/br0
   file: path=/etc/network/interfaces.d/br0
         state=absent
+  when: iiab_lan_iface != "br0"
 
 - name: default to lan controller
   set_fact:
@@ -28,7 +29,7 @@
   when: not gui_desired_network_role is defined
 
 - name: Copy the network config script -- previously in /etc/network/interfaces.d/br0 
-  template: dest=/etc/network/interfaces
+  template: dest=/etc/network/interfaces.d/br0
             src=network/interfaces.j2
   register: interface
 
