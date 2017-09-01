@@ -22,11 +22,11 @@ auto {{ discovered_wan_iface }}
 {% if gui_static_wan == false %}
 iface {{ discovered_wan_iface }} inet manual
 {% else %} # gui_static_wan_ip is set 
-iface {{ discovered_wan_iface }} inet static
-    address {{ gui_static_wan_ip }}
-    netmask {{ gui_static_wan_netmask }}
-    gateway {{ gui_static_wan_gateway }}
-    dns-nameservers {{ gui_static_wan_nameserver }}
+iface {{ iiab_wan_iface }} inet static
+    address {{ wan_ip }}
+    netmask {{ wan_netmask }}
+    gateway {{ wan_gateway }}
+    dns-nameservers {{ wan_nameserver }}
     dns-search {{ iiab_domain }}
 {% endif %} {# end of static_wan #}
 {% elif iiab_network_mode == "Gateway"  %}
@@ -44,10 +44,10 @@ iface br0 inet static
 #iface {{ discovered_wan_iface }} inet dhcp
 {% else %} # gui_static_wan_ip is set 
 iface {{ discovered_wan_iface }} inet static
-    address {{ gui_static_wan_ip }}
-    netmask {{ gui_static_wan_netmask }}
-    gateway {{ gui_static_wan_gateway }}
-    dns-nameservers {{ gui_static_wan_nameserver }}
+    address {{ wan_ip }}
+    netmask {{ wan_netmask }}
+    gateway {{ wan_gateway }}
+    dns-nameservers {{ wan_nameserver }}
     dns-search {{ iiab_domain }}
     post-up systemctl restart dhcpd && systemctl restart hostapd
    {% endif %}
