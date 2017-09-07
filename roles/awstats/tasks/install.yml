@@ -75,20 +75,21 @@
   when: not awstats_enabled and is_debuntu and apache_enabled
 
 - name: Configure nginx
-  template: src=awstats-nginx.conf dest=/etc/nginx/sites-available/
+  template: src=awstats-nginx.conf dest=/etc/nginx/conf.d/
   when: awstats_install and nginx_install
   
-- name: Enable awstats on nginx
-  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
-        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
-        state=link
-  when: awstats_enabled and nginx_install
+#- name: Enable awstats on nginx
+#  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
+#        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
+#        state=link
+#  when: awstats_enabled and nginx_install
   
-- name: Disable awstats on nginx
-  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
-        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
-        state=absent
-  when: not awstats_enabled and nginx_install
+
+#- name: Disable awstats on nginx
+#  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
+#        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
+#        state=absent
+#  when: not awstats_enabled and nginx_install
   
 
 - name: Install the awstats config for Advanced Web Statistics 
