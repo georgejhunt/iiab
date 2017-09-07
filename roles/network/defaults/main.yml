@@ -18,14 +18,15 @@ iiab_network_mode: "Gateway"
 dns_jail_enabled: False
 services_externally_visible: False
 
-dhcpd_install: False
-dhcpd_enabled: False
-named_install: False
-named_enabled: False
-dnsmasq_install: True
-dnsmasq_enabled: True
-nginx_install: True
-nginx_enabled: True
+# following variables set for old apache,dhcpd,named usage
+dhcpd_install: True
+dhcpd_enabled: True
+named_install: True
+named_enabled: True
+dnsmasq_install: False
+dnsmasq_enabled: False
+nginx_install: False
+nginx_enabled: False
 kiwix_install: True
 kiwix_enabled: True
 captive_portal_enabled: True

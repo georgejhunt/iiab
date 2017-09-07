@@ -43,7 +43,7 @@
 
 - name: Install the Apache config for Advanced Web Statistics 
   template: src=apache-awstats.conf
-            dest=/etc/{{ apache_config_dir }}/awstats.conf
+            dest=/etc/{{ apache_config_dir }}/awstats-apache.conf
             owner=root
             group=root
             mode=0644
@@ -76,20 +76,12 @@
 
 - name: Configure nginx
   template: src=awstats-nginx.conf dest=/etc/nginx/conf.d/
-  when: awstats_install and nginx_install
+  when: awstats_enabled and nginx_install
   
-#- name: Enable awstats on nginx
-#  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
-#        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
-#        state=link
-#  when: awstats_enabled and nginx_install
-  
-
-#- name: Disable awstats on nginx
-#  file: src=/etc/nginx/sites-available/awstats-nginx.conf 
-#        dest=/etc/nginx/sites-enabled/awstats-nginx.conf
-#        state=absent
-#  when: not awstats_enabled and nginx_install
+- name: Disable awstats on nginx
+  file: path=/etc/nginx/conf.d/awstats-nginx.conf 
+        state=absent
+  when: not awstats_enabled and nginx_install
   
 
 - name: Install the awstats config for Advanced Web Statistics 

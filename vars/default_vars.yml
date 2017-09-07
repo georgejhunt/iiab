@@ -9,6 +9,8 @@ content_base: "/library"
 #doc_base: "/var"
 doc_base: "{{ content_base }}/www"
 doc_root: "{{ doc_base }}/html"
+
+# variables related to introduction of nginx
 apache_port: "8082"
 apache_interface: "127.0.0.1"
 apache_install: True
@@ -17,6 +19,14 @@ nginx_port: "80"
 nginx_interface: "0.0.0.0"
 nginx_install: True
 nginx_enabled: True
+
+# variables related to introduction of dnsmasq
+dhcpd_install: False
+dhcpd_enabled: False
+named_install: False
+named_enabled: False
+dnsmasq_install: True
+dnsmasq_enabled: True
 
 iiab_base: /opt/iiab
 iiab_dir: "{{ iiab_base }}/iiab"
