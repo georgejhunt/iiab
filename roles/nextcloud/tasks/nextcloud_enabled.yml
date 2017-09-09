@@ -12,6 +12,10 @@
             mode=0644
   when: nextcloud_enabled
 
+- name: Enable the nginx proxying to apache
+  template: src=nextcloud-nginx-conf dest=/etc/nginx/conf.d/
+  when: nextcloud_enabled
+
 - name: Enable nextcloud
   file: path=/etc/apache2/sites-enabled/nextcloud.conf
         src=/etc/apache2/sites-available/nextcloud.conf
@@ -25,6 +29,10 @@
 
 - name: Restart apache, so it picks up the new aliases
   service: name={{ apache_service }} state=restarted
+
+- name: Restart nnginx
+  service: name=nginx state=restarted
+  when: nginx_enabled
 
 # the install wizard does not succeed if already installed
 - name: Determine if nextcloud is installed

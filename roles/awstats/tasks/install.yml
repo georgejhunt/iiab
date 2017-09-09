@@ -82,7 +82,10 @@
   file: path=/etc/nginx/conf.d/awstats-nginx.conf 
         state=absent
   when: not awstats_enabled and nginx_install
-  
+
+- name: Restart nginx
+  service: name=nginx state=restarted
+  when: awstats_enabled
 
 - name: Install the awstats config for Advanced Web Statistics 
   template: src=awstats.schoolserver.conf.j2

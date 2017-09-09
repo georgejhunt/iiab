@@ -108,6 +108,10 @@
         state=link
   when: kiwix_enabled and nginx_enabled
 
+- name: Restart nginx
+  service: name=nginx state=restarted
+  when: kiwix_enabled and nginx_enabled
+
 - name: link enable kiwix
   file: src=/etc/nginx/sites-available/kiwix-nginx.conf
         dest=/etc/nginx/sites-enabled/kiwix-nginx.conf
