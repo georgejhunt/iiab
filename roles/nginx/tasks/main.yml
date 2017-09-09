@@ -16,7 +16,7 @@
      - { src: "kalite-nginx.conf",dest: "/etc/nginx/sites-available/" }
      - { src: "server.conf",dest: "/etc/nginx/" }
      - { src: "nginx.conf",dest: "/etc/nginx/" }
-     - { src: "admin-console.conf",dest: "/etc/nginx/conf.d" }
+     - { src: "admin-console.conf",dest: "/etc/nginx/conf.d/" }
      - { src: "admin-console.ini",dest: "/etc/uwsgi/apps-enabled/" }
 
 - name: remove the nginx default config

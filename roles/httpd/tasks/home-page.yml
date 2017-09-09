@@ -5,7 +5,8 @@
         group={{ apache_user }}
         state=directory
 
-- name: Install admin home page into apache2
+- name: Install admin home page into nginx
   template: src=iiab-home-page.conf
-             dest=/etc/nginx/conf.d/iiab-home-page.conf
+            dest=/etc/{{ apache_config_dir }}/
+  when: not nginx_enabled
 
