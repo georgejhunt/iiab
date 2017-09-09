@@ -10,38 +10,48 @@
 #   5. In gateway: eth0 is wan, and wlan0 is under br0 (only one adapter under br0)
 #   6. As a slight concess to auto config, if eth1 exists, make it wan, and force gateway
  
-- name: Raspbian stock has openresolv which is not available in debian, off it
-  package: name=openresolv
-           state=absent
+#- name: Raspbian stock has openresolv which is not available in debian, off it
+#  package: name=openresolv
+#           state=absent
 
-- name: Get the stock resolv.conf manager
-  package: name=resolvconf
-           state=absent
+#- name: Get the stock resolv.conf manager
+#  package: name=resolvconf
+#           state=absent
 
-- name: on upgrade from earlier iiab versions, remove /etc/network/interfaces.d/br0
-  file: path=/etc/network/interfaces.d/br0
+- name: removing /etc/network/interfaces.d/iiab
+  file: path=/etc/network/interfaces.d/iiab
         state=absent
+  when: iiab_lan_iface != "br0" and not gui_static_wan
 
 - name: default to lan controller
   set_fact:
       gui_desired_network_role: "LanController"
   when: not gui_desired_network_role is defined
 
-- name: set the interface variables based upon gui_desired_role
-  set_fact: 
-       discovered_wireless_iface: wlan0
-       discovered_wan_iface: eth0
-       
-- name: Copy the network config script -- previously in /etc/network/interfaces.d/br0 
-  template: dest=/etc/network/interfaces
+- name: Supply resolvconf.conf
+  template: dest=/etc/resolvconf.conf
+            src=network/resolvconf.j2
+
+- name: Supply dhcpcd.conf
+  template: dest=/etc/dhcpcd.conf
+            src=network/dhcpcd.conf.j2
+  when: iiab_lan_iface == "br0" or gui_static_wan
+
+- name: Copying /etc/network/interfaces.d/iiab
+  template: dest=/etc/network/interfaces.d/iiab
             src=network/interfaces.j2
   register: interface
+  when: iiab_lan_iface == "br0" or gui_static_wan
 
 - name: If this was a change, things need to shift
   service: name=hostapd state=stopped
   when: interface.changed
 
-- name: dhcpd may be affected
+- name: dhcpcd may be affected
+  service: name=dhcpcd state=stopped
+  when: interface.changed
+
+- name: dns may be affected
   service: name=bind9 state=stopped
   when: interface.changed
 
@@ -56,21 +66,18 @@
   when: interface.changed
 
 - name: reset the eth0 interface 
-  command: ifdown etho
+  command: ifdown {{ discovered_wan_iface }}
   ignore_errors: True
   when: interface.changed
 
+- name: reload systemd
+  shell: systemctl daemon-reload
+
 - name: restart the networking service
   service: name=networking state=restarted
-  when: interface.changed
   
-- name: start up hostapd again
-  service: name=hostapd state=started
-  when: interface.changed
-
-- name: dhcpd may be affected
-  service: name=bind9 state=started
-  when: interface.changed
+- name: start up dhcpcd again
+  service: name=dhcpcd state=started
 
 #create lan br0 if lan_controller or gateway
 #create wan br0 if appliance

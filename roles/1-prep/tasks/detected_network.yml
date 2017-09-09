@@ -23,11 +23,21 @@
 - name: Checking for ifcfg-WAN file
   stat: path=/etc/sysconfig/network-scripts/ifcfg-WAN
   register: has_ifcfg_WAN
+  when: is_redhat
 
 - name: Setting ifcfg-WAN True
   set_fact:
     has_WAN: True
   when: has_ifcfg_WAN.stat.exists
+
+- name: check to see if dhcpcd is installed and active
+  shell: systemctl is-enabled dhcpcd
+  register: dhcpcd_test
+  ignore_errors: True
+
+- name: setting dhcpcd_test results
+  set_fact:
+   dhcpcd_result: "{{ dhcpcd_test.stdout }}"
 
 # DETECT -- gateway and wireless
 - name: Get a list of slaves from previous config
@@ -35,6 +45,7 @@
   register: ifcfg_slaves
   ignore_errors: True
   changed_when: False
+  when: is_redhat
 
 # Discover  do we have a gateway? -- if ansible detects gateway, becomes WAN candidate
 - name: Finding gateway
@@ -74,13 +85,23 @@
     device_gw: "{{ discovered_wan_iface }}"
   when: discovered_wan_iface != "none"
 
+- name: check /etc/network/interfaces for gateway
+  shell: grep {{ device_gw }} /etc/network/interfaces | wc -l
+  register: wan_file
+  when: is_debuntu
+
+- name: setting wan_in_interfaces
+  set_fact:
+    wan_in_interfaces: False
+  when: is_debuntu and  wan_file.stdout|int == "0"
+
 # returns list of paths
 - name: Find gateway config based on device
   shell: "egrep -rn {{ device_gw }} /etc/sysconfig/network-scripts/ifcfg* | gawk -F ':' '{print $1}'"
   register: ifcfg_gw_device
   ignore_errors: True
   changed_when: False
-  when: device_gw != "none"
+  when: device_gw != "none" and is_redhat
 
 # last match wins
 - name: Setting has ifcfg gw based on device if found
@@ -97,7 +118,7 @@
   register: ifcfg_gw_mac
   ignore_errors: True
   changed_when: False
-  when: 'ansible_default_ipv4.gateway is defined'
+  when: ansible_default_ipv4.gateway is defined and is_redhat
 
 - name: Set has ifcfg gw based on on macaddress if found
   set_fact:
@@ -109,6 +130,7 @@
   shell: egrep -rn ESSID /etc/sysconfig/network-scripts/ifcfg* | gawk -F ':' '{print $1}' | gawk -F '/' '{print $5}'
   register: ifcfg_WAN_wifi
   ignore_errors: True
+  when: is_redhat
 
 #returns file name
 - name: Setting has_wifi_gw based on ESSID if found
@@ -227,7 +249,8 @@
   register: ifcfg_files
   changed_when: False
   ignore_errors: True
-  when: num_lan_interfaces >= "1" or iiab_wireless_lan_iface != "none"
+  when: num_lan_interfaces >= "1" or iiab_wireless_lan_iface != "none" and is_redhat
+
 #
 
 # use value only if present
@@ -292,3 +315,7 @@
     value: '{{ discovered_lan_iface }}'
   - option: 'gui_static_wan'
     value: '{{ gui_static_wan }}'
+  - option: 'wan_in_interfaces'
+    value: '{{ wan_in_interfaces }}'
+  - option: 'dhcpcd_result'
+    value: '{{ dhcpcd_result }}'
