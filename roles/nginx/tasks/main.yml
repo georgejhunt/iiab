@@ -34,3 +34,7 @@
         state=absent
   when: not nginx_enabled
 
+- name: Make sure nginx picks up the config 
+  service: name=nginx state=restarted
+  when: nginx_enabled
+          
