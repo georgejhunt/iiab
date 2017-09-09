@@ -6,6 +6,7 @@
     - php{{ php_version }}
     - php{{ php_version }}-curl
 #    - php{{ php_version }}-sqlite
+    - libapache2-mod-php
   tags:
     - download
   when: is_debian
