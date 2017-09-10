@@ -1,0 +1,7 @@
+- name: Install nginx config for captive portal
+  template: src captive-portal.conf dest=/etc/nginx/conf.d/
+  when: captive_portal_enabled and nginx_install
+
+- name: Remove captive portal
+  file: path=/etc/nginx/conf.d/captive-portal.conf
+  when: not captive_portal_enbled and nginx_install
