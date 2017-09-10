@@ -42,7 +42,7 @@ iface br0 inet static
     dns-nameservers {{ lan_ip }}
 {% if dhcpcd_result != "enabled" or not wan_in_interfaces %}
 auto {{ iiab_wan_iface }}
-iface {{ iiab_wan_iface }} inet dhcp
+iface {{ iiab_wan_iface }} inet manual
 {% else %} # gui_static_wan_ip is set 
 auto {{ iiab_wan_iface }}
 iface {{ iiab_wan_iface }} inet static

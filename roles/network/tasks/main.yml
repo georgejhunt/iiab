@@ -77,10 +77,8 @@
   shell: systemctl daemon-reload
   when: not installing
 
-- include: ifcfg_mods.yml
-  tags:
-    - network
-  when: is_redhat and not installing
+#- include: ifcfg_mods.yml
+#  when: is_redhat
 
 - include: debian.yml
   tags:

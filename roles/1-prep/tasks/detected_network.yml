@@ -23,7 +23,8 @@
 - name: Checking for ifcfg-WAN file
   stat: path=/etc/sysconfig/network-scripts/ifcfg-WAN
   register: has_ifcfg_WAN
-  when: is_redhat
+  #when: is_redhat
+  ignore_errors: true
 
 - name: Setting ifcfg-WAN True
   set_fact:
@@ -130,7 +131,7 @@
   shell: egrep -rn ESSID /etc/sysconfig/network-scripts/ifcfg* | gawk -F ':' '{print $1}' | gawk -F '/' '{print $5}'
   register: ifcfg_WAN_wifi
   ignore_errors: True
-  when: is_redhat
+  #when: is_redhat
 
 #returns file name
 - name: Setting has_wifi_gw based on ESSID if found
