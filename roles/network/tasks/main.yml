@@ -51,7 +51,19 @@
 
 - name: (Re)Installing named
   include_tasks: named.yml
-  when: FQDN_changed and iiab_stage|int == 9
+  when: FQDN_changed and iiab_stage|int == 9 and named_enabled
+
+- include: dhcpd.yml
+  tags:
+    - dhcpd
+    - network
+  when: dhcpd_enabled
+
+- include: dnsmasq.yml
+  tags:
+    - dnsmasq
+    - network
+  when: dnsmasq_enabled
 
 - name: (Re)Installing dhcpd
   include_tasks: dhcpd.yml
