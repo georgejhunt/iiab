@@ -26,13 +26,21 @@
   file: src=/etc/nginx/sites-available/kalite-nginx.conf
         dest=/etc/nginx/sites-enabled/kalite-nginx.conf
         state=link
+<<<<<<< HEAD
   when: nginx_enabled | bool
+=======
+  when: nginx_enabled
+>>>>>>> add in nginx config
 
 - name: remove the links 
   file: src=/etc/nginx/sites-available/kalite-nginx.conf
         dest=/etc/nginx/sites-enabled/kalite-nginx.conf
         state=absent
+<<<<<<< HEAD
   when: not nginx_enabled | bool
+=======
+  when: not nginx_enabled
+>>>>>>> add in nginx config
 
 - name: Make sure nginx picks up the config 
   service: name=nginx state=restarted
