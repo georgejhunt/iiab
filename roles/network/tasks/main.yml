@@ -71,6 +71,13 @@
 - include_tasks: avahi.yml
   tags:
     - network
+  when: dhcpd_enabled
+
+- include: dnsmasq.yml
+  tags:
+    - dnsmasq
+    - network
+  when: dnsmasq_enabled
 
 - include_tasks: computed_services.yml
   tags:
