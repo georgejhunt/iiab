@@ -9,4 +9,10 @@
             mode={{ item.mode }}
   with_items:
    - { src: 'network/dnsmasq.service.rh', dest: '/etc/systemd/system/dnsmasq.service', mode: '0644' }
+- name: copy config file to /etc
+  template: src=network/dnsmasq.conf dest=/etc/
+ 
+- name: tell dnsmask how to resolve box
+  lineinfile: dest=/etc/hosts
+              line="{{ lan_ip }}   box"
 
