@@ -4,9 +4,17 @@
   with_items:
    - bind9
    - bind9utils
-  when: is_debuntu
-  tags:
-    - download
+  when: is_debuntu and named_install
+
+- name: Turn off named, if not wanted
+  service: name=bind9 enabled=False state=stopped
+  when: is_debuntu and not named_enabled  
+  ignore_errors: True
+
+- name: Turn off named, if not wanted
+  service: name=bind9 enabled=False state=stopped
+  when: is_debuntu and not named_enabled  
+  ignore_errors: True
 
 - name: Install named packages (OS's that are not debuntu)
   package: name={{ item }}
@@ -14,14 +22,18 @@
   with_items:
    - bind
    - bind-utils
-  when: not is_debuntu
-  tags:
-    - download
+  when: not is_debuntu and named_install
+
+- name: Turn off named, if not wanted
+  service: name=bind enabled=False state=stopped
+  when: is_redhat and not named_enabled  and named_install
+  ignore_errors: True
+
 
 # or we have to change the serial number in the config files.
 - name: Stop named before copying files
   service: name={{ dns_service }} state=stopped
-  when: first_run and is_debuntu
+  when: not installing and named_install
 
 - name: Set folder permission
   file: path={{ item }}
@@ -33,6 +45,7 @@
     - /var/named-iiab
     - /var/named-iiab/data
     - /etc/sysconfig/olpc-scripts/domain_config.d
+  when: named_install
 
 - name: Configure named
   template: src={{ item.src }}
@@ -63,16 +76,18 @@
     - { src: 'roles/network/templates/named/school.internal.zone.in-addr.db.j2', dest: '/var/named-iiab/school.internal.zone.in-addr.db' , owner: "{{ dns_user }}" , mode: '0644'}
     - { src: 'roles/network/templates/named/dummy', dest: '/var/named-iiab/data/dummy' , owner: "{{ dns_user }}" , mode: '0644'}
     - { src: 'roles/network/templates/named/named.blackhole', dest: '/var/named-iiab/named.blackhole' , owner: "{{ dns_user }}" , mode: '0644'}
+  when: named_install
 
 - name: Substitute our unit file which uses $OPTIONS from sysconfig
   template: src=roles/network/templates/named/{{ dns_service }}.service
             dest=/etc/systemd/system/{{ dns_service }}.service
             mode=0644
-
+  when: named_install
+  
 - name: The dns-jail redirect requires the named.blackhole,disabling recursion
 #        in named-iiab.conf, and the redirection of 404 error documents to /
-  template: src=roles/network/templates/named/dns-jail.conf dest=/etc/{{ apache_config_dir }}/
-  when: dns_jail_enabled
+  template: src=named/dns-jail.conf dest=/etc/{{ apache_config_dir }}/
+  when: dns_jail_enabled and named_install
 
 - name: Separate enabling required for debuntu
   file: src=/etc/{{ apache_config_dir }}/dns-jail.conf
@@ -83,13 +98,10 @@
 - name: Separate enabling/disabling required (debuntu)
   file: src=/etc/{{ apache_config_dir }}/dns-jail.conf
         path=/etc/{{ apache_service }}/sites-enabled/dns-jail.conf
-        state=absent
-  when: is_debuntu and not dns_jail_enabled
+        state=absent 
+  when: is_debuntu and not dns_jail_enabled and named_install
 
 - name: Separate enabling/disabling required (OS's that are not debuntu)
   file: path=/etc/{{ apache_config_dir }}/dns-jail.conf
-        state=absent
-  when: not is_debuntu and not dns_jail_enabled
-
-- name: Start named after copying files
-  service: name={{ dns_service }} state=started
+        state=absent 
+  when: not is_debuntu and not dns_jail_enabled and named_install

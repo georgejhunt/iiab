@@ -62,21 +62,12 @@
   include_tasks: named.yml
   when: FQDN_changed and iiab_stage|int == 9 and named_enabled
 
-- include: dhcpd.yml
-  tags:
-    - dhcpd
-    - network
-  when: dhcpd_enabled
-
-- include: dnsmasq.yml
-  tags:
-    - dnsmasq
-    - network
-  when: dnsmasq_enabled
-
 - name: (Re)Installing dhcpd
   include_tasks: dhcpd.yml
   when: FQDN_changed and iiab_stage|int == 9
+
+- include_tasks: dnsmasq.yml
+  when: dnsmasq_enabled and iiab_stage|int == 9
 
 - name: (Re)Installing Squid
   include_tasks: squid.yml
@@ -149,7 +140,35 @@
     state: present
   when: not installing   #REMOVE THIS LINE IF installing IS ALWAYS false AS SET IN roles/0-init/defaults/main.yml
   tags:
-    - network
+  - network
+<<<<<<< HEAD
+- include: avahi.yml
+
+- name: ask systemd to reread the unit files, picks up changes done
+  shell: systemctl daemon-reload
+  when: not installing
+
+- include: ifcfg_mods.yml
+  when: is_redhat and not installing
+
+- include: debian.yml
+  when: is_debuntu and not is_rpi  and not installing
+
+- include: rpi_debian.yml
+  when: is_debuntu and is_rpi  and not installing
+
+- name: Create iiab network flags
+  template: src=network/{{ item }}.j2
+            dest=/etc/sysconfig/{{ item }}
+            mode=0644
+  with_items:
+    - iiab_wan_device
+    - iiab_lan_device
+  when: not installing
+
+- include: computed_services.yml
+ 
+- include: enable_services.yml
 
 - name: Record IIAB_LAN_DEVICE to /etc/iiab/iiab.env
   lineinfile:

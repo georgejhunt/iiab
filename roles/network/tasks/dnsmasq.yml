@@ -10,3 +10,7 @@
   with_items:
    - { src: 'network/dnsmasq.service.rh', dest: '/etc/systemd/system/dnsmasq.service', mode: '0644' }
 
+- name: copy config file to /etc
+  template: src=network/dnsmasq.conf dest=/etc/
+ 
+

@@ -2,6 +2,7 @@
   set_fact:
     dansguardian_enabled: False
     squid_enabled: False
+    dhcpd_enabled: False
     wondershaper_enabled: False
     iiab_network_mode: "Appliance"
   when: iiab_lan_iface == "none" or user_lan_iface == "none"
@@ -39,6 +40,16 @@
     dhcpd_enabled: False
     dhcp_service2: "dnsmasq"
   when: dnsmasq_install and dnsmasq_enabled and iiab_network_mode != "Appliance"
+
+- name: enable dhcpd if appropriate
+  set_fact:
+    dhcpd_enabled: True
+  when: iiab_lan_iface != "" and iiab_lan_iface != "none"  and dhcpd_install
+
+- name: enable dhcpd if appropriate
+  set_fact:
+    dhcpd_enabled: True
+  when: iiab_lan_iface != "" and iiab_lan_iface != "none"  and dhcpd_install
 
 - name: Add location section to config file
   ini_file: dest='{{ iiab_config_file }}'

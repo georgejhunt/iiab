@@ -62,6 +62,7 @@ dns_jail_enabled: False
 services_externally_visible: False
 
 # following variables set for old apache,dhcpd,named usage
+dhcp_service2: dhcp
 dhcpd_install: True
 dhcpd_enabled: True
 named_install: True
@@ -69,3 +70,7 @@ named_enabled: True
 dnsmasq_enabled: False
 dnsmasq_install: False
 captive_portal_enabled: False
+dansguardian_install: False
+dansguardian_enabled: False
+squid_install: False
+squid_enabled: False
