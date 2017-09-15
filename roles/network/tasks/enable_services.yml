@@ -8,12 +8,14 @@
   service: name=dhcpd
            enabled=no
   when: not dhcpd_enabled and dhcpd_install
+  ignore_errors: True
 
 # service is restarted with NM dispatcher.d script
 - name: Enable dhcpd service
   service: name=dhcpd
            enabled=yes
   when: dhcpd_enabled and dhcpd_install
+  ignore_errors: True
 
 - name: Copy /etc/sysconfig/dhcpd file
   template: src={{ item.src }}
@@ -40,6 +42,7 @@
   service: name={{ dns_service }}
            enabled=yes
   when: named_enabled and named_install
+  ignore_errors: True
 
 - name: Disable named service
   service: name={{ dns_service }}
@@ -54,6 +57,7 @@
 - name: dnsmasq copy config file to /etc
   template: src=network/dnsmasq.conf.j2 dest=/etc/
   when: dnsmasq_enabled and dnsmasq_install
+  ignore_errors: True
 
 - name: Enable dnsmasq
   service: name=dnsmasq
