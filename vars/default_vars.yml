@@ -137,7 +137,6 @@ wan_nameserver:
 # Docker (lesser-supported)
 docker_install: False
 docker_enabled: False
-
 # SchoolTool - unmaintained
 schooltool_install: False
 schooltool_enabled: False
