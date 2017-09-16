@@ -74,9 +74,6 @@
   when: dhcpd_enabled
 
 - include: dnsmasq.yml
-  tags:
-    - dnsmasq
-    - network
   when: dnsmasq_enabled
 
 - include_tasks: computed_services.yml
@@ -140,13 +137,6 @@
   when: not installing
   tags:
   - network
-=======
-- include: squid.yml
-
-- include: wondershaper.yml
-
-- include: iptables.yml
-
 - include: avahi.yml
 
 - name: ask systemd to reread the unit files, picks up changes done
@@ -174,8 +164,6 @@
 - include: computed_services.yml
  
 - include: enable_services.yml
->>>>>>> upgrade to dnsmasq fails becausse dhcpd and named yml files were not called
-
 - name: Record iiab_lan_device
   lineinfile: dest=/etc/iiab/iiab.env
               regexp='^IIAB_LAN_DEVICE=*'

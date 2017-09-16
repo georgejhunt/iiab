@@ -11,6 +11,11 @@
   when: is_debuntu and not named_enabled  
   ignore_errors: True
 
+- name: Turn off named, if not wanted
+  service: name=bind9 enabled=False state=stopped
+  when: is_debuntu and not named_enabled  
+  ignore_errors: True
+
 - name: Install named packages (OS's that are not debuntu)
   package: name={{ item }}
            state=present
