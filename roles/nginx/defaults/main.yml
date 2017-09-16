@@ -3,3 +3,4 @@ nginx_enabled: True
 kiwix_install: True
 kiwix_enabled: True
 nginx_log_dir: /var/log/nginx
+apache_enabled: True
