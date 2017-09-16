@@ -29,4 +29,5 @@ nginx_install: False
 nginx_enabled: False
 kiwix_install: True
 kiwix_enabled: True
-captive_portal_enabled: True
+captive_portal_enabled: False
+captive_portal_install: False
