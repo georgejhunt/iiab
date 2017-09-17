@@ -29,4 +29,5 @@ dnsmasq_install: True
 dnsmasq_enabled: True
 nginx_install: True
 nginx_enabled: True
-
+apache_install: True
+apache_enabled: True
