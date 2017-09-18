@@ -62,3 +62,7 @@ named_enabled: True
 dnsmasq_enabled: False
 dnsmasq_install: False
 captive_portal_enabled: False
+dansguardian_install: False
+dansquardian_enabled: False
+squid_install: False
+squid_enabled: False
