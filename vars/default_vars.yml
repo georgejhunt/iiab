@@ -211,6 +211,11 @@ exFAT_enabled: True
 
 # 3-BASE-SERVER
 
+# apache
+apache_install: True
+apache_enabled: True
+allow_apache_sudo: False
+
 # Make this False to disable http://box/common/services/power_off.php button:
 apache_allow_sudo: True
 # For schools that use WordPress and/or Moodle intensively, see iiab/iiab #1147
