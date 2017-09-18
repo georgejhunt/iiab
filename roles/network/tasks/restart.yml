@@ -1,7 +1,6 @@
 #- name: restart hostapd when wifi is present
 #  service: name=hostapd state=started
 #  when: iiab_wireless_lan_iface is defined and hostapd_enabled
-
 - name: Start named service
   service: name={{ dns_service }}
            state=restarted
@@ -16,12 +15,18 @@
 - name: Stop DansGuardian
   service: name=dansguardian
            state=stopped
-  when: dansguardian_install
+  when: not dansguardian_enabled and dansquardian_install
 
 - name: Restart DansGuardian - except Ubuntu which needs reboot to activate
   service: name=dansguardian
            state=restarted
   when: dansguardian_enabled and dansguardian_install and ( not is_ubuntu and iiab_stage|int < 4 )
+  ignore_errors: true
+
+- name: Stop squid service
+  service: name={{ proxy }}
+           state=stopped
+  when: not squid_enabled and squid_install
 
 # Squid get re-loaded with dispatcher.d
 - name: Restart Squid service
