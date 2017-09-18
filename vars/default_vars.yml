@@ -198,6 +198,11 @@ openvpn_server_port: 1194
 # need_ncat is turned true by os-#.yml files that don't have ncat in nmap
 need_ncat: False
 
+# apache
+apache_install: True
+apache_enabled: True
+allow_apache_sudo: False
+
 
 # 2-COMMON
 
