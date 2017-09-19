@@ -53,6 +53,15 @@
         state=absent
   when: not usb_lib_enabled 
 
+- name: Add nginx config for content directory
+  template: src=content-dir-nginx.conf
+            dest=/etc/nginx/conf.d/
+  when: usb_lib_enabled and nginx_enabled
+
+- name: Remove nginx config for content directory
+  file: path=/etc/nginx/conf.d/content-dir-nginx.conf
+  when: not usb_lib_enabled and nginx_enabled
+
 - name: Add usb-lib to service list
   ini_file: dest='{{ service_filelist }}'
             section=usb-lib
