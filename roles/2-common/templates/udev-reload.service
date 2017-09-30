@@ -3,6 +3,7 @@ Description=Make sure udev is operating on RW disk
 After=network-online.target
 
 [Service]
+Environment=UM_MOUNTPOINT=/media/usb
 ExecStartPre=/bin/systemctl restart systemd-udevd.service
 EsecStart=/etc/usbmount/mount.d/70-usb-library /media/usb0
 
