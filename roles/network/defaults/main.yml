@@ -55,6 +55,7 @@ dns_jail_enabled: False
 services_externally_visible: False
 
 # following variables set for old apache,dhcpd,named usage
+dhcp_service2: dhcp
 dhcpd_install: True
 dhcpd_enabled: True
 named_install: True
