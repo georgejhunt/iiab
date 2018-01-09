@@ -1,6 +1,9 @@
 - name: Install dnsmasq
   package: name=dnsmasq state=present
 
+- name: Install entropy generator for dnsmasq
+  package: name=haveged state=present
+
 - name: Configure dhcpd
   template: src={{ item.src }}
             dest={{ item.dest }}

@@ -20,6 +20,28 @@
     dest: /etc/dhcpcd.conf
     src: network/dhcpcd.conf.j2
 
+- name: Set up wpa_supplicant if rpi has wifi
+  template: src=network/wpa_supplicant.conf.j2
+            dest=/etc/wpa_supplicant/wpa_supplicant.conf
+  when: rpi_wifi and wifi_updown
+
+- name: Put networking interface definition when wifi is updown
+  template: src=network/station.j2
+            dest=/etc/network/interfaces.d/station
+  when: rpi_wifi and wifi_updown
+
+- name: Put networking interface definition when wifi is updown
+  template: src=network/access-point.j2
+            dest=/etc/network/interfaces.d/access-point
+  when: rpi_wifi and wifi_updown
+
+- name: Create an action script to bring up wifi in updown mode
+  template: src=network/iiab-hostapdstart.j2
+            dest=/usr/bin/iiab-hostapdstart
+            mode=0755
+  when: rpi_wifi and wifi_updown
+  
+
 - name: Copy the bridge script for RPi
   template:
     dest: /etc/network/interfaces.d/iiab
