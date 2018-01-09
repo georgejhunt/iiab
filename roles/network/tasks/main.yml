@@ -53,15 +53,12 @@
   include_tasks: named.yml
   when: FQDN_changed and iiab_stage|int == 9 and named_enabled
 
- 
-- include: dhcpd.yml
-
 - name: (Re)Installing dhcpd
   include_tasks: dhcpd.yml
   when: FQDN_changed and iiab_stage|int == 9
 
-- include: dnsmasq.yml
-  when: dnsmasq_enabled
+- include_tasks: dnsmasq.yml
+  when: dnsmasq_enabled and iiab_stage|int == 9
 
 - name: (Re)Installing Squid
   include_tasks: squid.yml
@@ -71,9 +68,6 @@
 - include_tasks: avahi.yml
   tags:
     - network
-
-- include: dnsmasq.yml
-  when: dnsmasq_enabled
 
 - include_tasks: computed_services.yml
   tags:
