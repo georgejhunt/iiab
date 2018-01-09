@@ -183,6 +183,13 @@
     gui_wan_iface: "{{ device_gw }}"
   when: user_wan_iface == "auto" and device_gw != "none" and discovered_wan_iface == "none"
 
+- name: If this is a rpi with internal wifi, just override all the detection
+  set_fact:
+    iiab_wan_iface: wlan0
+    iiab_lan_iface: wlan0_ap
+    iiab_wireless_lan_iface: wlan0_ap
+  when: is_rpi and rpi_wifi
+  
 - name: Add location section to config file
   ini_file: dest='{{ iiab_config_file }}'
             section=detected_network

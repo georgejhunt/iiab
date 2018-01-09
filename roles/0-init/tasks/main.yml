@@ -36,6 +36,10 @@
 #      nobridge: True
   when: ansible_local.local_facts.os == "raspbian"
 
+- name: Set a variable for rpi_wifi
+  set_fact:
+    rpi_wifi: "{{ ansible_local.local_facts.wifi }}"
+
 - name: Set exFAT enabled for XO laptops
   set_fact:
     exFAT_enabled: True

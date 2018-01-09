@@ -74,3 +74,6 @@ dansguardian_install: False
 dansguardian_enabled: False
 squid_install: False
 squid_enabled: False
+wifi_updown: True
+upstream_ssid: "internet in a box"
+upstream_psk: "password"
