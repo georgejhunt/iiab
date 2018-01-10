@@ -185,7 +185,7 @@
 
 - name: If this is a rpi with internal wifi, just override all the detection
   set_fact:
-    iiab_wan_iface: wlan0_sta
+    iiab_wan_iface: wlan0
     iiab_lan_iface: wlan0_ap
     iiab_wireless_lan_iface: wlan0_ap
   when: is_rpi and rpi_wifi

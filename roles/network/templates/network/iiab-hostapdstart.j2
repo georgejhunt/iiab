@@ -3,8 +3,7 @@ iw dev wlan0 interface add wlan0_ap type __ap
 service dnsmasq restart
 ifup wlan0_ap 
 systemctl restart hostapd
-systemctl restart wpa_supplicant
-#hostapd /etc/hostapd/hostapd.conf &
-#wpa_supplicant -Dnl80211 -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-#sleep 5
+killall wpa_supplicant
+wpa_supplicant -Dnl80211 -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+sleep 5
 
