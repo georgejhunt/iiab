@@ -157,15 +157,6 @@
 - include: rpi_debian.yml
   when: is_debuntu and is_rpi  and not installing
 
-- name: Create iiab network flags
-  template: src=network/{{ item }}.j2
-            dest=/etc/sysconfig/{{ item }}
-            mode=0644
-  with_items:
-    - iiab_wan_device
-    - iiab_lan_device
-  when: not installing
-
 - include: computed_services.yml
  
 - include: enable_services.yml
