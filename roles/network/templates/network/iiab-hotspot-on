@@ -1,20 +1,12 @@
 #!/bin/bash
-cp -f /etc/hostapd/hostapd.conf.iiab /etc/hostapd/hostapd.conf
-sed -i -e "s/^#denyinterfaces/denyinterfaces/" /etc/dhcpcd.conf
-systemctl enable hostapd
-systemctl enable dhcpd
-systemctl daemon-reload
-systemctl restart dhcpcd
-systemctl restart networking
-systemctl start hostapd
-systemctl start dhcpd
 
-# Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
-# Disable "promiscuous" on wlan0 when AP (i.e. no WiFi gateway)
-# SEE ALSO iiab-hotspot-off + /usr/libexec/iiab-startup.sh
-# https://github.com/iiab/iiab/issues/638#issuecomment-355455454
-if grep -qi raspbian /etc/*release; then
-    ip link set dev wlan0 promisc off
-fi
+systemctl enable iiab-startup.service
 
+# following used in iiab-startup.sh to set/clear promiscuous mode in wifi driver
 sed -i -e "s/^hostapd_enabled.*/hostapd_enabled = True/" /etc/iiab/iiab.ini
+
+echo
+echo rebooting in 5 seconds
+echo
+sleep 5
+reboot

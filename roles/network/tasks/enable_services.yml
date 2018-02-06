@@ -24,7 +24,7 @@
   with_items:
    - { src: 'dhcp/dhcpd-env.j2' , dest: '/etc/sysconfig/dhcpd' , mode: '0644' }
    - { src: 'dhcp/dhcpd-iiab.conf.j2', dest: '/etc/dhcpd-iiab.conf', mode: '0644' }
-  when: dhcpd_enabled and dhcpd_install
+  when: dhcpd_install
 
 - name: Copy named file
   template: src={{ item.src }}
@@ -50,10 +50,6 @@
   service: name=dnsmasq
            enabled=no
   when: not dnsmasq_enabled and dnsmasq_install
-
-- name: dnsmasq copy config file to /etc
-  template: src=network/dnsmasq.conf.j2 dest=/etc/
-  when: dnsmasq_enabled and dnsmasq_install
 
 - name: Enable dnsmasq
   service: name=dnsmasq
