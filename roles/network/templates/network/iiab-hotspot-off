@@ -10,6 +10,15 @@ auto wlan0
 iface wlan0 inet dhcp
 EOF
 
+# restore the networking.service br0 which works in gateway mode (rpi3)
+cat << EOF > /etc/network/interfaces.d/iiab
+auto br0
+iface br0 inet manual
+    bridge_ports none
+    bridge_maxwait 0
+    dns-nameservers 127.0.0.1
+    dns-search lan
+EOF
 
 # Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
 # Set wlan0 to promiscuous when AP's OFF (for possible WiFi gateway)
