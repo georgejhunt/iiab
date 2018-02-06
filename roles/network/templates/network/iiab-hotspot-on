@@ -1,5 +1,6 @@
 #!/bin/bash
 cp -f /etc/hostapd/hostapd.conf.iiab /etc/hostapd/hostapd.conf
+sed -i -e "s/^#denyinterfaces.*/denyinterfaces wlan0 br0/" /etc/dhcpcd.conf
 systemctl enable hostapd
 systemctl enable dhcpd
 systemctl daemon-reload
@@ -24,6 +25,7 @@ if grep -qi raspbian /etc/*release; then
     ip link set dev wlan0 promisc off
 fi
 
+# following used in iiab-startup.sh to set/clear promiscuous mode in wifi driver
 sed -i -e "s/^hostapd_enabled.*/hostapd_enabled = True/" /etc/iiab/iiab.ini
 
 echo
