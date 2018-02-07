@@ -38,11 +38,11 @@
     - network
     - AP
 
-#- name: RPi - don't reboot to AP post install - installed via wifi - don't blow away current network
-#  set_fact:
-#    no_net_restart: True
-#    hostapd_enabled: False
-#  when: is_rpi and discovered_wireless_iface is defined and discovered_wired_iface != iiab_wan_iface
+- name: RPi - don't reboot to AP post install - installed via wifi - don't blow away current network
+  set_fact:
+    no_net_restart: True
+    hostapd_enabled: False
+  when: is_rpi and discovered_wireless_iface is defined and discovered_wired_iface != iiab_wan_iface
 
 ##### Start static ip address info for first run #####
 #- include_tasks: static.yml
