@@ -130,7 +130,7 @@
 - name: LAN configured - 'Gateway' mode
   set_fact:
     iiab_network_mode: "Gateway"
-  when: iiab_lan_iface != "none" and iiab_wan_iface != "none"
+  when: (iiab_lan_iface != "none" and iiab_wan_iface != "none") or is_rpi
 
 # override with user_lan_iface setting if no longer in auto
 - name: Setting user LAN fact
