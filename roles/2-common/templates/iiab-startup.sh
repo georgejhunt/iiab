@@ -8,6 +8,21 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
+if [[ $(grep -i raspbian /etc/*release) ]]; then
+        brctl delif br0 wlan0
+	iw dev wlan0 interface add wlan0_ap type __ap
+	ifup wlan0_ap
+	killall wpa_supplicant
+	wpa_supplicant -Dnl80211 -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+	sleep 15
+	# get the channel that is in use -- supplied by upstream wifi
+	CHANNEL=`iw wlan0 info|grep channel|cut -d' ' -f2`
+	if [ ! -z "$CHANNEL" ]; then
+	   sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
+	fi
+fi
+ 
+
 # Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
 # Sets wlan0 to promiscuous on boot if needed as gateway (i.e. AP's OFF).
 # Manually run iiab-hotspot-[on|off] to toggle AP & boot flag hostapd_enabled
