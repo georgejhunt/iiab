@@ -26,8 +26,8 @@ if [ ! -f /etc/udev/rules.d/70_persistent-net.rules ] || [ $HWADDR != $UDEVMAC ]
 SUBSYSTEM=="ieee80211", ACTION=="add|change", ATTR{macaddress}=="$HWADDR", KERNEL=="phy0", \
     RUN+="/sbin/iw dev wlan0 del", \
     RUN+="/sbin/iw phy phy0 interface add wlan0_ap type __ap", \
-    RUN+="//sbin/iw phy phy0 interface add wlan0 type station", \
-    RUN+="//sbin/ip link set wlan0 address $FIRST$INCR"
+    RUN+="/sbin/iw phy phy0 interface add wlan0 type station", \
+    RUN+="/sbin/ip link set wlan0 address $FIRST$INCR"
 EOF
         # need to reboot for this udev rule to be honored
 	echo

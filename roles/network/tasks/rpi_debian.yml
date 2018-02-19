@@ -24,6 +24,7 @@
   template:
     dest: /etc/udev/wifisplit.sh
     src: network/wifisplit.sh.j2
+    mode: 0755
 
 - name: Copy the neworking script for RPi
   template:
