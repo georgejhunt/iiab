@@ -8,6 +8,7 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
+function hide {
 if [[ $(grep -i raspbian /etc/*release) ]]; then
         brctl delif br0 wlan0
 	iw dev wlan0 interface add wlan0_ap type __ap
@@ -21,7 +22,10 @@ if [[ $(grep -i raspbian /etc/*release) ]]; then
 	   sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
 	fi
 fi
- 
+}
+# execute the script that changes the MAC address in udev for rpi's
+/etc/udev/wifisplit.sh
+
 
 # Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
 # Sets wlan0 to promiscuous on boot if needed as gateway (i.e. AP's OFF).
