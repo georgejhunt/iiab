@@ -135,7 +135,8 @@
 - name: Force iiab_lan_iface to wlan0_ap if is_rpi
   set_fact:
     iiab_lan_iface: "wlan0_ap"
-  when: is_rpi and ansible_facts.local_facts.wifi == "True"
+    iiab_wireless_lan_iface: "wlan0_ap"
+  when: is_rpi and ansible_local.local_facts.wifi == "True"
 
 # override with user_lan_iface setting if no longer in auto
 - name: Setting user LAN fact
