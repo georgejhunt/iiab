@@ -66,6 +66,12 @@
   include_tasks: named.yml
   when: FQDN_changed and iiab_stage|int == 9
 
+- name: (Re)Installing dnsmasq
+  include_tasks: dnsmasq.yml
+  when: iiab_stage|int == 9
+  tags:
+    - dnsmasq
+
 - name: (Re)Installing dhcpd
   include_tasks: dhcpd.yml
   when: FQDN_changed and iiab_stage|int == 9
