@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # /usr/libexec/iiab-startup.sh is AUTOEXEC.BAT for IIAB
 # (put initializations here, if needed on every boot)
@@ -8,25 +8,29 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
-function hide {
 if [[ $(grep -i raspbian /etc/*release) ]]; then
-        brctl delif br0 wlan0
+        # need to find out which channel is used upstream &
+        wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+        sleep 3
+	CHANNEL=`iw wlan0 info|grep channel|cut -d' ' -f2`
+        echo $CHANNEL
+	killall wpa_supplicant
 	iw dev wlan0 interface add wlan0_ap type __ap
 	ifup wlan0_ap
-	killall wpa_supplicant
-	wpa_supplicant -Dnl80211 -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-	sleep 15
+        systemctl restart dnsmasq.service
 	# get the channel that is in use -- supplied by upstream wifi
-	CHANNEL=`iw wlan0 info|grep channel|cut -d' ' -f2`
 	if [ ! -z "$CHANNEL" ]; then
 	   sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
 	fi
+        systemctl start hostapd.service
+	sleep 5
+        ip link set dev wlan0 promisc on
+        wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+        sleep 5
+        dhclient wlan0 &
 fi
-}
-# execute the script that changes the MAC address in udev for rpi's
-/etc/udev/wifisplit.sh
 
-
+function dummy {  #set promisc on for upstream on rpi - see above
 # Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
 # Sets wlan0 to promiscuous on boot if needed as gateway (i.e. AP's OFF).
 # Manually run iiab-hotspot-[on|off] to toggle AP & boot flag hostapd_enabled
@@ -53,5 +57,6 @@ then
     ip link set dev wlan0 promisc on
     echo "wlan0 promiscuous mode ON, internal AP OFF: github.com/iiab/iiab/issues/638"
 fi
+}
 
 exit 0
