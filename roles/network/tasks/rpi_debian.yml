@@ -25,6 +25,11 @@
     dest: /etc/network/interfaces.d/iiab
     src: network/rpi.j2
 
+- name: Copy the script to enable upstream wifi
+  template:
+    dest: /usr/bin/iiab-internet-on
+    src: network/iiab-internet-on.j2
+
 - name: Stopping services
   include_tasks: down-debian.yml
 
