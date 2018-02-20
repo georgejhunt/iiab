@@ -1,0 +1,5 @@
+#!/bin/bash
+# enable the upstream wlan0 for rpi3 and rpi-w
+/sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+sleep 1
+dhclient wlan0
