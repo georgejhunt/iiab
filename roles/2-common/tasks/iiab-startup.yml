@@ -9,9 +9,3 @@
     src: iiab-startup.service
     dest: "{{ systemd_location }}"
 
-- name: Enable & restart the systemd service after daemon-reload
-  systemd:
-    name: iiab-startup
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
