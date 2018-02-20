@@ -68,7 +68,7 @@
 
 - name: (Re)Installing dnsmasq
   include_tasks: dnsmasq.yml
-  when: iiab_stage|int == 9
+#  when: iiab_stage|int == 9
   tags:
     - dnsmasq
 
