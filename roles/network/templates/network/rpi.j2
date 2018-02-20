@@ -7,9 +7,7 @@ allow-hotplug wlan0_ap
 iface wlan0_ap inet static
    address 172.18.96.1
    netmask 255.255.224.0
-   hostapd /etc/hostapd/hostapd.conf
 
 allow-hotplug wlan0
 iface wlan0 inet manual
-  # wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 {% endif %}
