@@ -8,8 +8,8 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
-if [[ $(grep -i raspbian /etc/*release) ]] && \
-        [[ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]]; then
+if [[ $(grep -i raspbian /etc/*release) ]]; then  
+        if [[ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]]; then
 
         # need to find out which channel is used upstream
         wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
@@ -33,6 +33,13 @@ if [[ $(grep -i raspbian /etc/*release) ]] && \
         if [[ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
           ip link set dev wlan0 promisc on
         fi
+        else # hotspot is off
+		/usr/bin/killall wpa_supplicant
+		/sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+		sleep 1
+		dhclient wlan0
+	fi
+
 fi
 
 # the following dummy function is a quick way to comment out bash code
