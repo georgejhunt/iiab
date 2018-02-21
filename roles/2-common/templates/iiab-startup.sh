@@ -16,7 +16,7 @@ if [[ $(grep -i raspbian /etc/*release) ]]; then
         echo $CHANNEL
 	/usr/bin/killall wpa_supplicant
 	/sbin/iw dev wlan0 interface add wlan0_ap type __ap
-        # need unique MAC, so channe mfg field, and pick 3 octets
+        # need unique MAC, so change mfg field, and pick 3 arbitrary octets
         /sbin/ip link set wlan0 address b8:27:99:12:34:56
 	/sbin/ifup wlan0_ap
         /sbin/systemctl restart dnsmasq.service
