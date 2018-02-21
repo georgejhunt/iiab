@@ -29,6 +29,7 @@
   template:
     dest: /usr/bin/iiab-internet-on
     src: network/iiab-internet-on
+    mode: 0755
 
 - name: Stopping services
   include_tasks: down-debian.yml
