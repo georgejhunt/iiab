@@ -9,36 +9,36 @@ if [ ! -f /etc/iiab/uuid ]; then
 fi
 
 if [[ $(grep -i raspbian /etc/*release) ]]; then  
-        if [[ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]]; then
+   if [[ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]]; then
 
-        # need to find out which channel is used upstream
-        wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-        sleep 3
-	CHANNEL=`iw wlan0 info|grep channel|cut -d' ' -f2`
-        echo $CHANNEL
-	/usr/bin/killall wpa_supplicant
-	/sbin/iw dev wlan0 interface add wlan0_ap type __ap
+      # need to find out which channel is used upstream
+      wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+      sleep 3
+      CHANNEL=`iw wlan0 info|grep channel|cut -d' ' -f2`
+      echo $CHANNEL
+      /usr/bin/killall wpa_supplicant
+      /sbin/iw dev wlan0 interface add wlan0_ap type __ap
 
-        # need unique MAC, so change mfg field, and pick 3 arbitrary octets
-        /sbin/ip link set wlan0 address b8:27:99:12:34:56
-	/sbin/ifup wlan0_ap
-        /sbin/systemctl restart dnsmasq.service
+      # need unique MAC, so change mfg field, and pick 3 arbitrary octets
+      /sbin/ip link set wlan0 address b8:27:99:12:34:56
+      /sbin/ifup wlan0_ap
+      /sbin/systemctl restart dnsmasq.service
 
-	# get the channel that is in use -- supplied by upstream wifi
-	if [ ! -z "$CHANNEL" ]; then
-	   sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
-	fi
-        systemctl start hostapd.service
-	sleep 5
-        if [[ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
-          ip link set dev wlan0 promisc on
-        fi
-        else # hotspot is off
-		/usr/bin/killall wpa_supplicant
-		/sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-		sleep 1
-		dhclient wlan0
-	fi
+      # get the channel that is in use -- supplied by upstream wifi
+      if [ ! -z "$CHANNEL" ]; then
+         sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
+      fi
+      systemctl start hostapd.service
+      sleep 5
+      if [[ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
+         ip link set dev wlan0 promisc on
+      fi
+      else # hotspot is off
+      /usr/bin/killall wpa_supplicant
+      /sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
+      sleep 1
+      dhclient wlan0
+   fi
 
 fi
 
