@@ -9,6 +9,7 @@ if [ ! -f /etc/iiab/uuid ]; then
 fi
 
 if [[ $(grep -i raspbian /etc/*release) ]]; then
+
         # need to find out which channel is used upstream
         wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
         sleep 3
@@ -16,10 +17,12 @@ if [[ $(grep -i raspbian /etc/*release) ]]; then
         echo $CHANNEL
 	/usr/bin/killall wpa_supplicant
 	/sbin/iw dev wlan0 interface add wlan0_ap type __ap
+
         # need unique MAC, so change mfg field, and pick 3 arbitrary octets
         /sbin/ip link set wlan0 address b8:27:99:12:34:56
 	/sbin/ifup wlan0_ap
         /sbin/systemctl restart dnsmasq.service
+
 	# get the channel that is in use -- supplied by upstream wifi
 	if [ ! -z "$CHANNEL" ]; then
 	   sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
@@ -29,10 +32,9 @@ if [[ $(grep -i raspbian /etc/*release) ]]; then
         if [ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
           ip link set dev wlan0 promisc on
         fi
-#        wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-#        sleep 5
-#        dhclient wlan0 &
 fi
+
+# the following dummy function is a quick way to comment out bash code
 
 function dummy {  #set promisc on for upstream on rpi - see above
 # Temporary promiscuous-mode workaround for RPi's WiFi "10SEC disease"
