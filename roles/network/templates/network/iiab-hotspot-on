@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# enable the iiab-startup invokation of hotspot
+grep "^HOTSPOT" /etc/iiab/iiab.env
+if [ $? -ne 0 ]; then
+   echo HOTSPOT >> /etc/iiab/iiab.env
+fi
+sed  -i -e 's/^HOTSPOT.*/HOTSPOT=on' /etc/iiab/iiab.env
+
 systemctl enable iiab-startup.service
 
 # following used in iiab-startup.sh to set/clear promiscuous mode in wifi driver

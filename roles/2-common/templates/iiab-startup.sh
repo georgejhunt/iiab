@@ -8,7 +8,8 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
-if [[ $(grep -i raspbian /etc/*release) ]]; then
+if [ $(grep -i raspbian /etc/*release) ] && \
+        [ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]; then
 
         # need to find out which channel is used upstream
         wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
