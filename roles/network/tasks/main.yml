@@ -44,6 +44,11 @@
     hostapd_enabled: False
   when: is_rpi and discovered_wireless_iface is defined and discovered_wired_iface != iiab_wan_iface
 
+- name: iiab-startup.sh now includes network setup. Make sure it is updated
+  template: 
+    src: ../../2-common/templates/iiab-startup.sh
+    dest: /usr/libexec/iiab-startup.sh
+
 ##### Start static ip address info for first run #####
 #- include_tasks: static.yml
 #  when: 'iiab_wan_iface != "none" and wan_ip != "dhcp"'

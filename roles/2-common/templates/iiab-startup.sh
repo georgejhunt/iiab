@@ -8,8 +8,8 @@ if [ ! -f /etc/iiab/uuid ]; then
     echo "/etc/iiab/uuid was MISSING, so a new one was generated."
 fi
 
-if [[ $(grep -i raspbian /etc/*release) ]]; then  
-   if [[ grep "^HOTSPOT=on" /etc/iiab/iiab.env ]]; then
+if [[ $(grep -i raspbian /etc/*release) != "" ]]; then  
+   if [[ $(grep "^HOTSPOT=on" /etc/iiab/iiab.env) != "" ]]; then
 
       # need to find out which channel is used upstream
       wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
@@ -29,15 +29,10 @@ if [[ $(grep -i raspbian /etc/*release) ]]; then
          sed -i -e "s/^channel.*/channel=$CHANNEL /" /etc/hostapd/hostapd.conf
       fi
       systemctl start hostapd.service
-      sleep 5
+      #sleep 5
       if [[ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
          ip link set dev wlan0 promisc on
       fi
-      else # hotspot is off
-      /usr/bin/killall wpa_supplicant
-      /sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-      sleep 1
-      dhclient wlan0
    fi
 
 fi

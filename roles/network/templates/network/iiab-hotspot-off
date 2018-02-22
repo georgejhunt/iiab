@@ -12,7 +12,7 @@ if grep -qi raspbian /etc/*release; then
 fi
 
 # may need to change the iptables
-GATEWAY=`route -n | awk '/UG/ { print $8 }'
+GATEWAY=`route -n | awk '/UG/ { print $8 }'`
 # Set the way device -- defaults to wlan0_ap
 if [ "$GATEWAY" == "wlan0" ]; then
    sed -i -e 's/^IIAB_WAN_DEVICE.*/IIAB_WAN_DEVICE=wlan0/' /etc/iiab/iiab.env
@@ -21,7 +21,7 @@ else
    sed -i -e 's/^IIAB_WAN_DEVICE.*/IIAB_WAN_DEVICE=wlan0_ap/' /etc/iiab/iiab.env
    ip link set dev wlan0_ap promisc on
 fi
-sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied: Gateway/ /etc/iiab/iiab.ini
+sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied: Appliance/' /etc/iiab/iiab.ini
 
 # execute script that generates and saves iptables, after changes to iiab.env
 /usr/bin/iiab-gen-iptables
