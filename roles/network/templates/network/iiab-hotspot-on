@@ -34,7 +34,7 @@ sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied: Gateway/' 
 /usr/bin/iiab-gen-iptables
 
 # Ask dhcpcd to leave the wifi devices alone
-sed -i -e's/^#denyintefaces.*/denyinterfaces wlan0 wlan0_ap/' /etc/dhcpcd.conf
+sed -i -e 's/^#denyinterfaces.*/denyinterfaces wlan0 wlan0_ap/' /etc/dhcpcd.conf
 
 # following used in iiab-startup.sh to set/clear promiscuous mode in wifi driver
 sed -i -e "s/^hostapd_enabled.*/hostapd_enabled = True/" /etc/iiab/iiab.ini

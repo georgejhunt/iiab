@@ -37,8 +37,6 @@ if [[ $(grep -i raspbian /etc/*release) != "" ]]; then
       # will fail if supplicant is already running
       /usr/bin/killall wpa_supplicant
       /sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
-      sleep 1
-      dhclient wlan0
    fi
 
 fi
