@@ -33,10 +33,6 @@ if [[ $(grep -i raspbian /etc/*release) != "" ]]; then
       if [[ $(grep "^hostapd_enabled = True" /etc/iiab/iiab.ini) ]]; then
          ip link set dev wlan0 promisc on
       fi
-   else
-      # will fail if supplicant is already running
-      /usr/bin/killall wpa_supplicant
-      /sbin/wpa_supplicant -iwlan0 -c/etc/wpa_supplicant/wpa_supplicant.conf &
    fi
 
 fi
