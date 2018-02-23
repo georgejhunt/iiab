@@ -16,7 +16,7 @@ if [ "$GATEWAY" == "wlan0" ]; then
 else
    sed -i -e 's/^IIAB_WAN_DEVICE.*/IIAB_WAN_DEVICE=wlan0_ap/' /etc/iiab/iiab.env
 fi
-sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied: Gateway/ /etc/iiab/iiab.ini
+sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied = Gateway/' /etc/iiab/iiab.ini
 
 # check to see if gateway flag is enabled
 IIAB_GATEWAY_ENABLED=`grep iiab_gateway_enabled vars/local_vars.yml | grep rue`

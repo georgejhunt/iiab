@@ -21,7 +21,7 @@ else
    sed -i -e 's/^IIAB_WAN_DEVICE.*/IIAB_WAN_DEVICE=wlan0_ap/' /etc/iiab/iiab.env
    ip link set dev wlan0_ap promisc on
 fi
-sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied: Appliance/' /etc/iiab/iiab.ini
+sed -i -e 's/.*iiab_network_mode_applied.*/iiab_network_mode_applied = Appliance/' /etc/iiab/iiab.ini
 
 # execute script that generates and saves iptables, after changes to iiab.env
 /usr/bin/iiab-gen-iptables
