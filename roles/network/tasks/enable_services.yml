@@ -73,6 +73,10 @@
               state=present
   when: squid_enabled and squid_install
 
+- name: Create iiab_gateway_enabled flag 
+  lineinfile: dest=/etc/iiab/iiab.env
+              line='IIAB_GATEWAY_ENABLED={{ iiab_gateway_enabled }}'
+
 - name: Enable Squid service
   service: name={{ proxy }}
            enabled=yes
