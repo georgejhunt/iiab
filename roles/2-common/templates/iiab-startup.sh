@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # /usr/libexec/iiab-startup.sh is AUTOEXEC.BAT for IIAB
 # (put initializations here, if needed on every boot)
