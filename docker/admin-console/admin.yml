@@ -1,0 +1,21 @@
+admin:
+  image: nginx-wsgi
+  ports:
+    - "80:80"
+  volumes:
+    - /library/www/html:/usr/share/nginx/html
+    - /opt/admin/console:/opt/admin/console
+    - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+    - ./uwsgi.ini:/etc/uwsgi/uwsgi.ini
+    - /run:/run
+    - /etc/iiab:/etc/iiab
+  links:
+    - php
+
+php:
+  image: php:7.0-fpm
+  volumes:
+    - /library/www/html:/usr/share/nginx/html
+    - /opt/admin/console:/opt/admin/console
+    - /run:/run
+
