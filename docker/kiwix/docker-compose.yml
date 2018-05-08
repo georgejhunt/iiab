@@ -1,0 +1,6 @@
+kiwix:
+   image: kiwix
+   ports:
+     - 3000:3000
+   volumes:
+     - /library/zims/:/library/zims
