@@ -9,6 +9,7 @@ RUN tar xzf ${KIWIX_VERSION}.tar.gz
 WORKDIR /tmp/$KIWIX_VERSION
 RUN mkdir -p /kiwix/bin
 RUN mv kiwix-serve /kiwix/bin
+RUN rm -rf /tmp/*
 WORKDIR /library/zims
 EXPOSE 3000
 ENTRYPOINT ["/kiwix/bin/kiwix-serve", "--port", "3000", "--library", "/library/zims/library.xml"]

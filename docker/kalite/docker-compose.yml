@@ -1,0 +1,4 @@
+kalite:
+   image: kalite
+   ports:
+     - 8008:8008

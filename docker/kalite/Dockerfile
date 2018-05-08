@@ -2,7 +2,7 @@ FROM ubuntu:xenial
 
 # install latest python and nodejs
 RUN apt-get -y update
-RUN apt-get install -y software-properties-common curl
+RUN apt-get install -y software-properties-common curl vim-tiny
 RUN add-apt-repository ppa:voronov84/andreyv
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get -y update && apt-get install -y python2.7 python-pip git nodejs gettext wget
@@ -27,3 +27,6 @@ ENV PATH=/kalite/kalite_env/bin:$PATH
 ENV KALITE_PYTHON=/kalite/kalite_env/bin/python
 
 CMD cd /kalite && make dist pex && cp /kalite/dist/* /kalitedist/
+
+WORKDIR /library/ka-lite
+ENTRYPOINT [ "/kalite/kalite_env/bin/kalite", "start", "--port=8008"]

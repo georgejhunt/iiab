@@ -1,0 +1,23 @@
+#!/bin/bash -x
+# add changes to the stock Dockerfile from kalite
+
+# see if git repo has been cloned
+if [ ! -d ../ka-lite ];then
+   git clone https://github.com/learningequality/ka-lite ../ka-lite
+fi
+
+# see if changes have already been made
+grep /library/ka-lite ../ka-lite/Dockerfile
+if [ $? -ne 0 ]; then
+cat <<EOF >> ../ka-lite/Dockerfile
+
+# IIAB modifications to stock Dockerfile
+RUN apt-get install -y vim
+WORKDIR /library/ka-lite
+ENTRYPOINT [ "/kalite/kalite_env/bin/kalite", "start", "--port=8008"]
+EOF
+fi
+pushd ../ka-lite
+rm -rf .git
+docker build --tag kalite .
+popd
