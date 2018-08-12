@@ -1,3 +1,9 @@
+- name: Get python dateutil
+  package:
+     name: python-dateutil
+     state: present
+  when: py_captive_portal_install
+  
 - name: Create directory for Captive Portal script
   file:
     path: /opt/iiab/captive-portal
@@ -6,8 +12,8 @@
 
 - name: Copy Captive Portal script
   template:
-    src: roles/network/templates/captive_portal/captive_portal.py.j2
-    dest: /opt/iiab/captive-portal/captive_portal.py
+    src: roles/network/templates/captive_portal/capture_wsgi.py.j2
+    dest: /opt/iiab/captive-portal/capture_wsgi.py
     owner: root
     group: root
     mode: 0740
@@ -24,8 +30,8 @@
 
 - name: Copy Captive Portal Apache config file
   template:
-    src: roles/network/templates/captive_portal/001_captive_portal.conf.j2
-    dest: /etc/{{ apache_config_dir }}/001_captive_portal.conf
+    src: roles/network/templates/captive_portal/001-captive_portal.conf.j2
+    dest: /etc/{{ apache_config_dir }}/001-captive_portal.conf
     owner: root
     group: root
     mode: 0740
@@ -39,8 +45,8 @@
 
 - name: Enable Apache config file
   file:
-    src: /etc/apache2/sites-available/001_captive_portal.conf
-    dest: /etc/apache2/sites-enabled/001_captive_portal.conf
+    src: /etc/apache2/sites-available/001-captive_portal.conf
+    dest: /etc/apache2/sites-enabled/001-captive_portal.conf
     state: link
   when: py_captive_portal_enabled and is_debuntu
 
@@ -59,11 +65,11 @@
 - name: Stop captive_portal after copying files
   service:
     name: captive_portal.service
-    state: started
+    state: stopped
   when: py_captive_portal_install and not py_captive_portal_enabled
 
 - name: Disable Apache config file
   file:
-    dest: /etc/apache2/sites-enabled/001_captive_portal.conf
+    dest: /etc/apache2/sites-enabled/001-captive_portal.conf
     state: absent
   when: not py_captive_portal_enabled and is_debuntu
