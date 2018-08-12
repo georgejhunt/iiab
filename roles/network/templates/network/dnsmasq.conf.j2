@@ -8,6 +8,20 @@ local=/{{ iiab_domain }}/
 # Make all host names resolve to the Raspberry Pi's IP address
 address=/#/{{ lan_ip }}
 {% endif %}
+{% if py_captive_portal_enabled %}
+address=/clients3.google.com/{{ lan_ip }}
+address=/apple.com/{{ lan_ip }}
+address=/*.akamaitechnologies.com/{{ lan_ip }}
+address=/appleiphonecell.com/{{ lan_ip }}
+address=/thinkdifferent.us/{{ lan_ip }}
+address=/*.apple.com.edgekey.net/{{ lan_ip }}
+address=/ipv6.msftncsi.com/{{ lan_ip }}
+address=/ipv6.msftncsi.com.edgesuite.net/{{ lan_ip }}
+address=/www.msftncsi.com/{{ lan_ip }}
+address=/www.msftncsi.com.edgesuite.net/{{ lan_ip }}
+address=/teredo.ipv6.microsoft.com/{{ lan_ip }}
+address=/teredo.ipv6.microsoft.com.nsatc.net/{{ lan_ip }}
+{% endif %}
 # Specify the interface that will listen for DHCP and DNS requests
 interface={{ iiab_lan_iface }}
 # Set the domain for dnsmasq
