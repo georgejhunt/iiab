@@ -12,7 +12,7 @@
 
 - name: Copy Captive Portal script
   template:
-    src: roles/network/templates/captive-portal/capture-wsgi.py.j2
+    src: roles/network/templates/captive-portal/capture-wsgi.py
     dest: /opt/iiab/captive-portal/capture-wsgi.py
     owner: root
     group: root

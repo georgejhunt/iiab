@@ -6,4 +6,4 @@ systemctl stop captive_portal
 echo address=/#/172.18.96.1 > /etc/dnsmaq.d/capture
 /opt/iiab/captive-portal/capture-wsgi.py -d &
 # write the pid just started
-echo $$ > /opt/iiab/captive-portal/capture-wsgi.pid
+echo $! > /opt/iiab/captive-portal/capture-wsgi.pid
