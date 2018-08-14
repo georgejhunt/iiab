@@ -1,0 +1,6 @@
+#!/bin/bash -x
+# Turn off URL recording mode, and return to serving with apache2
+
+kill $(cat /opt/iiab/captive-portal/capture-wsgi.pid)
+awk '{print("address=/",$1,"/172.18.96.1")}' /opt/iiab/captive-portal/catchurl > /etc/dnsmasq.d/capture
+awk '{print("ScriptAlias ",$1)}' /opt/iiab/captive-portal/catchurl > /etc/apache2/capture
