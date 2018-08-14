@@ -8,6 +8,10 @@ import datetime
 import logging
 import os
 import sys
+from tempfile import mkstemp
+from shutil import move
+
+EXPIRE_SECONDS = 60 * 60 * 8
 
 def tstamp(dtime):
     '''return a UNIX style seconds since 1970 for datetime input'''
@@ -16,8 +20,27 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
+def update_user(ip, mac, newts,ymd):
+    fh, target_file_path = mkstemp()
+    with open(target_file_path, 'w') as target_file:
+        with open(/opt/iiab/captive-portal/users, 'r') as source_file:
+            for line in source_file:
+                target_file.write(line.replace(pattern, substring))
+                os.remove(source_file_path)
+                move(target_file_path, source_file_path)
+
+def replace(source_file_path, pattern, substring):
+fh, target_file_path = mkstemp()
+with open(target_file_path, 'w') as target_file:
+            with open(source_file_path, 'r') as source_file:
+                            for line in source_file:
+                                                target_file.write(line.replace(pattern, substring))
+                                                    remove(source_file_path)
+                                                        move(target_file_path, source_file_path)
+                                                                                                                                    
 def application (environ, start_response):
     global CATCH
+    global EXPIRE_SECONDS
     ip = environ['HTTP_X_FORWARDED_FOR'].strip()
     cmd="arp -an %s|gawk \'{print $4}\'" % ip
     mac = subprocess.check_output(cmd, shell=True)
@@ -29,8 +52,8 @@ def application (environ, start_response):
     '''
     data = []
     data.append("host: %s\n"%environ['HTTP_HOST'])
-    data.append("query: %s\n"%environ['QUERY_STRING'])
     data.append("path: %s\n"%environ['PATH_INFO'])
+    data.append("query: %s\n"%environ['QUERY_STRING'])
     data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
     logging.debug(data)
     cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
@@ -53,16 +76,17 @@ def application (environ, start_response):
         if os.path.exists("/opt/iiab/captive-portal/users"):
            with open("/opt/iiab/captive-portal/users","r") as users:
               for line in users:
-                 print line, ip
+                 #print line, ip
                  if ip in line:
-                    found = True
-                    break
+                    session_start = int(line.explode(' ')[2])
+                    ts=tstamp(datetime.datetime.now(tzutc()
+                    if ts - session_start < EXPIRE_SECONDS:
+                        found = True
+                        break
         if not found:
-           with open("/opt/iiab/captive-portal/users","a") as users:
-               ts=tstamp(datetime.datetime.now(tzutc()))
-               ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
-               outstr ="%s %s %s %s\n" %  (ip, mac.strip(), ts,ymd,) 
-               users.write(outstr)
+           ts=tstamp(datetime.datetime.now(tzutc()
+           ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
+           update_user(ip,mac.strip(),ts,ymd)
 
     response_body = "This worked"
     status = '302 Moved Temporarily'
