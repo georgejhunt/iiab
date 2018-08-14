@@ -16,7 +16,7 @@
     dest: /opt/iiab/captive-portal/
     mode: "{{ item.mode }}"
   with_items:
-     - { src: roles/network/templates/captive-portal/catchurl, mode: '0644' }
+     - { src: roles/network/templates/captive-portal/checkurls, mode: '0644' }
      - { src: roles/network/templates/captive-portal/capture-wsgi.py, mode: '0755' }
   when: py_captive_portal_install
 
