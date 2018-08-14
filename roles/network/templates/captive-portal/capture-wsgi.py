@@ -77,7 +77,7 @@ from iiab_env import get_iiab_env
 
 # set up some logging
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
-if sys.argv[1] == '-d':
+if len(sys.argv) > 1 and sys.argv[1] == '-d':
     CATCH = True
     PORT=80
 else:
