@@ -3,11 +3,13 @@
 
 from wsgiref.simple_server import make_server
 import subprocess
+from subprocess import Popen, PIPE
 from dateutil.tz import *
 import datetime
 import logging
 import os
 import sys
+import shlex
 from tempfile import mkstemp
 from shutil import move
 
@@ -22,16 +24,21 @@ def tstamp(dtime):
 
 def update_user(ip, mac, newts,ymd):
     fh, target_file_path = mkstemp()
-    with open(target_file_path, 'w') as target_file:
-        with open('/opt/iiab/captive-portal/users', 'r') as source_file:
-            for line in source_file:
-                if ip in line:
-                    target_file.write("%s %s %8.0d %s" % ip,mac,ts,ymd)
-                else:
-                    target_file.write(line)
-            os.remove(source_file_path)
-            move(target_file_path, source_file_path)
-
+    source_file_path = "/opt/iiab/captive-portal/users"
+    if os.path.isfile(source_file_path):
+        with open(target_file_path, 'w') as target_file:
+            with open(source_file_path, 'r') as source_file:
+                for line in source_file:
+                    if ip in line:
+                        target_file.write("%s %s %8.0d %s" % (ip,mac,ts,ymd,))
+                    else:
+                        target_file.write(line)
+                os.remove(source_file_path)
+                move(target_file_path, source_file_path)
+    else:
+        with open(source_file_path, 'w') as target_file:
+          target_file.write("%s %s %8.0d %s" % (ip,mac,ts,ymd,))
+        
 def microsoft(environ,start_response):
     response_body = "This worked"
     status = '302 Moved Temporarily'
@@ -93,13 +100,13 @@ def application (environ, start_response):
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         logging.debug(data)
         found = False
+        ts=tstamp(datetime.datetime.now(tzutc()))
         if os.path.exists("/opt/iiab/captive-portal/users"):
            with open("/opt/iiab/captive-portal/users","r") as users:
-              ts=tstamp(datetime.datetime.now(tzutc()))
               for line in users:
                  #print line, ip
                  if ip in line:
-                    session_start = int(line.explode(' ')[2])
+                    session_start = int(line.split(' ')[2])
                     if ts - session_start < EXPIRE_SECONDS:
                         found = True
                         break
@@ -107,44 +114,36 @@ def application (environ, start_response):
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
 
-        # discover if internet is available, and wanted
-        returncode = subprocess.call(["ping", "-c","1","8.8.8.8"])
-        if returncode == 0:
-            internet_available = True
-        else:
-            internet_available = False
-        
-        # does IIAB config want client internet acces?
-        internet_enabled = get_iiab_env("IIAB_GATEWAY_ENABLED")
-        if internet_available and internet_enabled:
-            # if this user is in our list, free her from iptables trap
-            cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
-            logging.debug(cmd)
-            result = subprocess.check_output(cmd)
-            if len(result) != 0:
-                logging.debug("untrap user from iptables trap returned" + result)
+        # since this user is in our list, free her from iptables trap
+        cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
+        logging.debug(cmd)
+        args = shlex.split(cmd)
+        process = Popen(args, stderr=PIPE, stdout=PIPE)
+        stdout, stderr = process.communicate()
+        if len(stderr) != 0:
+            logging.debug("untrap user from iptables trap returned" + stderr)
 
-        if environ['HTTP_HOST'] == "captive.apple.com" or
-           environ['HTTP_HOST'] == "appleiphonecell.com":
-           environ['HTTP_HOST'] == "detectportal.firefox.com" or
-           environ['HTTP_HOST'] == "*.apple.com.edgekey.net" or
-           environ['HTTP_HOST'] == "gsp1.apple.com" or
-           environ['HTTP_HOST'] == "apple.com" or
-           environ['HTTP_HOST'] == "www.apple.com" or
-           return macintosh(environment, start_response) 
+        if environ['HTTP_HOST'] == "captive.apple.com" or\
+           environ['HTTP_HOST'] == "appleiphonecell.com" or\
+           environ['HTTP_HOST'] == "detectportal.firefox.com" or\
+           environ['HTTP_HOST'] == "*.apple.com.edgekey.net" or\
+           environ['HTTP_HOST'] == "gsp1.apple.com" or\
+           environ['HTTP_HOST'] == "apple.com" or\
+           environ['HTTP_HOST'] == "www.apple.com": 
+           return macintosh(environ, start_response) 
 
-        if environ['HTTP_HOST'] == "clients3.google.com" or
+        if environ['HTTP_HOST'] == "clients3.google.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
-           return android(environment, start_response) 
+           return android(environ, start_response) 
            
-        if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or
-           environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or
-           environ['HTTP_HOST'] == "www.msftncsi.com" or
-           environ['HTTP_HOST'] == "www.msftncsi.com.edgesuite.net" or
-           environ['HTTP_HOST'] == "www.msftconnecttest.com" or
-           environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com" or
-           environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net" or
-           return microsoft(environment, start_response) 
+        if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
+           environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
+           environ['HTTP_HOST'] == "www.msftncsi.com" or\
+           environ['HTTP_HOST'] == "www.msftncsi.com.edgesuite.net" or\
+           environ['HTTP_HOST'] == "www.msftconnecttest.com" or\
+           environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com" or\
+           environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net": 
+           return microsoft(environ, start_response) 
     response_body = "This worked"
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
