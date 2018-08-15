@@ -60,7 +60,7 @@ kalite_server_port={{ kalite_server_port }}
 kolibri_http_port={{ kolibri_http_port }}
 sugarizer_port={{ sugarizer_port }}
 block_DNS={{ block_DNS }}
-captive_portal_enabled= {{ captive_portal_enabled }}
+captive_portal_enabled={{ captive_portal_enabled }}
 py_captive_portal_enabled={{ py_captive_portal_enabled }}
 iptables_trap_enabled={{ iptables_trap_enabled }}
 
