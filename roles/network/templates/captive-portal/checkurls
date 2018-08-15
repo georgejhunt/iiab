@@ -1,6 +1,5 @@
 clients3.google.com
 connectivitycheck.gstatic.com
-captive.apple.com
 detectportal.firefox.com
 *.akamaitechnologies.com
 appleiphonecell.com
@@ -13,3 +12,5 @@ www.msftncsi.com.edgesuite.net
 www.msftconnecttest.com
 teredo.ipv6.microsoft.com
 teredo.ipv6.microsoft.com.nsatc.net
+captive.apple.com
+init-p01st.push.apple.com
