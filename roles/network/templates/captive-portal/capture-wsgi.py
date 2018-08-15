@@ -47,9 +47,14 @@ def android(environ, start_response):
     return [response_body]
 
 def macintosh(environ, start_response):
-    response_body = "This worked"
+    response_body = """
+    <h1>Welcome to IIAB</h1>
+    <form method="post" action="http://box.lan/home"> 
+       <input type="submit" value="Go To MENU" style="padding:10px 20px;" /> 
+    </form> """
+    
     status = '302 Moved Temporarily'
-    response_headers = [('Location','http://box.lan/home')]
+    response_headers = [('Content','text/html')]
     start_response(status, response_headers)
     return [response_body]
 
@@ -87,7 +92,6 @@ def application (environ, start_response):
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         logging.debug(data)
-        cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
         logging.debug(cmd)
         found = False
         if os.path.exists("/opt/iiab/captive-portal/users"):
@@ -103,6 +107,12 @@ def application (environ, start_response):
         if not found:
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
+
+        # since this user is in our list, free her from iptables trap
+        cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
+        result = subprocess.check_output(cmd)
+        if len(result) != 0:
+            logging.debug("untrap user from iptables trap returned" + result)
 
         if environ['HTTP_HOST'] == "captive.apple.com" or
            environ['HTTP_HOST'] == "appleiphonecell.com":
@@ -159,5 +169,5 @@ httpd = make_server (
 # Wait for a single request, serve it and quit
 #httpd.handle_request()
 httpd.serve_forever()
-# vim: tabstop=3 expandtab shiftwidth=3 softtabstop=3 background=dark
+#vim: tabstop=3 expandtab shiftwidth=3 softtabstop=3 background=dark
 
