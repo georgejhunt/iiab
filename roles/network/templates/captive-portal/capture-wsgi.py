@@ -92,7 +92,6 @@ def application (environ, start_response):
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         logging.debug(data)
-        logging.debug(cmd)
         found = False
         if os.path.exists("/opt/iiab/captive-portal/users"):
            with open("/opt/iiab/captive-portal/users","r") as users:
@@ -108,11 +107,22 @@ def application (environ, start_response):
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
 
-        # since this user is in our list, free her from iptables trap
-        cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
-        result = subprocess.check_output(cmd)
-        if len(result) != 0:
-            logging.debug("untrap user from iptables trap returned" + result)
+        # discover if internet is available, and wanted
+        returncode = subprocess.call(["ping", "-c","1","8.8.8.8"])
+        if returncode == 0:
+            internet_available = True
+        else:
+            internet_available = False
+        
+        # does IIAB config want client internet acces?
+        internet_enabled = get_iiab_env("IIAB_GATEWAY_ENABLED")
+        if internet_available and internet_enabled:
+            # if this user is in our list, free her from iptables trap
+            cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
+            logging.debug(cmd)
+            result = subprocess.check_output(cmd)
+            if len(result) != 0:
+                logging.debug("untrap user from iptables trap returned" + result)
 
         if environ['HTTP_HOST'] == "captive.apple.com" or
            environ['HTTP_HOST'] == "appleiphonecell.com":
