@@ -22,7 +22,7 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-def update_user(ip, mac, newts,ymd):
+def update_user(ip, mac, ts, ymd):
     fh, target_file_path = mkstemp()
     source_file_path = "/opt/iiab/captive-portal/users"
     if os.path.isfile(source_file_path):
@@ -30,14 +30,14 @@ def update_user(ip, mac, newts,ymd):
             with open(source_file_path, 'r') as source_file:
                 for line in source_file:
                     if ip in line:
-                        target_file.write("%s %s %8.0d %s" % (ip,mac,ts,ymd,))
+                        target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
                     else:
                         target_file.write(line)
                 os.remove(source_file_path)
                 move(target_file_path, source_file_path)
     else:
         with open(source_file_path, 'w') as target_file:
-          target_file.write("%s %s %8.0d %s" % (ip,mac,ts,ymd,))
+          target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
         
 def microsoft(environ,start_response):
     response_body = "This worked"
@@ -47,21 +47,34 @@ def microsoft(environ,start_response):
     return [response_body]
 
 def android(environ, start_response):
-    response_body = "This worked"
-    status = '302 Moved Temporarily'
-    response_headers = [('Location','http://box.lan/home')]
-    start_response(status, response_headers)
-    return [response_body]
-
-def macintosh(environ, start_response):
     response_body = """
-    <h1>Welcome to IIAB</h1>
-    <form method="post" action="http://box.lan/home"> 
+    <h1>Welcome to IIAB for the MAC</h1>
+    <form method="post" action="http://box.lan/home" target="_system"> 
        <input type="submit" value="Go To MENU" style="padding:10px 20px;" /> 
     </form> """
     
     status = '302 Moved Temporarily'
     response_headers = [('Content','text/html')]
+    start_response(status, response_headers)
+    return [response_body]
+
+def macintosh(environ, start_response):
+    global MAC_SUCCESS
+    response_body = """
+    <h1>Welcome to IIAB for the MAC</h1>
+    <form method="post" action="http://box.lan/home" target="_system"> 
+       <input type="submit" value="Go To MENU" style="padding:10px 20px;" /> 
+    </form> """
+    if MAC_SUCCESS:
+        response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+        <a href="http://box.lan/home">link to home</a></BODY></HTML>i '''
+        status = '200 Success'
+        MAC_SUCCESS = False
+    else:
+        response_body = "<script>window.location.reload(true)</script>"
+        status = '302 Moved Temporarily'
+        MAC_SUCCESS = True
+    response_headers = [('Location','http://box.lan/home')]
     start_response(status, response_headers)
     return [response_body]
 
@@ -155,6 +168,7 @@ def application (environ, start_response):
 sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
 
+MAC_SUCCESS=False
 # set up some logging
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
 if len(sys.argv) > 1 and sys.argv[1] == '-d':
