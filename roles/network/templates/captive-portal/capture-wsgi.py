@@ -40,24 +40,47 @@ def update_user(ip, mac, ts, ymd):
           target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
         
 def microsoft(environ,start_response):
-    response_body = "This worked"
-    status = '302 Moved Temporarily'
+    logging.debug("sending microsoft response")
+    response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+    <a href="http://box.lan/home">link to home</a></BODY></HTML> '''
+    #response_body=''
+    status = '200 Success'
+    #status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
     start_response(status, response_headers)
     return [response_body]
 
 def android(environ, start_response):
-    response_body = """
-    <h1>Welcome to IIAB for the MAC</h1>
-    <form method="post" action="http://box.lan/home" target="_system"> 
-       <input type="submit" value="Go To MENU" style="padding:10px 20px;" /> 
-    </form> """
-    
-    status = '302 Moved Temporarily'
-    response_headers = [('Content','text/html')]
+    global ANDROID_SUCCESS
+    '''
+    if ANDROID_SUCCESS:
+        response_body = <HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+        <a href="https://box.lan/home">link to home</a></BODY></HTML> 
+        status = '200 Success'
+        #ANDROID_SUCCESS = False
+    else:
+    '''
+    if ANDROID_SUCCESS:
+        response_body = "hello"
+        status = '302 Moved Temporarily'
+        #ANDROID_SUCCESS = False
+        response_headers = [('Location','android_splash')]
+        start_response(status, response_headers)
+        return [response_body]
+
+def android_splash(enfiron, start_response):
+    global ANDROID_SUCCESS
+    logging.debug("returning android_splash")
+    response_body = """<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>
+    <h1>Welcome to IIAB for Android</h1>
+        <a href="https://box.lan/home">Click on this to get to a real browser</a>
+        <a href="http://box.lan/home">Click on this to get to IIAB home page</a>
+     </BODY></HTML>"""
+    status = '200 OK'
+    response_headers = [('content','text/html')]
     start_response(status, response_headers)
     return [response_body]
-
+    
 def macintosh(environ, start_response):
     global MAC_SUCCESS
     response_body = """
@@ -74,7 +97,7 @@ def macintosh(environ, start_response):
         response_body = "<script>window.location.reload(true)</script>"
         status = '302 Moved Temporarily'
         MAC_SUCCESS = True
-    response_headers = [('Location','http://box.lan/home')]
+    response_headers = [('content','text/html')]
     start_response(status, response_headers)
     return [response_body]
 
@@ -91,6 +114,8 @@ def application (environ, start_response):
     
     if CATCH:
         logging.debug("Checking for url %s"%environ['HTTP_HOST'])
+        if environ['HTTP_HOST'] == '/box.lan':
+            return                            
         found = False
         if os.path.exists("/opt/iiab/captive-portal/checkurls"):
            with open("/opt/iiab/captive-portal/checkurls","r") as checkers:
@@ -129,7 +154,7 @@ def application (environ, start_response):
 
         # since this user is in our list, free her from iptables trap
         cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
-        logging.debug(cmd)
+        #logging.debug(cmd)
         args = shlex.split(cmd)
         process = Popen(args, stderr=PIPE, stdout=PIPE)
         stdout, stderr = process.communicate()
@@ -145,10 +170,13 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "www.apple.com": 
            return macintosh(environ, start_response) 
 
+        if  environ['PATH_INFO'] == "/android_splash":
+            return android_splash(environ, start_response) 
         if environ['HTTP_HOST'] == "clients3.google.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
            return android(environ, start_response) 
-           
+           #environ['HTTP_HOST'] == "capture.lan" and\
+
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
            environ['HTTP_HOST'] == "www.msftncsi.com" or\
@@ -169,6 +197,7 @@ sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
 
 MAC_SUCCESS=False
+ANDROID_SUCCESS=True
 # set up some logging
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
 if len(sys.argv) > 1 and sys.argv[1] == '-d':
