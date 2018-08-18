@@ -12,6 +12,10 @@ import sys
 import shlex
 from tempfile import mkstemp
 from shutil import move
+from jinja2 import Environment, FileSystemLoader
+
+# Create the jinja2 environment.
+j2_env = Environment(loader=FileSystemLoader('/opt/iiab/captive-portal'),trim_blocks=True)
 
 EXPIRE_SECONDS = 60 * 60 * 8
 
@@ -29,6 +33,7 @@ def update_user(ip, mac, ts, ymd):
         with open(target_file_path, 'w') as target_file:
             with open(source_file_path, 'r') as source_file:
                 for line in source_file:
+                    if line == '': continue
                     if ip in line:
                         target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
                     else:
@@ -41,12 +46,15 @@ def update_user(ip, mac, ts, ymd):
         
 def microsoft(environ,start_response):
     logging.debug("sending microsoft response")
-    response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+    response_body = j2_env.get_template("simple").render()
+    print response_body
+    dummy='''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
     <a href="http://box.lan/home">link to home</a></BODY></HTML> '''
     #response_body=''
     status = '200 Success'
     #status = '302 Moved Temporarily'
-    response_headers = [('Location','http://box.lan/home')]
+    response_headers = [('Location','http://box.lan/home'),
+            ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
     return [response_body]
 
