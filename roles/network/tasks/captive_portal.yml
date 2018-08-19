@@ -18,7 +18,7 @@
   with_items:
      - { src: roles/network/templates/captive-portal/checkurls, mode: '0644' }
      - { src: roles/network/templates/captive-portal/capture-wsgi.py, mode: '0755' }
-     - { src: roles/network/templates/captive-portal/simple mode: '0755' }
+     - { src: roles/network/templates/captive-portal/simple, mode: '0755' }
   when: py_captive_portal_install
 
 - name: Copy Captive Portal scripts
