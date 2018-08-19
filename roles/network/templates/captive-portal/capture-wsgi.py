@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-# Python's bundled WSGI server
+# -*- coding: utf-8 -*-
+# using Python's bundled WSGI server
 
 from wsgiref.simple_server import make_server
 import subprocess
@@ -22,6 +23,7 @@ EXPIRE_SECONDS = 60 * 60 * 8
 # Get the IIAB variables
 sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
+doc_root = get_iiab_env("WWWROOT")
 
 MAC_SUCCESS=False
 ANDROID_SUCCESS=True
@@ -38,6 +40,10 @@ else:
     CATCH = False
     LIST = False
     PORT=9090
+
+# what language are we speaking?
+lang = os.environ['LANG'][0:2]
+logging.debug('speaking: %s'%lang)
 
 def tstamp(dtime):
     '''return a UNIX style seconds since 1970 for datetime input'''
@@ -65,11 +71,18 @@ def update_user(ip, mac, ts, ymd):
           target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
         
 def microsoft(environ,start_response):
-    logging.debug("sending microsoft response")
-    response_body = str(j2_env.get_template("simple").render())
-    print response_body
-    status = '200 Success'
-    response_headers = [('Location','http://box.lan/home'),
+    #logging.debug("sending microsoft response")
+    en_txt={ 'message':"Click on the button to go to the IIAB home page",\
+            'btn1':"GO TO IIAB HOME PAGE",'doc_root':get_iiab_env("WWWROOT")}
+    es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
+            'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
+    if lang == "en":
+        txt = en_txt
+    elif lang == "es":
+        txt = es_txt
+    response_body = str(j2_env.get_template("simple").render(**txt))
+    status = '200 OK'
+    response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
     return [response_body]
@@ -92,20 +105,52 @@ def android(environ, start_response):
         start_response(status, response_headers)
         return [response_body]
 
-def android_splash(enfiron, start_response):
-    global ANDROID_SUCCESS
-    logging.debug("returning android_splash")
-    response_body = """<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>
-    <h1>Welcome to IIAB for Android</h1>
-        <a href="https://box.lan/home">Click on this to get to a real browser</a>
-        <a href="http://box.lan/home">Click on this to get to IIAB home page</a>
-     </BODY></HTML>"""
+def android_splash(environ, start_response):
+    en_txt={ 'message':"Click on the button to go to the IIAB home page",\
+            'btn1':"GO TO IIAB HOME PAGE", 'btn2':'Go to CHROME browser',\
+            'doc_root':get_iiab_env("WWWROOT") }
+    es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
+            'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
+    if lang == "en":
+        txt = en_txt
+    elif lang == "es":
+        txt = es_txt
+    response_body = str(j2_env.get_template("simple").render(**txt))
     status = '200 OK'
-    response_headers = [('content','text/html')]
+    response_headers = [('Content-type','text/html'),
+            ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
     return [response_body]
-    
+
 def macintosh(environ, start_response):
+    global MAC_SUCCESS
+    en_txt={ 'message':"Click on the button to go to the IIAB home page",\
+            'btn1':"GO TO IIAB HOME PAGE",\
+            'success_token': 'SUCCESS', 'doc_root':get_iiab_env("WWWROOT")}
+    es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
+            'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
+    if lang == "en":
+        txt = en_txt
+    elif lang == "es":
+        txt = es_txt
+    if MAC_SUCCESS:
+        response_body = str(j2_env.get_template("simple").render(**txt))
+        status = '200 OK'
+        response_headers = [('Content-type','text/html'),
+                ('Content-Length',str(len(response_body)))]
+        status = '200 Success'
+        MAC_SUCCESS = False
+        start_response(status, response_headers)
+        return [response_body]
+    else:
+        response_body = "<script>window.location.reload(true)</script>"
+        status = '302 Moved Temporarily'
+        MAC_SUCCESS = True
+        response_headers = [('content','text/html')]
+        start_response(status, response_headers)
+        return [response_body]
+
+def works(environ, start_response):
     global MAC_SUCCESS
     response_body = """
     <h1>Welcome to IIAB for the MAC</h1>
@@ -126,12 +171,27 @@ def macintosh(environ, start_response):
     return [response_body]
 
 def banner(environ, start_response):
-    logging.debug("in banner")
     status = '200 OK'
     headers = [('Content-type', 'image/png')]
     start_response(status, headers)
     image = open("/opt/iiab/captive-portal/iiab_banner6.png", "rb").read() 
     return [image]
+
+def bootstrap(environ, start_response):
+    logging.debug("in bootstrap")
+    status = '200 OK'
+    headers = [('Content-type', 'text/javascript')]
+    start_response(status, headers)
+    boot = open("%s/common/js/bootstrap.min.js"%doc_root, "rb").read() 
+    return [boot]
+
+def bootstrap_css(environ, start_response):
+    logging.debug("in bootstrap_css")
+    status = '200 OK'
+    headers = [('Content-type', 'text/css')]
+    start_response(status, headers)
+    boot = open("%s/common/css/bootstrap.min.css"%doc_root, "rb").read() 
+    return [boot]
 
 def application (environ, start_response):
     global CATCH
@@ -196,6 +256,12 @@ def application (environ, start_response):
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
             return banner(environ, start_response) 
+
+        if  environ['PATH_INFO'] == "/bootstrap.min.js":
+            return bootstrap(environ, start_response) 
+
+        if  environ['PATH_INFO'] == "/bootstrap.min.css":
+            return bootstrap_css(environ, start_response) 
 
         # mac
         if environ['HTTP_HOST'] == "captive.apple.com" or\

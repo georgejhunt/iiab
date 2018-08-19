@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>IIAB Splash Page</title>
+    <title>Success</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/bootstrap.min.css"/>
+    <script src="/bootstrap.min.js"></script>
     <style type="text/css">
        #header {
           display: block;
@@ -33,7 +35,7 @@
           background-color: #fff;
       }
       .button {
-           font: bold 20px Arial;
+           font: bold 14px Arial;
            text-decoration: none;
            background-color: #EEEEEE;
            color: #333333;
@@ -50,17 +52,21 @@
     </style>
   </head>
   <body>
+     {% if success_token is defined %}
+     Success
+     {% endif %}
+     <br>
      <div align="center">
 		<div id="header"></div>
       <H1>Welcome to IIAB</H1>
       <br><br>
-      {% message }}
+      {{ message }}
       <br><br>
       <div id="choices">
-         <a class="button" href="http://box.lan/home">{% btn1_text %}/a>
-         {% if btn2_text is defined %}
-         <a class="button" href="http://box.lan/home">{% btn1_text %}/a>
+         {% if btn2 is defined %}
+         <a class="button" href="https://box.lan/home">{{ btn2 }}</a>
          {% endif %}
+         <a class="button" href="http://box.lan/home">{{ btn1 }}</a>
       </div>
   </body>
 </html>
