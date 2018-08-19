@@ -19,6 +19,26 @@ j2_env = Environment(loader=FileSystemLoader('/opt/iiab/captive-portal'),trim_bl
 
 EXPIRE_SECONDS = 60 * 60 * 8
 
+# Get the IIAB variables
+sys.path.append('/etc/iiab/')
+from iiab_env import get_iiab_env
+
+MAC_SUCCESS=False
+ANDROID_SUCCESS=True
+# set up some logging
+logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
+if len(sys.argv) > 1 and sys.argv[1] == '-d':
+    CATCH = True
+    LIST = False
+    PORT=80
+elif len(sys.argv) > 1 and sys.argv[1] == '-l':
+    LIST = True
+    CATCH = False
+else:
+    CATCH = False
+    LIST = False
+    PORT=9090
+
 def tstamp(dtime):
     '''return a UNIX style seconds since 1970 for datetime input'''
     epoch = datetime.datetime(1970, 1, 1,tzinfo=tzutc())
@@ -46,13 +66,9 @@ def update_user(ip, mac, ts, ymd):
         
 def microsoft(environ,start_response):
     logging.debug("sending microsoft response")
-    response_body = j2_env.get_template("simple").render()
+    response_body = str(j2_env.get_template("simple").render())
     print response_body
-    dummy='''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
-    <a href="http://box.lan/home">link to home</a></BODY></HTML> '''
-    #response_body=''
     status = '200 Success'
-    #status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
@@ -108,6 +124,14 @@ def macintosh(environ, start_response):
     response_headers = [('content','text/html')]
     start_response(status, response_headers)
     return [response_body]
+
+def banner(environ, start_response):
+    logging.debug("in banner")
+    status = '200 OK'
+    headers = [('Content-type', 'image/png')]
+    start_response(status, headers)
+    image = open("/opt/iiab/captive-portal/iiab_banner6.png", "rb").read() 
+    return [image]
 
 def application (environ, start_response):
     global CATCH
@@ -169,6 +193,11 @@ def application (environ, start_response):
         if len(stderr) != 0:
             logging.debug("untrap user from iptables trap returned" + stderr)
 
+        # do more specific stuff first
+        if  environ['PATH_INFO'] == "/iiab_banner6.png":
+            return banner(environ, start_response) 
+
+        # mac
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
            environ['HTTP_HOST'] == "detectportal.firefox.com" or\
@@ -178,13 +207,14 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "www.apple.com": 
            return macintosh(environ, start_response) 
 
+        # android
         if  environ['PATH_INFO'] == "/android_splash":
             return android_splash(environ, start_response) 
         if environ['HTTP_HOST'] == "clients3.google.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
            return android(environ, start_response) 
-           #environ['HTTP_HOST'] == "capture.lan" and\
 
+        # microsoft
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
            environ['HTTP_HOST'] == "www.msftncsi.com" or\
@@ -193,6 +223,7 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com" or\
            environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net": 
            return microsoft(environ, start_response) 
+
     response_body = "This worked"
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
@@ -200,25 +231,6 @@ def application (environ, start_response):
 
     return [response_body]
 
-# Get the IIAB variables
-sys.path.append('/etc/iiab/')
-from iiab_env import get_iiab_env
-
-MAC_SUCCESS=False
-ANDROID_SUCCESS=True
-# set up some logging
-logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
-if len(sys.argv) > 1 and sys.argv[1] == '-d':
-    CATCH = True
-    LIST = False
-    PORT=80
-elif len(sys.argv) > 1 and sys.argv[1] == '-l':
-    LIST = True
-    CATCH = False
-else:
-    CATCH = False
-    LIST = False
-    PORT=9090
 # Instantiate the server
 httpd = make_server (
     "", # The host name
