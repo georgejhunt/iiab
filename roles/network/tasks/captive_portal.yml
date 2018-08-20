@@ -73,6 +73,13 @@
     state: link
   when: py_captive_portal_enabled and is_debuntu
 
+- name: Enable Apache ssl config file
+  file:
+    src: /etc/apache2/sites-available/default-ssl.conf
+    dest: /etc/apache2/sites-enabled/default-ssl.conf
+    state: link
+  when: py_captive_portal_enabled and is_debuntu
+
 - name: Start captive-portal after copying files
   service:
     name: captive-portal.service
