@@ -24,6 +24,7 @@ EXPIRE_SECONDS = 60 * 60 * 8
 sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
 doc_root = get_iiab_env("WWWROOT")
+iptables_trap_enabled = get_iiab_env("IPTABLES_TRAP_ENABLED")
 
 MAC_SUCCESS=False
 ANDROID_SUCCESS=True
@@ -174,7 +175,7 @@ def banner(environ, start_response):
     status = '200 OK'
     headers = [('Content-type', 'image/png')]
     start_response(status, headers)
-    image = open("/opt/iiab/captive-portal/iiab_banner6.png", "rb").read() 
+    image = open("%s/iiab-menu/menu-files/images/iiab_banner6.png"%doc_root, "rb").read() 
     return [image]
 
 def bootstrap(environ, start_response):
@@ -183,6 +184,14 @@ def bootstrap(environ, start_response):
     headers = [('Content-type', 'text/javascript')]
     start_response(status, headers)
     boot = open("%s/common/js/bootstrap.min.js"%doc_root, "rb").read() 
+    return [boot]
+
+def jquery(environ, start_response):
+    logging.debug("in bootstrap")
+    status = '200 OK'
+    headers = [('Content-type', 'text/javascript')]
+    start_response(status, headers)
+    boot = open("%s/common/js/jquery.min.js"%doc_root, "rb").read() 
     return [boot]
 
 def bootstrap_css(environ, start_response):
@@ -244,14 +253,15 @@ def application (environ, start_response):
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
 
-        # since this user is in our list, free her from iptables trap
-        cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
-        #logging.debug(cmd)
-        args = shlex.split(cmd)
-        process = Popen(args, stderr=PIPE, stdout=PIPE)
-        stdout, stderr = process.communicate()
-        if len(stderr) != 0:
-            logging.debug("untrap user from iptables trap returned" + stderr)
+        if iptables_trap_enabled:
+           # since this user is in our list, free her from iptables trap
+           cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
+           #logging.debug(cmd)
+           args = shlex.split(cmd)
+           process = Popen(args, stderr=PIPE, stdout=PIPE)
+           stdout, stderr = process.communicate()
+           if len(stderr) != 0:
+               logging.debug("untrap user from iptables trap returned" + stderr)
 
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
@@ -262,6 +272,9 @@ def application (environ, start_response):
 
         if  environ['PATH_INFO'] == "/bootstrap.min.css":
             return bootstrap_css(environ, start_response) 
+
+        if  environ['PATH_INFO'] == "/jquery.min.js":
+            return jquery(environ, start_response) 
 
         # mac
         if environ['HTTP_HOST'] == "captive.apple.com" or\
