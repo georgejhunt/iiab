@@ -21,9 +21,9 @@
   when: py_captive_portal_install
 
 - name: Copy the jinja2 template to captive portal
-  file: 
+  copy: 
     src: roles/network/files/simple
-    dest: /opt/iiab/captive-portal
+    dest: /opt/iiab/captive-portal/
 
 - name: Copy Captive Portal scripts
   template:
