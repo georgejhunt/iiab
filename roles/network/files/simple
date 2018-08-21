@@ -2,25 +2,25 @@
 <html>
   <head>
     <title>Success</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/bootstrap.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=.75">
+<!--    <link rel="stylesheet" href="/bootstrap.min.css"/>
     <script src="/jquery.min.js"></script>
-    <script src="/bootstrap.min.js"></script>
+    <script src="/bootstrap.min.js"></script> -->
     <style type="text/css">
        #header {
           display: block;
           height: 120px;
-          width:100%;
+          width:350px;
           background: #000 url('iiab_banner6.png') no-repeat 0 0;
           border-radius: 5px;
-          margin: auto;
+          margin: 5px;
        }
       body {
           background-color: #CBFFAA;
           font-family: sans-serif;
           font-size: 100%;
-          width: 1180px;
-          margin: auto;
+          width: 350px;
+          margin: 3px;
       }
 
       a {
