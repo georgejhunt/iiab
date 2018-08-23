@@ -37,6 +37,7 @@ if len(sys.argv) > 1 and sys.argv[1] == '-d':
 elif len(sys.argv) > 1 and sys.argv[1] == '-l':
     LIST = True
     CATCH = False
+    PORT=80
 else:
     CATCH = False
     LIST = False
@@ -187,7 +188,7 @@ def bootstrap(environ, start_response):
     return [boot]
 
 def jquery(environ, start_response):
-    logging.debug("in bootstrap")
+    logging.debug("in jquery")
     status = '200 OK'
     headers = [('Content-type', 'text/javascript')]
     start_response(status, headers)
@@ -214,7 +215,8 @@ def application (environ, start_response):
         logging.debug(data)
     
     if CATCH:
-        logging.debug("Checking for url %s"%environ['HTTP_HOST'])
+        logging.debug("Checking for url %s. USER_AGENT:%s"%(environ['HTTP_HOST'],\
+               environ['HTTP_USER_AGENT'],))
         if environ['HTTP_HOST'] == '/box.lan':
             return                            
         found = False
@@ -228,6 +230,10 @@ def application (environ, start_response):
            with open("/opt/iiab/captive-portal/checkurls","a") as checkers:
                outstr ="%s\n" %  (environ['HTTP_HOST']) 
                checkers.write(outstr)
+        data = [
+        '%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
+        logging.debug(data)
+    
     else:
         ip = environ['HTTP_X_FORWARDED_FOR'].strip()
         cmd="arp -an %s|gawk \'{print $4}\'" % ip
@@ -253,7 +259,7 @@ def application (environ, start_response):
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
 
-        if iptables_trap_enabled:
+        if iptables_trap_enabled == "True":
            # since this user is in our list, free her from iptables trap
            cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
            #logging.debug(cmd)
