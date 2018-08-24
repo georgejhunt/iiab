@@ -113,6 +113,9 @@ dnsmasq_enabled: False
 # Enable in local_vars.yml AFTER installing IIAB!  Then run "cd /opt/iiab/iiab; ./iiab-network"
 dns_jail_enabled: False
 
+# Divert all http queries when mac address of client is not in our list
+iptables_trap_enabled: False
+
 # For @tim-moody's Nodogsplash approach to Captive Portal?  High experimental as of June 2018: github.com/iiab/iiab/issues/608
 captive_portal_install: False
 captive_portal_enabled: False
@@ -380,32 +383,32 @@ munin_enabled: False
 phpmyadmin_install: False
 phpmyadmin_enabled: False
 
+# sugar-stats - unmaintained
+sugar_stats_install: False
+sugar_stats_enabled: False
+
+# TeamViewer - unmaintained (better to install from http://teamviewer.com)
+teamviewer_install: False
+teamviewer_enabled: False
+
 # vnStat
 vnstat_install: True
 vnstat_enabled: False
 
-# ================================================================
-
-# Unmaintained (better to install from http://teamviewer.com or prep scripts at http://download.iiab.io)
-# teamviewer_install: False
-# teamviewer_enabled: False
-
-# sugar-stats - unmaintained
-# sugar_stats_install: False
-# sugar_stats_enabled: False
-
 # XOVis - unmaintained
-# xovis_install: False
-# xovis_enabled: False
-# xovis_target_host: "127.0.0.1:5984"
-# xovis_deployment_name: olpc
-# xovis_db_name: xovis
-# xovis_db_user: admin
-# xovis_db_password: admin
+xovis_install: False
+xovis_enabled: False
+xovis_target_host: "127.0.0.1:5984"
+xovis_deployment_name: olpc
+xovis_db_name: xovis
+xovis_db_user: admin
+xovis_db_password: admin
 
-# xovis_root: "/opt/xovis"
-# xovis_backup_dir: "/library/users"
-# xovis_chart_heading: "My School: Usage Data Visualization"
+xovis_root: "/opt/xovis"
+xovis_backup_dir: "/library/users"
+xovis_chart_heading: "My School: Usage Data Visualization"
+
+# ================================================================
 
 # Ajenti - unmaintained
 # ajenti_install: False
@@ -419,10 +422,9 @@ vnstat_enabled: False
 # rachel_doc_root: "{{ doc_root }}/modules"
 
 # ================================================================
+# Platforms - turn all off and let <OS>.yml turn on as appropriate
 
-# Platforms - turn all off and let /opt/iiab/iiab/vars/<OS>.yml turn on as appropriate
-
-# Wide to narrow
+# wide to narrow
 is_debuntu: False
 is_ubuntu: False
 is_ubuntu_18: False
