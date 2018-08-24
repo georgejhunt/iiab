@@ -26,8 +26,6 @@ from iiab_env import get_iiab_env
 doc_root = get_iiab_env("WWWROOT")
 iptables_trap_enabled = get_iiab_env("IPTABLES_TRAP_ENABLED")
 
-MAC_SUCCESS=False
-ANDROID_SUCCESS=True
 # set up some logging
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
 if len(sys.argv) > 1 and sys.argv[1] == '-d':
@@ -42,6 +40,9 @@ else:
     CATCH = False
     LIST = False
     PORT=9090
+
+MAC_SUCCESS=False
+ANDROID_SUCCESS=True
 
 # what language are we speaking?
 lang = os.environ['LANG'][0:2]
@@ -91,14 +92,6 @@ def microsoft(environ,start_response):
 
 def android(environ, start_response):
     global ANDROID_SUCCESS
-    '''
-    if ANDROID_SUCCESS:
-        response_body = <HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
-        <a href="https://box.lan/home">link to home</a></BODY></HTML> 
-        status = '200 Success'
-        #ANDROID_SUCCESS = False
-    else:
-    '''
     if ANDROID_SUCCESS:
         response_body = "hello"
         status = '302 Moved Temporarily'
@@ -152,26 +145,7 @@ def macintosh(environ, start_response):
         start_response(status, response_headers)
         return [response_body]
 
-def works(environ, start_response):
-    global MAC_SUCCESS
-    response_body = """
-    <h1>Welcome to IIAB for the MAC</h1>
-    <form method="post" action="http://box.lan/home" target="_system"> 
-       <input type="submit" value="Go To MENU" style="padding:10px 20px;" /> 
-    </form> """
-    if MAC_SUCCESS:
-        response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
-        <a href="http://box.lan/home">link to home</a></BODY></HTML>i '''
-        status = '200 Success'
-        MAC_SUCCESS = False
-    else:
-        response_body = "<script>window.location.reload(true)</script>"
-        status = '302 Moved Temporarily'
-        MAC_SUCCESS = True
-    response_headers = [('content','text/html')]
-    start_response(status, response_headers)
-    return [response_body]
-
+# =============  Return html pages  ============================
 def banner(environ, start_response):
     status = '200 OK'
     headers = [('Content-type', 'image/png')]
@@ -203,6 +177,7 @@ def bootstrap_css(environ, start_response):
     boot = open("%s/common/css/bootstrap.min.css"%doc_root, "rb").read() 
     return [boot]
 
+# ================== Start serving the wsgi application  =================
 def application (environ, start_response):
     global CATCH
     global LIST
@@ -243,6 +218,8 @@ def application (environ, start_response):
         data.append("path: %s\n"%environ['PATH_INFO'])
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
+        agent = environ['HTTP_USER_AGENT']
+        data.append("agent: %s\n"%agent)
         logging.debug(data)
         found = False
         ts=tstamp(datetime.datetime.now(tzutc()))
@@ -258,16 +235,6 @@ def application (environ, start_response):
         if not found:
            ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
-
-        if iptables_trap_enabled == "True":
-           # since this user is in our list, free her from iptables trap
-           cmd="sudo iptables -I internet 1 -t mangle -m mac --mac-source %s -j RETURN"%mac
-           #logging.debug(cmd)
-           args = shlex.split(cmd)
-           process = Popen(args, stderr=PIPE, stdout=PIPE)
-           stdout, stderr = process.communicate()
-           if len(stderr) != 0:
-               logging.debug("untrap user from iptables trap returned" + stderr)
 
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
@@ -296,6 +263,10 @@ def application (environ, start_response):
         if  environ['PATH_INFO'] == "/android_splash":
             return android_splash(environ, start_response) 
         if environ['HTTP_HOST'] == "clients3.google.com" or\
+           environ['HTTP_HOST'] == "mtalk.google.com" or\
+           environ['HTTP_HOST'] == "alt7-mtalk.google.com" or\
+           environ['HTTP_HOST'] == "alt6-mtalk.google.com" or\
+           environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
            return android(environ, start_response) 
 
