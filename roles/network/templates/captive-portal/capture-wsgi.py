@@ -55,7 +55,9 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-def update_user(ip, mac, ts, ymd):
+def update_user(ip, mac, ts, ymd, return_204="False"):
+    print("in update_user. return_204:%s"%return_204)
+    found = False
     fh, target_file_path = mkstemp()
     source_file_path = "/opt/iiab/captive-portal/users"
     if os.path.isfile(source_file_path):
@@ -63,15 +65,19 @@ def update_user(ip, mac, ts, ymd):
             with open(source_file_path, 'r') as source_file:
                 for line in source_file:
                     if line == '': continue
-                    if ip in line:
-                        target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
+                    if line.find(ip) != -1:
+                        target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
+                        found = True
                     else:
                         target_file.write(line)
+                if not found:
+                    target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
+
                 os.remove(source_file_path)
                 move(target_file_path, source_file_path)
     else:
         with open(source_file_path, 'w') as target_file:
-          target_file.write("%s %s %8.0d %s\n" % (ip,mac,ts,ymd,))
+          target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
         
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
@@ -177,6 +183,28 @@ def bootstrap_css(environ, start_response):
     boot = open("%s/common/css/bootstrap.min.css"%doc_root, "rb").read() 
     return [boot]
 
+def put_204(environ, start_response):
+    logging.debug("in put_204")
+    print("in put_204")
+
+    # get values to update_user
+    ip = environ['HTTP_X_FORWARDED_FOR'].strip()
+    cmd="arp -an %s|gawk \'{print $4}\'" % ip
+    mac = subprocess.check_output(cmd, shell=True)
+    ts=tstamp(datetime.datetime.now(tzutc()))
+    ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
+
+    # following call removes the return_204 flag for this user
+    update_user(ip,mac.strip(),ts,ymd)
+
+    status = '204 No Data'
+    response_body = ''
+    response_headers = [('Content-type','text/html'),
+            ('Content-Length',str(len(response_body)))]
+    start_response(status, response_headers)
+    print("sending 204")
+    return [response_body]
+
 # ================== Start serving the wsgi application  =================
 def application (environ, start_response):
     global CATCH
@@ -219,21 +247,22 @@ def application (environ, start_response):
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         agent = environ['HTTP_USER_AGENT']
-        data.append("agent: %s\n"%agent)
+        osys = agent.split(';')[1]
+        data.append("OS: %s\n"%osys)
         logging.debug(data)
         found = False
+        return_204_flag = "False"
         ts=tstamp(datetime.datetime.now(tzutc()))
+        ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
         if os.path.exists("/opt/iiab/captive-portal/users"):
            with open("/opt/iiab/captive-portal/users","r") as users:
               for line in users:
                  #print line, ip
-                 if ip in line:
-                    session_start = int(line.split(' ')[2])
-                    if ts - session_start < EXPIRE_SECONDS:
-                        found = True
-                        break
+                 session_start = int(line.split(' ')[2])
+                 if ts - session_start < EXPIRE_SECONDS:
+                     found = True
+                     break
         if not found:
-           ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
            update_user(ip,mac.strip(),ts,ymd)
 
         # do more specific stuff first
@@ -249,6 +278,30 @@ def application (environ, start_response):
         if  environ['PATH_INFO'] == "/jquery.min.js":
             return jquery(environ, start_response) 
 
+        if  environ['PATH_INFO'] == "/home_selected":
+            # the js link to home page triggers this ajax url 
+            # mark the sign-in conversation completed, return 204
+            update_user(ip,mac.strip(),ts,ymd,"True")
+            logging.debug("setting flag to return_204")
+            print("setting flag to return_204")
+
+            status = '200 OK'
+            headers = [('Content-type', 'text/html')]
+            start_response(status, headers)
+            return [""]
+
+        if  environ['PATH_INFO'] == "/generate_204":
+           print "path detected"
+           if os.path.exists("/opt/iiab/captive-portal/users"):
+              with open("/opt/iiab/captive-portal/users","r") as users:
+                 for line in users:
+                    if line.find(ip) != -1:
+                        print line,ip
+                        nibble = line.split(' ')[4]
+                        print "nibble:%s"%nibble
+                        if nibble.strip() == "True":
+                           print "putting 204"
+                           return put_204(environ,start_response)
         # mac
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
