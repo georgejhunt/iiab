@@ -14,11 +14,13 @@ import shlex
 from tempfile import mkstemp
 from shutil import move
 from jinja2 import Environment, FileSystemLoader
+import sqlite3
 
 # Create the jinja2 environment.
-j2_env = Environment(loader=FileSystemLoader('/opt/iiab/captive-portal'),trim_blocks=True)
+CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
+j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=True)
 
-EXPIRE_SECONDS = 60 * 60 * 8
+EXPIRE_SECONDS = 60 * 1
 
 # Get the IIAB variables
 sys.path.append('/etc/iiab/')
@@ -41,6 +43,16 @@ else:
     LIST = False
     PORT=9090
 
+# Use a sqlite database to store per client information
+user_db = os.path.join(CAPTIVE_PORTAL_BASE,"users.sqlite")
+conn = sqlite3.connect(user_db)
+c = conn.cursor()
+c.execute( """create table IF NOT EXISTS users 
+            (ip text PRIMARY KEY, mac text, 
+            lasttimestamp integer, send204after integer,
+            os text, os_version text,
+            ymd text)""")
+
 MAC_SUCCESS=False
 ANDROID_SUCCESS=True
 
@@ -55,29 +67,13 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-def update_user(ip, mac, ts, ymd, return_204="False"):
+def update_user(ip, mac, lasttimestarm, send204after, os, os_version, ymd):
     print("in update_user. return_204:%s"%return_204)
-    found = False
-    fh, target_file_path = mkstemp()
-    source_file_path = "/opt/iiab/captive-portal/users"
-    if os.path.isfile(source_file_path):
-        with open(target_file_path, 'w') as target_file:
-            with open(source_file_path, 'r') as source_file:
-                for line in source_file:
-                    if line == '': continue
-                    if line.find(ip) != -1:
-                        target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
-                        found = True
-                    else:
-                        target_file.write(line)
-                if not found:
-                    target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
+    sql = "INSERT OR REPLACE INTO users VALUES ( ip, mac, \
+            lasttimestarm, send204after, os, os_version, ymd )"
+    c.execute(sql)
+    conn.commit()
 
-                os.remove(source_file_path)
-                move(target_file_path, source_file_path)
-    else:
-        with open(source_file_path, 'w') as target_file:
-          target_file.write("%s %s %8.0d %s %s\n" % (ip,mac,ts,ymd,return_204))
         
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
@@ -247,13 +243,18 @@ def application (environ, start_response):
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         agent = environ['HTTP_USER_AGENT']
-        osys = agent.split(';')[1]
-        data.append("OS: %s\n"%osys)
+        #osys = agent.split(';')[1]
+        #data.append("OS: %s\n"%osys)
+        data.append("AGENT: %s\n"%agent)
         logging.debug(data)
+        print(data)
         found = False
         return_204_flag = "False"
         ts=tstamp(datetime.datetime.now(tzutc()))
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
+        #os, os_version = parse_agent(agent)
+
+        #update_user(ip, mac, ts, 0, os, os_version, ymd):
         if os.path.exists("/opt/iiab/captive-portal/users"):
            with open("/opt/iiab/captive-portal/users","r") as users:
               for line in users:
@@ -262,8 +263,6 @@ def application (environ, start_response):
                  if ts - session_start < EXPIRE_SECONDS:
                      found = True
                      break
-        if not found:
-           update_user(ip,mac.strip(),ts,ymd)
 
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
