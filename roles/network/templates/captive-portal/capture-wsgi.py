@@ -15,6 +15,7 @@ from tempfile import mkstemp
 from shutil import move
 from jinja2 import Environment, FileSystemLoader
 import sqlite3
+import re
 
 # Create the jinja2 environment.
 CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
@@ -47,6 +48,7 @@ else:
 user_db = os.path.join(CAPTIVE_PORTAL_BASE,"users.sqlite")
 conn = sqlite3.connect(user_db)
 c = conn.cursor()
+c.row_factory = sqlite3.Row
 c.execute( """create table IF NOT EXISTS users 
             (ip text PRIMARY KEY, mac text, 
             lasttimestamp integer, send204after integer,
@@ -67,11 +69,10 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-def update_user(ip, mac, lasttimestarm, send204after, os, os_version, ymd):
-    print("in update_user. return_204:%s"%return_204)
-    sql = "INSERT OR REPLACE INTO users VALUES ( ip, mac, \
-            lasttimestarm, send204after, os, os_version, ymd )"
-    c.execute(sql)
+def update_user(ip, mac, lasttimestamp, send204after, system, system_version, ymd):
+    print("in update_user.")
+    sql = "INSERT OR REPLACE INTO users VALUES (?,?,?,?,?,?,?)" 
+    c.execute(sql,(ip, mac,lasttimestamp, send204after, system, system_version, ymd ))
     conn.commit()
 
         
@@ -191,7 +192,7 @@ def put_204(environ, start_response):
     ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
 
     # following call removes the return_204 flag for this user
-    update_user(ip,mac.strip(),ts,ymd)
+    #update_user(ip,mac.strip(),ts,ymd)
 
     status = '204 No Data'
     response_body = ''
@@ -201,6 +202,23 @@ def put_204(environ, start_response):
     print("sending 204")
     return [response_body]
 
+def parse_agent(agent):
+    system = ''
+    system_version = ''
+    match = re.search(r"(Android)\s([.\d]*)",agent)
+    if match:
+        system = match.group(1)
+        system_version = match.group(2)
+    match = re.search(r"(OS X)\s([\d_]*)",agent)
+    if match:
+        system = match.group(1)
+        system_version = match.group(2)
+    match = re.search(r"(Windows NT)\s([\d.]*)",agent)
+    if match:
+        system = match.group(1)
+        system_version = match.group(2)
+    return (system, system_version)
+#
 # ================== Start serving the wsgi application  =================
 def application (environ, start_response):
     global CATCH
@@ -252,17 +270,12 @@ def application (environ, start_response):
         return_204_flag = "False"
         ts=tstamp(datetime.datetime.now(tzutc()))
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
-        #os, os_version = parse_agent(agent)
 
-        #update_user(ip, mac, ts, 0, os, os_version, ymd):
-        if os.path.exists("/opt/iiab/captive-portal/users"):
-           with open("/opt/iiab/captive-portal/users","r") as users:
-              for line in users:
-                 #print line, ip
-                 session_start = int(line.split(' ')[2])
-                 if ts - session_start < EXPIRE_SECONDS:
-                     found = True
-                     break
+        system, system_version = parse_agent(agent)
+        
+        #print("parse returned: [%s]  [%s]"%(system,system_version))
+
+        update_user(ip, mac, ts, 0, system, system_version, ymd)
 
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
@@ -280,7 +293,7 @@ def application (environ, start_response):
         if  environ['PATH_INFO'] == "/home_selected":
             # the js link to home page triggers this ajax url 
             # mark the sign-in conversation completed, return 204
-            update_user(ip,mac.strip(),ts,ymd,"True")
+            #update_user(ip,mac.strip(),ts,ymd,"True")
             logging.debug("setting flag to return_204")
             print("setting flag to return_204")
 
