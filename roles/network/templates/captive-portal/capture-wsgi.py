@@ -17,11 +17,19 @@ from jinja2 import Environment, FileSystemLoader
 import sqlite3
 import re
 
+# Notes on timeout strategy
+# every client timestamp is recorded
+# When splash page is clicked, return 204 timeout starts (may be different for different OSs
+# captive portal redirect is triggered after inactivity timeout
+
 # Create the jinja2 environment.
 CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
 j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=True)
 
-EXPIRE_SECONDS = 60 * 1
+# Define time outs
+INACTIVITY_TO = 10
+PORTAL_TO = 30
+
 
 # Get the IIAB variables
 sys.path.append('/etc/iiab/')
@@ -56,7 +64,7 @@ c.execute( """create table IF NOT EXISTS users
             ymd text)""")
 
 MAC_SUCCESS=False
-ANDROID_SUCCESS=True
+ANDROID_TRIGGER=False
 
 # what language are we speaking?
 lang = os.environ['LANG'][0:2]
@@ -69,13 +77,55 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
+# datab"ase operations
 def update_user(ip, mac, lasttimestamp, send204after, system, system_version, ymd):
-    print("in update_user.")
-    sql = "INSERT OR REPLACE INTO users VALUES (?,?,?,?,?,?,?)" 
-    c.execute(sql,(ip, mac,lasttimestamp, send204after, system, system_version, ymd ))
+    #print("in update_user.")
+    sql = "INSERT OR REPLACE INTO users (ip,mac,lasttimestamp,os,os_version,ymd) VALUES (?,?,?,?,?,?)" 
+    c.execute(sql,(ip, mac,lasttimestamp,  system, system_version, ymd ))
     conn.commit()
 
+def platform_info(ip):
+    sql = "select * FROM users WHERE ip = ?"
+    c.execute(sql,(ip,))
+    row = c.fetchone()
+    return (row['os'],row['os_version'])
         
+def timeout_info(ip):
+    sql = "select * FROM users WHERE ip = ?"
+    c.execute(sql,(ip,))
+    row = c.fetchone()
+    return (row['lasttimestamp'],row['send204after'])
+        
+def inactive(ip):
+    ts=tstamp(datetime.datetime.now(tzutc()))
+    last_ts, cp_done = timeout_info(ip) 
+    print("last_ts:%s current: %s"%(last_ts,ts,))
+    if not last_ts:
+        return True
+    if ts - int(last_ts) > INACTIVITY_TO:
+        print "inactive"
+        return True
+    else:
+        print "active"
+        return False
+
+def portal_done(ip):
+    ts=tstamp(datetime.datetime.now(tzutc()))
+    last_ts, cp_done = timeout_info(ip) 
+    print("cp_done:%s current: %s"%(cp_done,ts,))
+    if not cp_done:
+        return False
+    if ts - int(cp_done) > 0:
+        return True
+    else:
+        return False
+
+def set_portal_expire(ip,value):
+    ts=tstamp(datetime.datetime.now(tzutc()))
+    sql = 'UPDATE users SET send204after = ?  where ip = ?'
+    c.execute(sql,(ts + value,ip,))
+    conn.commit()
+
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
@@ -94,18 +144,39 @@ def microsoft(environ,start_response):
     return [response_body]
 
 def android(environ, start_response):
-    global ANDROID_SUCCESS
-    if ANDROID_SUCCESS:
-        response_body = "hello"
-        status = '302 Moved Temporarily'
-        #ANDROID_SUCCESS = False
-        response_headers = [('Location','android_splash')]
-        start_response(status, response_headers)
-        return [response_body]
+    response_body = "hello"
+    status = '302 Moved Temporarily'
+    response_headers = [('Location','android_https')]
+    start_response(status, response_headers)
+    return [response_body]
 
 def android_splash(environ, start_response):
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
-            'btn1':"GO TO IIAB HOME PAGE", 'btn2':'Go to CHROME browser',\
+            'btn1':"GO TO IIAB HOME PAGE", \
+            'doc_root':get_iiab_env("WWWROOT") }
+    es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
+            'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
+    if lang == "en":
+        txt = en_txt
+    elif lang == "es":
+        txt = es_txt
+    response_body = str(j2_env.get_template("simple").render(**txt))
+    status = '200 OK'
+    response_headers = [('Content-type','text/html'),
+            ('Content-Length',str(len(response_body)))]
+    start_response(status, response_headers)
+    return [response_body]
+
+def android_save(environ, start_response):
+    status = '302 redirect'
+    response_headers = [('Content-type','text/html'),('Location','http://%s'%get_iiab_env("WWWROOT"))
+            ('Content-Length',str(len(response_body)))]
+    start_response(status, response_headers)
+    return ["hi"]
+
+def android_https(environ, start_response):
+    en_txt={ 'message':"""Please ignore the following SECURITY warning""",\
+             'btn2':'Go to CHROME browser',\
             'doc_root':get_iiab_env("WWWROOT") }
     es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
             'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
@@ -180,10 +251,16 @@ def bootstrap_css(environ, start_response):
     boot = open("%s/common/css/bootstrap.min.css"%doc_root, "rb").read() 
     return [boot]
 
+def null(environ, start_response):
+    status = '200 OK'
+    headers = [('Content-type', 'text/html')]
+    start_response(status, headers)
+    return [""]
+
 def put_204(environ, start_response):
     logging.debug("in put_204")
     print("in put_204")
-
+    '''
     # get values to update_user
     ip = environ['HTTP_X_FORWARDED_FOR'].strip()
     cmd="arp -an %s|gawk \'{print $4}\'" % ip
@@ -193,7 +270,7 @@ def put_204(environ, start_response):
 
     # following call removes the return_204 flag for this user
     #update_user(ip,mac.strip(),ts,ymd)
-
+    '''
     status = '204 No Data'
     response_body = ''
     response_headers = [('Content-type','text/html'),
@@ -223,7 +300,8 @@ def parse_agent(agent):
 def application (environ, start_response):
     global CATCH
     global LIST
-    global EXPIRE_SECONDS
+    global INACTIVITY_TO
+    global ANDROID_TRIGGER
 
     # Sorting and stringifying the environment key, value pairs
     if LIST:
@@ -275,8 +353,6 @@ def application (environ, start_response):
         
         #print("parse returned: [%s]  [%s]"%(system,system_version))
 
-        update_user(ip, mac, ts, 0, system, system_version, ymd)
-
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
             return banner(environ, start_response) 
@@ -290,30 +366,34 @@ def application (environ, start_response):
         if  environ['PATH_INFO'] == "/jquery.min.js":
             return jquery(environ, start_response) 
 
+        if  environ['PATH_INFO'] == "/favicon.ico":
+            return null(environ, start_response) 
+
         if  environ['PATH_INFO'] == "/home_selected":
             # the js link to home page triggers this ajax url 
             # mark the sign-in conversation completed, return 204
             #update_user(ip,mac.strip(),ts,ymd,"True")
             logging.debug("setting flag to return_204")
+            set_portal_expire(ip,PORTAL_TO)
             print("setting flag to return_204")
 
             status = '200 OK'
             headers = [('Content-type', 'text/html')]
             start_response(status, headers)
             return [""]
-
+        '''
         if  environ['PATH_INFO'] == "/generate_204":
-           print "path detected"
+           print "generate_204 detected"
            if os.path.exists("/opt/iiab/captive-portal/users"):
               with open("/opt/iiab/captive-portal/users","r") as users:
                  for line in users:
                     if line.find(ip) != -1:
-                        print line,ip
+                        #print line,ip
                         nibble = line.split(' ')[4]
-                        print "nibble:%s"%nibble
                         if nibble.strip() == "True":
                            print "putting 204"
-                           return put_204(environ,start_response)
+                           return put_204(environ,start_respone
+        '''
         # mac
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
@@ -326,14 +406,27 @@ def application (environ, start_response):
 
         # android
         if  environ['PATH_INFO'] == "/android_splash":
-            return android_splash(environ, start_response) 
+           return android_splash(environ, start_response) 
+        if  environ['PATH_INFO'] == "/android_https":
+           return android_https(environ, start_response) 
         if environ['HTTP_HOST'] == "clients3.google.com" or\
            environ['HTTP_HOST'] == "mtalk.google.com" or\
            environ['HTTP_HOST'] == "alt7-mtalk.google.com" or\
            environ['HTTP_HOST'] == "alt6-mtalk.google.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
-           return android(environ, start_response) 
+           if inactive(ip):
+               ANDROID_TRIGGER = True
+           else:
+               #ANDROID_TRIGGER = False
+               pass
+           if system != "":
+                update_user(ip, mac, ts, 0, system, system_version, ymd)
+           if ANDROID_TRIGGER:
+                return android(environ, start_response) 
+           elif portal_done(ip):
+                return put_204(environ,start_response)
+                      
 
         # microsoft
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
@@ -345,6 +438,7 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net": 
            return microsoft(environ, start_response) 
 
+    print("executing the defaut redirect. Agent:%s"%agent)
     response_body = "This worked"
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
