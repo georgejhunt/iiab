@@ -80,8 +80,14 @@ def tstamp(dtime):
 # database operations
 def update_user(ip, mac, system, system_version, ymd):
     #print("in update_user.")
-    sql = "INSERT OR REPLACE INTO users (ip,mac,os,os_version,ymd) VALUES (?,?,?,?,?)" 
-    c.execute(sql,(ip, mac, system, system_version, ymd ))
+    sql = "SELECT * FROM users WHERE ip = ?"
+    c.execute(sql,(ip,))
+    if c.rowcount == 0:
+        sql = "INSERT INTO users (ip,mac,os,os_version,ymd) VALUES (?,?,?,?,?)" 
+        c.execute(sql,(ip, mac, system, system_version, ymd ))
+    else:
+        sql = "UPDATE users SET  (mac,os,os_version,ymd) = ( ?, ?, ?, ? ) WHERE ip = ?"
+        c.execute(sql,(mac, system, system_version, ymd, ip,))
     conn.commit()
 
 def platform_info(ip):
@@ -211,6 +217,7 @@ def android_https(environ, start_response):
 
 def macintosh(environ, start_response):
     global MAC_SUCCESS
+    '''
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
             'btn1':"GO TO IIAB HOME PAGE",\
             'success_token': 'SUCCESS', 'doc_root':get_iiab_env("WWWROOT")}
@@ -229,13 +236,20 @@ def macintosh(environ, start_response):
         MAC_SUCCESS = False
         start_response(status, response_headers)
         return [response_body]
+    '''
+
+    if MAC_SUCCESS:
+        response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+        <a href="http://box.lan/home">link to home</a></BODY></HTML>i '''
+        status = '200 Success'
+        #MAC_SUCCESS = False
     else:
         response_body = "<script>window.location.reload(true)</script>"
         status = '302 Moved Temporarily'
         MAC_SUCCESS = True
-        response_headers = [('content','text/html')]
-        start_response(status, response_headers)
-        return [response_body]
+    response_headers = [('content','text/html')]
+    start_response(status, response_headers)
+    return [response_body]
 
 def mac_success(environ,start_response):
     status = '200 ok'
@@ -378,7 +392,9 @@ def application (environ, start_response):
         # record the activity with this ip
         ts=tstamp(datetime.datetime.now(tzutc()))
         sql = "UPDATE  users SET current_ts = ? WHERE ip = ?" 
-        c.execute(sql,(ip, ts))
+        c.execute(sql,(ts,ip,))
+        if c.rowcount == 0:
+            print("failed UPDATE  users SET current_ts = %s WHERE ip = %s"%(ts,ip,)) 
         conn.commit()
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
 
@@ -429,8 +445,8 @@ def application (environ, start_response):
                            return put_204(environ,start_respone
         '''
         # mac
-        if  environ['PATH_INFO'] == "/success.txt":
-           return mac_success(environ, start_response) 
+        #if  environ['PATH_INFO'] == "/success.txt" and MAC_SUCCESS:
+           #return mac_success(environ, start_response) 
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
            environ['HTTP_HOST'] == "detectportal.firefox.com" or\
