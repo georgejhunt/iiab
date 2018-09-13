@@ -18,7 +18,7 @@ import sqlite3
 import re
 
 # Notes on timeout strategy
-# every client timestamp is recorded
+# every client timestamp is recorded into current_ts
 # When splash page is clicked, return 204 timeout starts (may be different for different OSs
 # captive portal redirect is triggered after inactivity timeout
 
@@ -58,13 +58,13 @@ conn = sqlite3.connect(user_db)
 c = conn.cursor()
 c.row_factory = sqlite3.Row
 c.execute( """create table IF NOT EXISTS users 
-            (ip text PRIMARY KEY, mac text, 
+            (ip text PRIMARY KEY, mac text, current_ts integer,
             lasttimestamp integer, send204after integer,
             os text, os_version text,
             ymd text)""")
 
 MAC_SUCCESS=False
-ANDROID_TRIGGER=False
+ANDROID_TRIGGERED=False
 
 # what language are we speaking?
 lang = os.environ['LANG'][0:2]
@@ -77,11 +77,11 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-# datab"ase operations
-def update_user(ip, mac, lasttimestamp, send204after, system, system_version, ymd):
+# database operations
+def update_user(ip, mac, system, system_version, ymd):
     #print("in update_user.")
-    sql = "INSERT OR REPLACE INTO users (ip,mac,lasttimestamp,os,os_version,ymd) VALUES (?,?,?,?,?,?)" 
-    c.execute(sql,(ip, mac,lasttimestamp,  system, system_version, ymd ))
+    sql = "INSERT OR REPLACE INTO users (ip,mac,os,os_version,ymd) VALUES (?,?,?,?,?)" 
+    c.execute(sql,(ip, mac, system, system_version, ymd ))
     conn.commit()
 
 def platform_info(ip):
@@ -121,10 +121,12 @@ def portal_done(ip):
         return False
 
 def set_portal_expire(ip,value):
+    global ANDROID_TRIGGERED
     ts=tstamp(datetime.datetime.now(tzutc()))
     sql = 'UPDATE users SET send204after = ?  where ip = ?'
     c.execute(sql,(ts + value,ip,))
     conn.commit()
+    ANDROID_TRIGGERED = False
 
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
@@ -144,9 +146,24 @@ def microsoft(environ,start_response):
     return [response_body]
 
 def android(environ, start_response):
+    global ANDROID_TRIGGERED
+    ip = environ['HTTP_X_FORWARDED_FOR'].strip()
+    system,system_version = platform_info(ip)
+    if system_version[0:1] < '6':
+        print("system < 6:%s"%system_version)
+        location = '/android_splash'
+    else:
+        location = 'android_https'
+    agent = environ['HTTP_USER_AGENT']
+    '''
+    if ANDROID_TRIGGERED:
+        return null(environ,start_response) # doing nothing
+    if agent[0:7] == 'Mozilla':
+        ANDROID_TRIGGERED = True
+    '''
     response_body = "hello"
     status = '302 Moved Temporarily'
-    response_headers = [('Location','android_https')]
+    response_headers = [('Location',location)]
     start_response(status, response_headers)
     return [response_body]
 
@@ -176,7 +193,8 @@ def android_save(environ, start_response):
 
 def android_https(environ, start_response):
     en_txt={ 'message':"""Please ignore the following SECURITY warning""",\
-             'btn2':'Go to CHROME browser',\
+             'btn2':'Click this first Go to CHROME browser',\
+             'btn1':'Then click this to go to IIAB home page',\
             'doc_root':get_iiab_env("WWWROOT") }
     es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
             'btn1':"IIAB",'doc_root':get_iiab_env("WWWROOT")}
@@ -219,6 +237,18 @@ def macintosh(environ, start_response):
         start_response(status, response_headers)
         return [response_body]
 
+def mac_success(environ,start_response):
+    status = '200 ok'
+    headers = [('Content-type', 'text/html')]
+    start_response(status, headers)
+    return ["success"]
+
+def microsoft_connect(environ,start_response):
+    status = '200 ok'
+    headers = [('Content-type', 'text/html')]
+    start_response(status, headers)
+    return ["Microsoft Connect Test"]
+
 # =============  Return html pages  ============================
 def banner(environ, start_response):
     status = '200 OK'
@@ -252,7 +282,7 @@ def bootstrap_css(environ, start_response):
     return [boot]
 
 def null(environ, start_response):
-    status = '200 OK'
+    status = '200 ok'
     headers = [('Content-type', 'text/html')]
     start_response(status, headers)
     return [""]
@@ -301,7 +331,7 @@ def application (environ, start_response):
     global CATCH
     global LIST
     global INACTIVITY_TO
-    global ANDROID_TRIGGER
+    global ANDROID_TRIGGERED
 
     # Sorting and stringifying the environment key, value pairs
     if LIST:
@@ -339,19 +369,22 @@ def application (environ, start_response):
         data.append("query: %s\n"%environ['QUERY_STRING'])
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         agent = environ['HTTP_USER_AGENT']
-        #osys = agent.split(';')[1]
-        #data.append("OS: %s\n"%osys)
         data.append("AGENT: %s\n"%agent)
         logging.debug(data)
         print(data)
         found = False
         return_204_flag = "False"
+
+        # record the activity with this ip
         ts=tstamp(datetime.datetime.now(tzutc()))
+        sql = "UPDATE  users SET current_ts = ? WHERE ip = ?" 
+        c.execute(sql,(ip, ts))
+        conn.commit()
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
 
-        system, system_version = parse_agent(agent)
-        
-        #print("parse returned: [%s]  [%s]"%(system,system_version))
+        system,system_version = parse_agent(agent)
+        if system != '':
+            update_user(ip, mac, system, system_version, ymd)
 
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
@@ -370,6 +403,7 @@ def application (environ, start_response):
             return null(environ, start_response) 
 
         if  environ['PATH_INFO'] == "/home_selected":
+            ANDROID_TRIGGERED = True
             # the js link to home page triggers this ajax url 
             # mark the sign-in conversation completed, return 204
             #update_user(ip,mac.strip(),ts,ymd,"True")
@@ -395,6 +429,8 @@ def application (environ, start_response):
                            return put_204(environ,start_respone
         '''
         # mac
+        if  environ['PATH_INFO'] == "/success.txt":
+           return mac_success(environ, start_response) 
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
            environ['HTTP_HOST'] == "detectportal.firefox.com" or\
@@ -410,25 +446,22 @@ def application (environ, start_response):
         if  environ['PATH_INFO'] == "/android_https":
            return android_https(environ, start_response) 
         if environ['HTTP_HOST'] == "clients3.google.com" or\
-           environ['HTTP_HOST'] == "mtalk.google.com" or\
-           environ['HTTP_HOST'] == "alt7-mtalk.google.com" or\
-           environ['HTTP_HOST'] == "alt6-mtalk.google.com" or\
-           environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
-           environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
-           if inactive(ip):
-               ANDROID_TRIGGER = True
-           else:
-               #ANDROID_TRIGGER = False
-               pass
-           if system != "":
-                update_user(ip, mac, ts, 0, system, system_version, ymd)
-           if ANDROID_TRIGGER:
+            environ['HTTP_HOST'] == "mtalk.google.com" or\
+            environ['HTTP_HOST'] == "alt7-mtalk.google.com" or\
+            environ['HTTP_HOST'] == "alt6-mtalk.google.com" or\
+            environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
+            environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
+            last_ts, cp_done = timeout_info(ip) 
+            print("last_ts:%s current: %s"%(last_ts,ts,))
+            if not last_ts or (ts - int(last_ts) > INACTIVITY_TO):
                 return android(environ, start_response) 
-           elif portal_done(ip):
+            elif portal_done(ip):
                 return put_204(environ,start_response)
-                      
+            return #return without doing anything
 
         # microsoft
+        if  environ['PATH_INFO'] == "/connecttest.txt":
+           return microsoft_connect(environ, start_response) 
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
            environ['HTTP_HOST'] == "www.msftncsi.com" or\
