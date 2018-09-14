@@ -144,7 +144,7 @@ def microsoft(environ,start_response):
         txt = en_txt
     elif lang == "es":
         txt = es_txt
-    response_body = str(j2_env.get_template("simple").render(**txt))
+    response_body = str(j2_env.get_template("simple.template").render(**txt))
     status = '200 OK'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -183,7 +183,7 @@ def android_splash(environ, start_response):
         txt = en_txt
     elif lang == "es":
         txt = es_txt
-    response_body = str(j2_env.get_template("simple").render(**txt))
+    response_body = str(j2_env.get_template("simple.template").render(**txt))
     status = '200 OK'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -208,7 +208,7 @@ def android_https(environ, start_response):
         txt = en_txt
     elif lang == "es":
         txt = es_txt
-    response_body = str(j2_env.get_template("simple").render(**txt))
+    response_body = str(j2_env.get_template("simple.template").render(**txt))
     status = '200 OK'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -217,7 +217,6 @@ def android_https(environ, start_response):
 
 def macintosh(environ, start_response):
     global MAC_SUCCESS
-    '''
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
             'btn1':"GO TO IIAB HOME PAGE",\
             'success_token': 'SUCCESS', 'doc_root':get_iiab_env("WWWROOT")}
@@ -228,28 +227,25 @@ def macintosh(environ, start_response):
     elif lang == "es":
         txt = es_txt
     if MAC_SUCCESS:
-        response_body = str(j2_env.get_template("simple").render(**txt))
-        status = '200 OK'
-        response_headers = [('Content-type','text/html'),
-                ('Content-Length',str(len(response_body)))]
-        status = '200 Success'
-        MAC_SUCCESS = False
-        start_response(status, response_headers)
-        return [response_body]
-    '''
-
-    if MAC_SUCCESS:
-        response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
-        <a href="http://box.lan/home">link to home</a></BODY></HTML>i '''
+        response_body = str(j2_env.get_template("mac.template").render(**txt))
+        #MAC_SUCCESS = False
+         
+        #response_body = '''<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success<br>
+        #<a href="http://box.lan/home">link to home</a></BODY></HTML>i '''
         status = '200 Success'
         #MAC_SUCCESS = False
+        response_headers = [('Content-type','text/html'),
+                ('Content-Length',str(len(response_body)))]
+        start_response(status, response_headers)
+        return [response_body]
+        
     else:
         response_body = "<script>window.location.reload(true)</script>"
         status = '302 Moved Temporarily'
         MAC_SUCCESS = True
-    response_headers = [('content','text/html')]
-    start_response(status, response_headers)
-    return [response_body]
+        response_headers = [('content','text/html')]
+        start_response(status, response_headers)
+        return [response_body]
 
 def mac_success(environ,start_response):
     status = '200 ok'
@@ -476,7 +472,7 @@ def application (environ, start_response):
             return #return without doing anything
 
         # microsoft
-        if  environ['PATH_INFO'] == "/connecttest.txt":
+        if  environ['PATH_INFO'] == "/connecttest.txt" and portal_done():
            return microsoft_connect(environ, start_response) 
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
