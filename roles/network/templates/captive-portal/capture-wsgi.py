@@ -82,7 +82,8 @@ def update_user(ip, mac, system, system_version, ymd):
     #print("in update_user.")
     sql = "SELECT * FROM users WHERE ip = ?"
     c.execute(sql,(ip,))
-    if c.rowcount == 0:
+    row = c.fetchone()
+    if row == None:
         sql = "INSERT INTO users (ip,mac,os,os_version,ymd) VALUES (?,?,?,?,?)" 
         c.execute(sql,(ip, mac, system, system_version, ymd ))
     else:
@@ -94,17 +95,19 @@ def platform_info(ip):
     sql = "select * FROM users WHERE ip = ?"
     c.execute(sql,(ip,))
     row = c.fetchone()
+    if row is None: return ('','',)
     return (row['os'],row['os_version'])
         
 def timeout_info(ip):
     sql = "select * FROM users WHERE ip = ?"
     c.execute(sql,(ip,))
     row = c.fetchone()
+    if row is None: return (0,0,)
     return (row['lasttimestamp'],row['send204after'])
         
 def inactive(ip):
     ts=tstamp(datetime.datetime.now(tzutc()))
-    last_ts, cp_done = timeout_info(ip) 
+    last_ts, send204after = timeout_info(ip) 
     print("last_ts:%s current: %s"%(last_ts,ts,))
     if not last_ts:
         return True
@@ -115,18 +118,19 @@ def inactive(ip):
         print "active"
         return False
 
-def portal_done(ip):
+def is_after204_timeout(ip):
     ts=tstamp(datetime.datetime.now(tzutc()))
-    last_ts, cp_done = timeout_info(ip) 
-    print("cp_done:%s current: %s"%(cp_done,ts,))
-    if not cp_done:
+    last_ts, send204after = timeout_info(ip) 
+    if send204after == 0: return False
+    print("send204after:%s current: %s"%(send204after,ts,))
+    if not send204after:
         return False
-    if ts - int(cp_done) > 0:
+    if ts - int(send204after) > 0:
         return True
     else:
         return False
 
-def set_portal_expire(ip,value):
+def set_204after(ip,value):
     global ANDROID_TRIGGERED
     ts=tstamp(datetime.datetime.now(tzutc()))
     sql = 'UPDATE users SET send204after = ?  where ip = ?'
@@ -396,6 +400,7 @@ def application (environ, start_response):
 
         system,system_version = parse_agent(agent)
         if system != '':
+            print('system:%s'%system)
             update_user(ip, mac, system, system_version, ymd)
 
         # do more specific stuff first
@@ -420,7 +425,7 @@ def application (environ, start_response):
             # mark the sign-in conversation completed, return 204
             #update_user(ip,mac.strip(),ts,ymd,"True")
             logging.debug("setting flag to return_204")
-            set_portal_expire(ip,PORTAL_TO)
+            set_204after(ip,PORTAL_TO)
             print("setting flag to return_204")
 
             status = '200 OK'
@@ -463,16 +468,16 @@ def application (environ, start_response):
             environ['HTTP_HOST'] == "alt6-mtalk.google.com" or\
             environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
             environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
-            last_ts, cp_done = timeout_info(ip) 
+            last_ts, send204after = timeout_info(ip) 
             print("last_ts:%s current: %s"%(last_ts,ts,))
             if not last_ts or (ts - int(last_ts) > INACTIVITY_TO):
                 return android(environ, start_response) 
-            elif portal_done(ip):
+            elif is_after204_timeout(ip):
                 return put_204(environ,start_response)
             return #return without doing anything
 
         # microsoft
-        if  environ['PATH_INFO'] == "/connecttest.txt" and portal_done():
+        if  environ['PATH_INFO'] == "/connecttest.txt" and is_after204_timeout(ip):
            return microsoft_connect(environ, start_response) 
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
