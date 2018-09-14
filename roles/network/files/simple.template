@@ -3,8 +3,8 @@
   <head>
     <title>Success</title>
     <meta name="viewport" content="width=device-width, initial-scale=.75">
-<!--    <link rel="stylesheet" href="/bootstrap.min.css"/>
     <script src="/jquery.min.js"></script>
+<!--    <link rel="stylesheet" href="/bootstrap.min.css"/>
     <script src="/bootstrap.min.js"></script> -->
     <style type="text/css">
       @media (max-width: 500px){
@@ -65,12 +65,13 @@
            border-left: 1px solid #CCCCCC;
            radius: 5px;
       }
-      #choices{
-         display: inline;
-      }
     </style>
     <script>
      var w = window.innerWidth;
+     function homeclick(){
+        window.open("http://box.lan/home","_system");
+        $.ajax("/home_selected");
+     }
 
     </script>
   </head>
@@ -84,12 +85,16 @@
       <H1>Welcome to IIAB</H1>
       <br><br>
       {{ message }}
-      <br><br>
       <div id="choices">
          {% if btn2 is defined %}
-         <a class="button" href="https://box.lan/home">{{ btn2 }}</a>
+         <a class="button" href="https://captive.lan/android_splash">{{ btn2 }}</a>
          {% endif %}
-         <a class="button" href="http://box.lan/home">{{ btn1 }}</a>
+         <br><br>
+      <br><br>
+      <br><br>
+      <br><br>
+      <!--     <a class="button" href="http://box.lan/home">{{ btn1 }}</a> -->
+         <a class="button" onclick="homeclick()">{{ btn1 }}</a>
       </div>
   </body>
 </html>

@@ -22,7 +22,12 @@
 
 - name: Copy the jinja2 template to captive portal
   copy: 
-    src: roles/network/files/simple
+    src: roles/network/files/simple.template
+    dest: /opt/iiab/captive-portal/
+
+- name: Copy the jinja2 template to captive portal
+  copy: 
+    src: roles/network/files/mac.template
     dest: /opt/iiab/captive-portal/
 
 - name: Copy Captive Portal scripts
