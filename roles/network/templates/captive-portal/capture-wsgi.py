@@ -138,6 +138,12 @@ def set_204after(ip,value):
     conn.commit()
     ANDROID_TRIGGERED = False
 
+def set_lasttimestamp(ip):
+    ts=tstamp(datetime.datetime.now(tzutc()))
+    sql = 'UPDATE users SET lasttimestamp = ?  where ip = ?'
+    c.execute(sql,(ts,ip,))
+    conn.commit()
+
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
@@ -426,6 +432,7 @@ def application (environ, start_response):
             #update_user(ip,mac.strip(),ts,ymd,"True")
             logging.debug("setting flag to return_204")
             set_204after(ip,PORTAL_TO)
+            set_lasttimestamp(ip)
             print("setting flag to return_204")
 
             status = '200 OK'
@@ -477,7 +484,7 @@ def application (environ, start_response):
             return #return without doing anything
 
         # microsoft
-        if  environ['PATH_INFO'] == "/connecttest.txt" and is_after204_timeout(ip):
+        if  environ['PATH_INFO'] == "/connecttest.txt" and not inactive(ip):
            return microsoft_connect(environ, start_response) 
         if environ['HTTP_HOST'] == "ipv6.msftncsi.com" or\
            environ['HTTP_HOST'] == "ipv6.msftncsi.com.edgesuite.net" or\
