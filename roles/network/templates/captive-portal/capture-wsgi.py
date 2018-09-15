@@ -27,15 +27,14 @@ CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
 j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=True)
 
 # Define time outs
-INACTIVITY_TO = 10
-PORTAL_TO = 30
+INACTIVITY_TO = 30
+PORTAL_TO = 0 
 
 
 # Get the IIAB variables
 sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
 doc_root = get_iiab_env("WWWROOT")
-iptables_trap_enabled = get_iiab_env("IPTABLES_TRAP_ENABLED")
 
 # set up some logging
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
@@ -79,7 +78,6 @@ def tstamp(dtime):
 
 # database operations
 def update_user(ip, mac, system, system_version, ymd):
-    #print("in update_user.")
     sql = "SELECT * FROM users WHERE ip = ?"
     c.execute(sql,(ip,))
     row = c.fetchone()
@@ -108,21 +106,18 @@ def timeout_info(ip):
 def inactive(ip):
     ts=tstamp(datetime.datetime.now(tzutc()))
     last_ts, send204after = timeout_info(ip) 
-    print("last_ts:%s current: %s"%(last_ts,ts,))
     if not last_ts:
         return True
     if ts - int(last_ts) > INACTIVITY_TO:
-        print "inactive"
         return True
     else:
-        print "active"
         return False
 
 def is_after204_timeout(ip):
     ts=tstamp(datetime.datetime.now(tzutc()))
     last_ts, send204after = timeout_info(ip) 
     if send204after == 0: return False
-    print("send204after:%s current: %s"%(send204after,ts,))
+    logging.debug("function: is_after204_timeout send204after:%s current: %s"%(send204after,ts,))
     if not send204after:
         return False
     if ts - int(send204after) > 0:
@@ -166,17 +161,12 @@ def android(environ, start_response):
     ip = environ['HTTP_X_FORWARDED_FOR'].strip()
     system,system_version = platform_info(ip)
     if system_version[0:1] < '6':
-        print("system < 6:%s"%system_version)
+        logging.debug("system < 6:%s"%system_version)
         location = '/android_splash'
+        set_204after(ip,0)
     else:
         location = 'android_https'
     agent = environ['HTTP_USER_AGENT']
-    '''
-    if ANDROID_TRIGGERED:
-        return null(environ,start_response) # doing nothing
-    if agent[0:7] == 'Mozilla':
-        ANDROID_TRIGGERED = True
-    '''
     response_body = "hello"
     status = '302 Moved Temporarily'
     response_headers = [('Location',location)]
@@ -308,25 +298,12 @@ def null(environ, start_response):
     return [""]
 
 def put_204(environ, start_response):
-    logging.debug("in put_204")
-    print("in put_204")
-    '''
-    # get values to update_user
-    ip = environ['HTTP_X_FORWARDED_FOR'].strip()
-    cmd="arp -an %s|gawk \'{print $4}\'" % ip
-    mac = subprocess.check_output(cmd, shell=True)
-    ts=tstamp(datetime.datetime.now(tzutc()))
-    ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
-
-    # following call removes the return_204 flag for this user
-    #update_user(ip,mac.strip(),ts,ymd)
-    '''
     status = '204 No Data'
     response_body = ''
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
-    print("sending 204")
+    logging.debug("sending 204 html response")
     return [response_body]
 
 def parse_agent(agent):
@@ -400,13 +377,12 @@ def application (environ, start_response):
         sql = "UPDATE  users SET current_ts = ? WHERE ip = ?" 
         c.execute(sql,(ts,ip,))
         if c.rowcount == 0:
-            print("failed UPDATE  users SET current_ts = %s WHERE ip = %s"%(ts,ip,)) 
+            logging.debug("failed UPDATE  users SET current_ts = %s WHERE ip = %s"%(ts,ip,)) 
         conn.commit()
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
 
         system,system_version = parse_agent(agent)
         if system != '':
-            print('system:%s'%system)
             update_user(ip, mac, system, system_version, ymd)
 
         # do more specific stuff first
@@ -433,25 +409,11 @@ def application (environ, start_response):
             logging.debug("setting flag to return_204")
             set_204after(ip,PORTAL_TO)
             set_lasttimestamp(ip)
-            print("setting flag to return_204")
-
             status = '200 OK'
             headers = [('Content-type', 'text/html')]
             start_response(status, headers)
             return [""]
-        '''
-        if  environ['PATH_INFO'] == "/generate_204":
-           print "generate_204 detected"
-           if os.path.exists("/opt/iiab/captive-portal/users"):
-              with open("/opt/iiab/captive-portal/users","r") as users:
-                 for line in users:
-                    if line.find(ip) != -1:
-                        #print line,ip
-                        nibble = line.split(' ')[4]
-                        if nibble.strip() == "True":
-                           print "putting 204"
-                           return put_204(environ,start_respone
-        '''
+
         # mac
         #if  environ['PATH_INFO'] == "/success.txt" and MAC_SUCCESS:
            #return mac_success(environ, start_response) 
@@ -476,7 +438,6 @@ def application (environ, start_response):
             environ['HTTP_HOST'] == "connectivitycheck.android.com" or\
             environ['HTTP_HOST'] == "connectivitycheck.gstatic.com":
             last_ts, send204after = timeout_info(ip) 
-            print("last_ts:%s current: %s"%(last_ts,ts,))
             if not last_ts or (ts - int(last_ts) > INACTIVITY_TO):
                 return android(environ, start_response) 
             elif is_after204_timeout(ip):
@@ -495,7 +456,7 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net": 
            return microsoft(environ, start_response) 
 
-    print("executing the defaut redirect. Agent:%s"%agent)
+    logging.debug("executing the defaut redirect. Agent:%s"%agent)
     response_body = "This worked"
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
