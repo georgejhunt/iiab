@@ -61,7 +61,6 @@ kolibri_http_port={{ kolibri_http_port }}
 sugarizer_port={{ sugarizer_port }}
 block_DNS={{ block_DNS }}
 py_captive_portal_enabled={{ py_captive_portal_enabled }}
-iptables_trap_enabled={{ iptables_trap_enabled }}
 
 echo "LAN is $lan and WAN is $wan"
 #
