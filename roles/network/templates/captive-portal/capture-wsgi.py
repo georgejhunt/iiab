@@ -4,23 +4,22 @@
 
 from wsgiref.simple_server import make_server
 import subprocess
-from subprocess import Popen, PIPE
 from dateutil.tz import *
 import datetime
 import logging
 import os
 import sys
-import shlex
-from tempfile import mkstemp
-from shutil import move
 from jinja2 import Environment, FileSystemLoader
 import sqlite3
 import re
 
 # Notes on timeout strategy
 # every client timestamp is recorded into current_ts
-# When splash page is clicked, return 204 timeout starts (may be different for different OSs
-# captive portal redirect is triggered after inactivity timeout
+# When splash page is clicked , return 204 timeout starts (via ajax call),
+# Return 204 is android (may be different for different versions)
+# captive portal redirect is triggered after inactivity timeout, 
+# which needs to be longer than period of normal connecetivity checks by OS
+# 
 
 # Create the jinja2 environment.
 CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
@@ -28,7 +27,9 @@ j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=Tr
 
 # Define time outs
 INACTIVITY_TO = 30
-PORTAL_TO = 0 
+PORTAL_TO = 0 # delay after triggered by ajax upon click of link to home page
+# I had hoped that returning 204 status after some delay 
+#  would dispense with "sign-in to network" (no work)
 
 
 # Get the IIAB variables
@@ -37,19 +38,15 @@ from iiab_env import get_iiab_env
 doc_root = get_iiab_env("WWWROOT")
 
 # set up some logging
-logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.ERROR)
+CATCH = False
 if len(sys.argv) > 1 and sys.argv[1] == '-d':
     CATCH = True
-    LIST = False
-    PORT=80
-elif len(sys.argv) > 1 and sys.argv[1] == '-l':
-    LIST = True
-    CATCH = False
     PORT=80
 else:
-    CATCH = False
-    LIST = False
     PORT=9090
+if len(sys.argv) > 1 and sys.argv[1] == '-l':
+    logging.setLevel(logging.DEBUG)
 
 # Use a sqlite database to store per client information
 user_db = os.path.join(CAPTIVE_PORTAL_BASE,"users.sqlite")
@@ -198,8 +195,8 @@ def android_save(environ, start_response):
     return ["hi"]
 
 def android_https(environ, start_response):
-    en_txt={ 'message':"""Please ignore the following SECURITY warning""",\
-             'btn2':'Click this first Go to CHROME browser',\
+    en_txt={ 'message':"""Please ignore the SECURITY warning which appears after clicking the first button""",\
+             'btn2':'Click this first Go to the browser we need',\
              'btn1':'Then click this to go to IIAB home page',\
             'doc_root':get_iiab_env("WWWROOT") }
     es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
@@ -246,12 +243,6 @@ def macintosh(environ, start_response):
         response_headers = [('content','text/html')]
         start_response(status, response_headers)
         return [response_body]
-
-def mac_success(environ,start_response):
-    status = '200 ok'
-    headers = [('Content-type', 'text/html')]
-    start_response(status, headers)
-    return ["success"]
 
 def microsoft_connect(environ,start_response):
     status = '200 ok'
@@ -330,32 +321,30 @@ def application (environ, start_response):
     global INACTIVITY_TO
     global ANDROID_TRIGGERED
 
-    # Sorting and stringifying the environment key, value pairs
-    if LIST:
-        data = [
-        '%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
-        logging.debug(data)
-    
+    # Log the URLs that are not in checkurls
+    # This "CATCH" mode substitutes this server for apache at port 80
+    # CATCH mode is started by "iiab-catch" and turned off by "iiab-uncath".
     if CATCH:
         logging.debug("Checking for url %s. USER_AGENT:%s"%(environ['HTTP_HOST'],\
                environ['HTTP_USER_AGENT'],))
         if environ['HTTP_HOST'] == '/box.lan':
             return                            
         found = False
-        if os.path.exists("/opt/iiab/captive-portal/checkurls"):
-           with open("/opt/iiab/captive-portal/checkurls","r") as checkers:
+        url_list = os.path.join(CAPTIVE_PORTAL_BASE,"checkurls")
+        if os.path.exists(url_list):
+           with open(url_list,"r") as checkers:
               for line in checkers:
-                 if environ['HTTP_HOST'] in line:
+                 if line.find(environ['HTTP_HOST']) > -1:
                     found = True
                     break
         if not found:
-           with open("/opt/iiab/captive-portal/checkurls","a") as checkers:
+            with open(url_list,"a") as checkers:
                outstr ="%s\n" %  (environ['HTTP_HOST']) 
                checkers.write(outstr)
-        data = [
-        '%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
-        logging.debug(data)
+            data = ['%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
+            logging.debug("This url was missing from checkurls:%s"%data)
     
+    # Normal query for captive portal
     else:
         ip = environ['HTTP_X_FORWARDED_FOR'].strip()
         cmd="arp -an %s|gawk \'{print $4}\'" % ip
@@ -385,6 +374,7 @@ def application (environ, start_response):
         if system != '':
             update_user(ip, mac, system, system_version, ymd)
 
+#######   Return pages based upon PATH   ###############
         # do more specific stuff first
         if  environ['PATH_INFO'] == "/iiab_banner6.png":
             return banner(environ, start_response) 
@@ -414,9 +404,8 @@ def application (environ, start_response):
             start_response(status, headers)
             return [""]
 
+#### parse OS platform based upon URL  ##################
         # mac
-        #if  environ['PATH_INFO'] == "/success.txt" and MAC_SUCCESS:
-           #return mac_success(environ, start_response) 
         if environ['HTTP_HOST'] == "captive.apple.com" or\
            environ['HTTP_HOST'] == "appleiphonecell.com" or\
            environ['HTTP_HOST'] == "detectportal.firefox.com" or\
