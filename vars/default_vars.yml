@@ -1,141 +1,162 @@
-   # WARNING: DO NOT MODIFY THIS FILE.
-   # CHANGES WILL BE LOST IF YOU DO A GIT PULL OR FETCH.
-   # Instead put changes in your own /etc/iiab/local_vars.yml
-   # See http://wiki.iiab.io/local_vars.yml to learn more!
+# WARNING: DO NOT MODIFY THIS FILE.
+# CHANGES WILL BE LOST IF YOU DO A GIT PULL OR FETCH.
+# Instead put changes in your own /etc/iiab/local_vars.yml
+# See http://wiki.iiab.io/local_vars.yml to learn more!
 
-   # By convention we use True/False to indicate boolean constants.
+# By convention we use True/False to indicate boolean constants.
 
-   # Installation Constants
-   content_base: "/library"
-   #doc_base: "/var"
-   doc_base: "{{ content_base }}/www"
-   doc_root: "{{ doc_base }}/html"
+# Installation Constants
+content_base: "/library"
+#doc_base: "/var"
+doc_base: "{{ content_base }}/www"
+doc_root: "{{ doc_base }}/html"
 
-   iiab_base: /opt/iiab
-   iiab_dir: "{{ iiab_base }}/iiab"
-   pip_packages_dir: "{{ iiab_base }}/pip-packages"
-   yum_packages_dir: "{{ iiab_base }}/yum-packages"
-   downloads_dir: "{{ iiab_base }}/downloads"
-   iiab_download_url: http://download.iiab.io/packages
-   # Ansible's default timeout for "get_url:" downloads (10 seconds) often fails
-   download_timeout: 200
+iiab_base: /opt/iiab
+iiab_dir: "{{ iiab_base }}/iiab"
+pip_packages_dir: "{{ iiab_base }}/pip-packages"
+yum_packages_dir: "{{ iiab_base }}/yum-packages"
+downloads_dir: "{{ iiab_base }}/downloads"
+iiab_download_url: http://download.iiab.io/packages
+# Ansible's default timeout for "get_url:" downloads (10 seconds) often fails
+download_timeout: 200
 
-   # Configuration File(s)
-   iiab_config_file: /etc/iiab/iiab.ini
-   iiab_local_vars_file: /etc/iiab/local_vars.yml
-   service_filelist: "{{ iiab_config_file }}"
+# Configuration File(s)
+iiab_config_file: /etc/iiab/iiab.ini
+iiab_local_vars_file: /etc/iiab/local_vars.yml
+service_filelist: "{{ iiab_config_file }}"
 
-   # The following variable may be useful in debugging
-   disregard_network: False  # use cache or error out if cache does not exist
+# The following variable may be useful in debugging
+disregard_network: False  # use cache or error out if cache does not exist
 
-   # Users and Passwords
+# Users and Passwords
 
-   iiab_admin_user: iiab-admin
-   # Obtain a password hash with:
-   #    python -c 'import crypt; print crypt.crypt("<plaintext>", "$6$<salt>")'
-   iiab_admin_passw_hash: $6$xsce51$D.IrrEeLBYIuJkGDmi27pZUGOwPFp98qpl3hxMwWV4hXigFGmdSvy3s/j7tn6OnyTTLmlV7SsN0lCUAFzxSop.
-   admin_install: True
+iiab_admin_user: iiab-admin
+# Obtain a password hash with:
+#    python -c 'import crypt; print crypt.crypt("<plaintext>", "$6$<salt>")'
+iiab_admin_passw_hash: $6$xsce51$D.IrrEeLBYIuJkGDmi27pZUGOwPFp98qpl3hxMwWV4hXigFGmdSvy3s/j7tn6OnyTTLmlV7SsN0lCUAFzxSop.
+admin_install: True
 
-   # Set admin_install: False if you don't want iiab_admin_user & wheel group
-   # auto-created in roles/iiab-admin/tasks/main.yml, thereby disabling sudo-based
-   # warnings on use of published passwords like pi/raspberry & iiab-admin/g0adm1n
+# Set admin_install: False if you don't want iiab_admin_user & wheel group
+# auto-created in roles/iiab-admin/tasks/main.yml, thereby disabling sudo-based
+# warnings on use of published passwords like pi/raspberry & iiab-admin/g0adm1n
 
-   # If admin_install: False, set iiab_admin_user (above) to an existing Linux
-   # user that has sudo access, so you can login to Admin Console http://box/admin
+# If admin_install: False, set iiab_admin_user (above) to an existing Linux
+# user that has sudo access, so you can login to Admin Console http://box/admin
 
-   # Languages
-   default_language: en
-   language_priority: en es
+# Languages
+default_language: en
+language_priority: en es
 
-   # Time Zone (php needs timezone to be set)
-   local_tz: "{{ ansible_date_time.tz }}"
+# Time Zone (php needs timezone to be set)
+local_tz: "{{ ansible_date_time.tz }}"
 
-   # Read https://github.com/iiab/iiab/wiki/IIAB-Networking
-   # Also readable offline @ http://box/info/IIAB-Networking.html
+# Read https://github.com/iiab/iiab/wiki/IIAB-Networking
+# Also readable offline @ http://box/info/IIAB-Networking.html
 
-   # NETWORK PARAMETERS FOLLOW ACROSS THE NEXT 65 LINES, as enabled by Ansible's
-   # NETWORK role (/opt/iiab/iiab/roles/network/*) in 4-SERVER-OPTIONS below.
-   # SEE ALSO: /opt/iiab/iiab/roles/network/defaults/main.yml
+# NETWORK PARAMETERS FOLLOW ACROSS THE NEXT 65 LINES, as enabled by Ansible's
+# NETWORK role (/opt/iiab/iiab/roles/network/*) in 4-SERVER-OPTIONS below.
+# SEE ALSO: /opt/iiab/iiab/roles/network/defaults/main.yml
 
-   iiab_hostname: box
-   iiab_domain: lan
-   lan_ip: 172.18.96.1
-   lan_netmask: 255.255.224.0
+iiab_hostname: box
+iiab_domain: lan
+lan_ip: 172.18.96.1
+lan_netmask: 255.255.224.0
 
-   # Internal Wi-Fi Access Point
-   # Values are used if there is an internal Wi-Fi adapter and hostapd is enabled
-   # The platform variable adapts install to specific hardware (raspberry pi=rpi2)
-   # Raspbian req WiFi country since March 2018.  CHANGE IT IN /etc/iiab/local_vars.yml
-   host_country_code: US
-   host_ssid: "Internet in a Box"
-   host_wifi_mode: g
-   host_channel: 6
-   hostapd_secure: False
-   hostapd_password: changeme
-   hostapd_enabled: True
-   # Above is forcibly set to False (in roles/network/tasks/main.yml) if IIAB is
-   # being WiFi-installed (run "iiab-hotspot-on" AFTER ./iiab-install completes
-   # and content is downloaded, to enable the internal WiFi Access Point / AP!)
-   reboot_to_AP: False
-   # For those installing IIAB over WiFi: "reboot_to_AP: True" overrides the above
-   # detection of WiFi-as-gateway, forcing "hostapd_enabled: True" regardless.
+# Internal Wi-Fi Access Point
+# Values are used if there is an internal Wi-Fi adapter and hostapd is enabled
+# The platform variable adapts install to specific hardware (raspberry pi=rpi2)
+# Raspbian req WiFi country since March 2018.  CHANGE IT IN /etc/iiab/local_vars.yml
+host_country_code: US
+host_ssid: "Internet in a Box"
+host_wifi_mode: g
+host_channel: 6
+hostapd_secure: False
+hostapd_password: changeme
+hostapd_enabled: True
+# Above is forcibly set to False (in roles/network/tasks/main.yml) if IIAB is
+# being WiFi-installed (run "iiab-hotspot-on" AFTER ./iiab-install completes
+# and content is downloaded, to enable the internal WiFi Access Point / AP!)
+reboot_to_AP: False
+# For those installing IIAB over WiFi: "reboot_to_AP: True" overrides the above
+# detection of WiFi-as-gateway, forcing "hostapd_enabled: True" regardless.
 
-   # Gateway mode
-   iiab_lan_enabled: True
-   iiab_wan_enabled: True
-   ssh_port: 22
-   # Ties in what the user populated in the GUI for static WAN IP address info:
-   gui_wan: True
-   adm_cons_force_ssl: False
-   adm_cons_allow_downloads: False
+# Gateway mode
+iiab_lan_enabled: True
+iiab_wan_enabled: True
+ssh_port: 22
+# Ties in what the user populated in the GUI for static WAN IP address info:
+gui_wan: True
+adm_cons_force_ssl: False
+adm_cons_allow_downloads: False
 
-   # Gateway and Filters
-   # Most all implementations set "iiab_gateway_enabled: False" within
-   # local_vars.yml as they cannot afford Internet access for students
-   # and teachers, and the many associated IT/support/training costs.
-   iiab_gateway_enabled: True
-   gw_squid_whitelist: False
-   gw_block_https: False
+# Gateway and Filters
+# Most all implementations set "iiab_gateway_enabled: False" within
+# local_vars.yml as they cannot afford Internet access for students
+# and teachers, and the many associated IT/support/training costs.
+iiab_gateway_enabled: True
+gw_squid_whitelist: False
+gw_block_https: False
 
-   # dhcpd
-   dhcpd_install: True
-   dhcpd_enabled: False
+# dhcpd
+dhcpd_install: True
+dhcpd_enabled: False
 
-   # named
-   named_install: True
-   named_enabled: True
-   block_DNS: False
+# named
+named_install: True
+named_enabled: True
+block_DNS: False
 
-   # dnsmasq
-   dnsmasq_install: True
-   dnsmasq_enabled: False
+# dnsmasq
+dnsmasq_install: True
+dnsmasq_enabled: False
 
-   # Enable in local_vars.yml AFTER installing IIAB!  Then run "cd /opt/iiab/iiab; ./iiab-network"
-   dns_jail_enabled: False
+# Enable in local_vars.yml AFTER installing IIAB!  Then run "cd /opt/iiab/iiab; ./iiab-network"
+dns_jail_enabled: False
 
-   # Divert all http queries when mac address of client is not in our list
-   iptables_trap_enabled: False
+# For @tim-moody's Nodogsplash approach to Captive Portal?  High experimental as of June 2018: github.com/iiab/iiab/issues/608
+captive_portal_install: False
+captive_portal_enabled: False
 
-   # For @tim-moody's Nodogsplash approach to Captive Portal?  High experimental as of June 2018: github.com/iiab/iiab/issues/608
-   captive_portal_install: False
-   captive_portal_enabled: False
+# Simple python Captive Portal, that @m-anish & @jvonau are experimenting with in July 2018: github.com/iiab/iiab/pull/870
+py_captive_portal_install: True
+py_captive_portal_enabled: False
 
-   # Simple python Captive Portal, that @m-anish & @jvonau are experimenting with in July 2018: github.com/iiab/iiab/pull/870
-   py_captive_portal_install: True
-   py_captive_portal_enabled: False
+# Squid
+squid_install: False
+squid_enabled: False
 
-   # Squid
-   squid_install: False
-   squid_enabled: False
+# DansGuardian
+dansguardian_install: False
+dansguardian_enabled: False
 
-   # DansGuardian
-   dansguardian_install: False
-   dansguardian_enabled: False
+# Wonder Shaper
+# Unmaintained as of October 2017: https://github.com/iiab/iiab/pull/382
+wondershaper_install: False
+wondershaper_enabled: False
 
-   # Wonder Shaper
-   # Unmaintained as of October 2017: https://github.com/iiab/iiab/pull/382
-   wondershaper_install: False
-   wondershaper_enabled: False
+# Intended for developers: ONLY CHANGE THESE IF YOU KNOW WHAT YOU ARE DOING
+# The following 2 override the detection when not "auto"
+user_wan_iface: auto
+user_lan_iface: auto
+wan_ip: dhcp
+wan_netmask:
+wan_gateway:
+wan_nameserver:
+# exFAT is auto-enabled for all "debuntu" OS's as of Nov 2017, in roles/2-common/tasks/packages.yml#L35-L36
+# exFAT_enabled: True
+
+# Parameters by Aggregate Roles
+# Each Role must have the following variables which are either True or False:
+#   <role-name>_install
+#   <role-name>_enabled
+
+# Our past convention was to install everything in all aggregates
+# And to enable everything in 1-PREP, 2-COMMON, and 3-BASE-SERVER
+
+
+# 1-PREP
+
+# 2-COMMON
 
    # Intended for developers: ONLY CHANGE THESE IF YOU KNOW WHAT YOU ARE DOING
    # The following 2 override the detection when not "auto"
@@ -204,10 +225,8 @@
    # You can change iiab_home_url in /etc/iiab/local_vars.yml to get a different
    # homepage.  For example one of the following: (if its service is enabled!)
 
-   # iiab_home_url: /home
-   # iiab_home_url: /wordpress
-   # iiab_home_url: /wiki      # for dokuwiki
-   # iiab_home_url: /mediawiki
+
+# 5-XO-SERVICES
 
    # PostgreSQL auto-installed by Moodle &/or Pathagar as nec, no need to touch!
    # roles/1-prep/tasks/computed_vars.yml, roles/4-server-options/tasks/main.yml
@@ -231,6 +250,7 @@
    usb_lib_enabled: True
    iiab_usb_lib_show_all: False
 
+<<<<<<< HEAD
    # Toggle iiab-refresh-wiki-docs scraping for offline docs (http://box/info)
    nodocs: False
 
@@ -457,21 +477,219 @@
    # sugar-stats - unmaintained
    # sugar_stats_install: False
    # sugar_stats_enabled: False
+=======
+
+# 6-GENERIC-APPS
+
+# DokuWiki
+dokuwiki_install: False
+dokuwiki_enabled: False
+
+# MediaWiki
+mediawiki_install: False
+mediawiki_enabled: False
+
+# Elgg
+elgg_install: True
+elgg_enabled: False
+# elgg_mysql_password: $6$iiab51$jeTwnATcbaa92xo0QBTgjLBU.5aVDDrbKeNyyC99R/TAWz6pvfzj.L7lfnOVVjD78nxqT.gkNn6XZmuRV0W3o1
+elgg_mysql_password: elgg4kids
+
+# ejabberd
+ejabberd_install: False
+ejabberd_enabled: False
+
+# Nextcloud
+nextcloud_install: True
+nextcloud_enabled: False
+
+# WordPress
+wordpress_install: True
+wordpress_enabled: False
+
+
+# 7-EDU-APPS
+
+# KA Lite - SEE THE "Transmission" BITTORRENT DOWNLOADER FURTHER BELOW, TO INSTALL THOUSANDS OF VIDEOS
+kalite_install: True
+kalite_enabled: False
+kalite_server_port: 8008
+kalite_root: "/library/ka-lite"
+# Unused in 2018; but remain as placeholders for Fedora 18 legacy (XO laptops)
+kalite_cron_enabled: False
+kalite_user: kalite
+kalite_password_hash: $6$<salt>$KHET0XRRsgAY.wOWyTOI3W7dyDh0ESOr48uI5vtk2xdzsU7aw0TF4ZkNuM34RmHBGMJ1fTCmOyVobo0LOhBlJ/
+kalite_password: kalite
+
+# Kolibri
+kolibri_install: False
+kolibri_enabled: False
+kolibri_http_port: 8009
+
+# Kiwix
+kiwix_install: True
+kiwix_enabled: True
+kiwix_port: 3000
+iiab_zim_path: /library/zims
+
+# Moodle
+moodle_install: False
+moodle_enabled: False
+
+# OpenStreetMap (OSM)
+osm_install: True
+osm_enabled: False
+# changed in June 2017 from:
+# iiab_install: True
+# iiab_enabled: False
+
+# Sugarizer
+# Might stall MongoDB on Power Failure: github.com/xsce/xsce/issues/879
+# Sugarizer 1.0.1+ strategies to solve? github.com/iiab/iiab/pull/957
+sugarizer_install: True
+sugarizer_enabled: False
+sugarizer_port: 8089
+
+
+# 8-MGMT-TOOLS
+
+# Transmission is a BitTorrent downloader for large Content Packs etc
+transmission_install: False
+transmission_enabled: False
+
+# Transmission download directory & general owner/group
+transmission_download_dir: "{{ content_base }}/transmission/"    # /library/transmission/
+transmission_user: debian-transmission
+transmission_group: root
+
+# Monitor downloads at http://box:9091 or http://box:9091/transmission using Admin/changeme
+transmission_http_port: 9091
+transmission_url : "/transmission/"
+transmission_peer_port: 51413
+
+# Provision Transmission with torrent(s) from http://pantry.learningequality.org/downloads/ka-lite/0.17/content/
+transmission_provision: True
+transmission_kalite_version: 0.17
+
+# A. Uncomment language(s) in /etc/iiab/local_vars.yml to download KA Lite videos to /library/transmission
+transmission_kalite_languages:
+  - english
+  #- french
+  #- hindi
+  #- portugal-portuguese
+  #- brazilian-portuguese
+  #- spanish
+  #- swahili
+# B. Monitor BitTorrent downloads at http://box:9091 using Admin/changeme
+#    until the download is confirmed complete (can take hours if not days!)
+# C. Carefully move all videos/thumbnails into /library/ka-lite/content
+#    (DO NOT OVERWRITE SUBFOLDERS assessment, locale, srt !)
+# D. Log in to KA Lite at http://box:8008/updates/videos/ using Admin/changeme
+#    then click "Scan content folder for videos" (can take many minutes!)
+# E. READ "KA Lite Administration: What tips & tricks exist?" AT http://FAQ.IIAB.IO
+
+# Transmission administrative account
+transmission_username: Admin
+transmission_password: changeme
+
+# AWStats - summarizes http access logs
+awstats_install: True
+awstats_enabled: False
+
+# Monit
+monit_install: False
+monit_enabled: False
+watchdog:
+  - sshd
+  - idmgr
+  - ejabberd
+  - httpd
+  - postgresql
+  - squid
+
+# Munin
+munin_install: True
+munin_enabled: False
+
+# Handy for maintaining tables, but DANGEROUS if not locked down
+phpmyadmin_install: False
+phpmyadmin_enabled: False
+
+# vnStat
+vnstat_install: True
+vnstat_enabled: False
+>>>>>>> no changes to default_vars.yml
+
+
+# 9-LOCAL-ADDONS
+
+# Calibre E-Book Library
+# WARNING: CALIBRE INSTALLS GRAPHICAL LIBRARIES SIMILAR TO X WINDOWS & OPENGL
+# ON (HEADLESS, SERVER, LITE) OS'S THAT DON'T ALREADY HAVE THESE INSTALLED.
+calibre_install: True
+calibre_enabled: True
+# vars/raspbian-9.yml tries the .deb upgrade of Calibre, overriding this default:
+calibre_via_debs: False
+calibre_unstable_debs: False
+# vars/<most-OS's>.yml use Calibre's python installer/upgrader (x86_64), overriding this default:
+calibre_via_python: False
+# Change calibre_port to 8010 if you're using XO laptops needing above idmgr
+calibre_port: 8080
+# Change calibre to XYZ add your own mnemonic URL like: http://box/XYZ
+calibre_web_path: calibre  #NEEDS WORK: https://github.com/iiab/iiab/issues/529
+
+# WARNING: Calibre-Web (below) depends on Calibre's own /usr/bin/ebook-convert
+# program, so we recommend you also install Calibre (above!)
+
+# Calibre-Web alternative to Calibre, offers a clean/modern UX
+calibreweb_install: True
+calibreweb_enabled: True
+calibreweb_port: 8083
+# http://box/books works.  Add {box/libros, box/livres, box/livros, box/liv} etc?
+calibreweb_url: /books
+calibreweb_home: "{{ content_base }}/calibre-web"    # /library/calibre-web
+
+
+# TeamViewer - unmaintained (better to install from http://teamviewer.com or prep scripts at http://download.iiab.io)
+# teamviewer_install: False
+# teamviewer_enabled: False
+
+# Docker - unmaintained
+# docker_install: False
+# docker_enabled: False
+
+# SchoolTool - unmaintained
+# schooltool_install: False
+# schooltool_enabled: False
+
+# Debian SchoolTool - nnmaintained
+# debian_schooltool_install: False
+# debian_schooltool_enabled: False
+
+# Pathagar - unmaintained (consider Calibre or Calibre-Web above?)
+# pathagar_install: False
+# pathagar_enabled: False
+
+# sugar-stats - unmaintained
+# sugar_stats_install: False
+# sugar_stats_enabled: False
 
 # XOVis - unmaintained
-xovis_install: False
-xovis_enabled: False
-xovis_target_host: "127.0.0.1:5984"
-xovis_deployment_name: olpc
-xovis_db_name: xovis
-xovis_db_user: admin
-xovis_db_password: admin
+# xovis_install: False
+# xovis_enabled: False
+# xovis_target_host: "127.0.0.1:5984"
+# xovis_deployment_name: olpc
+# xovis_db_name: xovis
+# xovis_db_user: admin
+# xovis_db_password: admin
 
-xovis_root: "/opt/xovis"
-xovis_backup_dir: "/library/users"
-xovis_chart_heading: "My School: Usage Data Visualization"
+# xovis_root: "/opt/xovis"
+# xovis_backup_dir: "/library/users"
+# xovis_chart_heading: "My School: Usage Data Visualization"
 
-# ================================================================
+# ownCloud - unmaintained
+# owncloud_install: False
+# owncloud_enabled: False
 
 # ownCloud - unmaintained
 # owncloud_install: False
@@ -489,9 +707,10 @@ xovis_chart_heading: "My School: Usage Data Visualization"
 # rachel_doc_root: "{{ doc_root }}/modules"
 
 # ================================================================
-# Platforms - turn all off and let <OS>.yml turn on as appropriate
 
-# wide to narrow
+# Platforms - turn all off and let /opt/iiab/iiab/vars/<OS>.yml turn on as appropriate
+
+# Wide to narrow
 is_debuntu: False
 is_ubuntu: False
 is_ubuntu_18: False
