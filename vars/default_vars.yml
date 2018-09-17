@@ -158,337 +158,101 @@ wan_nameserver:
 
 # 2-COMMON
 
-   # Intended for developers: ONLY CHANGE THESE IF YOU KNOW WHAT YOU ARE DOING
-   # The following 2 override the detection when not "auto"
-   user_wan_iface: auto
-   user_lan_iface: auto
-   wan_ip: dhcp
-   wan_netmask:
-   wan_gateway:
-   wan_nameserver:
-   # exFAT is auto-enabled for all "debuntu" OS's as of Nov 2017, in roles/2-common/tasks/packages.yml#L35-L36
-   # exFAT_enabled: True
+# 3-BASE-SERVER
 
-   # Parameters by Aggregate Roles
-   # Each Role must have the following variables which are either True or False:
-   #   <role-name>_install
-   #   <role-name>_enabled
+# Make this False to disable http://box/common/services/power_off.php button:
+allow_apache_sudo: True
 
-   # Our past convention was to install everything in all aggregates
-   # And to enable everything in 1-PREP, 2-COMMON, and 3-BASE-SERVER
+# roles/httpd runs here
 
+# roles/iiab-admin runs here
 
-   # 1-PREP
+# MySQL MANDATORY - THESE SETTINGS HAVE NO EFFECT - SEE roles/1-prep/tasks/computed_vars.yml, roles/mysql/tasks/main.yml
+mysql_install: True
+mysql_enabled: True
+# mysql_root_password: $6$iiab51$3ICIW0CLWxxMW2a3yrHZ38ukZItD5tcadL4rWcE9D.qIGStxhh8rRsaSxoj3b.MYxI/VRDNjpzSYK/V6zkWFI0
+mysql_root_password: fixmysql
 
-<<<<<<< HEAD
-   # 2-COMMON
-=======
 
 # 4-SERVER-OPTIONS
->>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 
-   # 3-BASE-SERVER
+# sshd
+sshd_enabled: True
 
-   # Make this False to disable http://box/common/services/power_off.php button:
-   allow_apache_sudo: True
+# OpenVPN
+openvpn_install: True
+openvpn_enabled: False
 
-   # roles/httpd runs here
+# For /etc/iiab/openvpn_handle
+openvpn_handle: ""
 
-   # roles/iiab-admin runs here
+# cron seems necessary on CentOS:
+openvpn_cron_enabled: False
 
-   # MySQL MANDATORY - THESE SETTINGS HAVE NO EFFECT - SEE roles/1-prep/tasks/computed_vars.yml, roles/mysql/tasks/main.yml
-   mysql_install: True
-   mysql_enabled: True
-   # mysql_root_password: $6$iiab51$3ICIW0CLWxxMW2a3yrHZ38ukZItD5tcadL4rWcE9D.qIGStxhh8rRsaSxoj3b.MYxI/VRDNjpzSYK/V6zkWFI0
-   mysql_root_password: fixmysql
+openvpn_server: xscenet.net
+openvpn_server_virtual_ip: 10.8.0.1
+openvpn_server_port: 1194
 
+# roles/network runs here (MANY SETTINGS ABOVE)
 
-   # 4-SERVER-OPTIONS
+# Homepage
+iiab_home_url: /home
 
-   # sshd
-   sshd_enabled: True
+# You can change iiab_home_url in /etc/iiab/local_vars.yml to get a different
+# homepage.  For example one of the following: (if its service is enabled!)
 
-   # OpenVPN
-   openvpn_install: True
-   openvpn_enabled: False
+# iiab_home_url: /home
+# iiab_home_url: /wordpress
+# iiab_home_url: /wiki      # for dokuwiki
+# iiab_home_url: /mediawiki
 
-   # For /etc/iiab/openvpn_handle
-   openvpn_handle: ""
+# PostgreSQL auto-installed by Moodle &/or Pathagar as nec, no need to touch!
+# roles/1-prep/tasks/computed_vars.yml, roles/4-server-options/tasks/main.yml
+postgresql_install: False
+postgresql_enabled: False
 
-   # cron seems necessary on CentOS:
-   openvpn_cron_enabled: False
+# authserver
+authserver_install: False
+authserver_enabled: False
 
-   openvpn_server: xscenet.net
-   openvpn_server_virtual_ip: 10.8.0.1
-   openvpn_server_port: 1194
+# Common UNIX Printing System (CUPS)
+cups_install: True
+cups_enabled: False
 
-   # roles/network runs here (MANY SETTINGS ABOVE)
+# Samba. Take a security audit seriously before deploying this.
+samba_install: False
+samba_enabled: False
 
-   # Homepage
-   iiab_home_url: /home
+# usb-lib
+usb_lib_install: True
+usb_lib_enabled: True
+iiab_usb_lib_show_all: False
 
-   # You can change iiab_home_url in /etc/iiab/local_vars.yml to get a different
-   # homepage.  For example one of the following: (if its service is enabled!)
-
+# Toggle iiab-refresh-wiki-docs scraping for offline docs (http://box/info)
+nodocs: False
 
 
 # 5-XO-SERVICES
 
-   # PostgreSQL auto-installed by Moodle &/or Pathagar as nec, no need to touch!
-   # roles/1-prep/tasks/computed_vars.yml, roles/4-server-options/tasks/main.yml
-   postgresql_install: False
-   postgresql_enabled: False
+# Lesser-supported XO services need additional testing.  Please contact
+# http://lists.laptop.org/pipermail/server-devel/ if you're able to help test.
 
-   # authserver
-   authserver_install: False
-   authserver_enabled: False
+xo_services_install: False
+xo_services_enabled: False
 
-   # Common UNIX Printing System (CUPS)
-   cups_install: True
-   cups_enabled: False
+# activity-server
+activity_server_install: False
+activity_server_enabled: False
 
-   # Samba. Take a security audit seriously before deploying this.
-   samba_install: False
-   samba_enabled: False
+# ejabberd-xs
+ejabberd_xs_install: False
+ejabberd_xs_enabled: False
 
-   # usb-lib
-   usb_lib_install: True
-   usb_lib_enabled: True
-   iiab_usb_lib_show_all: False
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-   # Toggle iiab-refresh-wiki-docs scraping for offline docs (http://box/info)
-   nodocs: False
+# idmgr
+idmgr_install: False
+idmgr_enables: False
 
 
-   # 5-XO-SERVICES
-
-   # Lesser-supported XO services need additional testing.  Please contact
-   # http://lists.laptop.org/pipermail/server-devel/ if you're able to help test.
-
-   xo_services_install: False
-   xo_services_enabled: False
-
-   # activity-server
-   activity_server_install: False
-   activity_server_enabled: False
-
-   # ejabberd-xs
-   ejabberd_xs_install: False
-   ejabberd_xs_enabled: False
-
-   # idmgr
-   idmgr_install: False
-   idmgr_enables: False
-
-
-   # 6-GENERIC-APPS
-
-   # DokuWiki
-   dokuwiki_install: False
-   dokuwiki_enabled: False
-
-   # MediaWiki
-   mediawiki_install: False
-   mediawiki_enabled: False
-
-   # Elgg
-   elgg_install: True
-   elgg_enabled: False
-   # elgg_mysql_password: $6$iiab51$jeTwnATcbaa92xo0QBTgjLBU.5aVDDrbKeNyyC99R/TAWz6pvfzj.L7lfnOVVjD78nxqT.gkNn6XZmuRV0W3o1
-   elgg_mysql_password: elgg4kids
-
-   # ejabberd
-   ejabberd_install: False
-   ejabberd_enabled: False
-
-   # Nextcloud
-   nextcloud_install: True
-   nextcloud_enabled: False
-
-   # WordPress
-   wordpress_install: True
-   wordpress_enabled: False
-
-
-   # 7-EDU-APPS
-
-   # KA Lite - SEE THE "Transmission" BITTORRENT DOWNLOADER FURTHER BELOW, TO INSTALL THOUSANDS OF VIDEOS
-   kalite_install: True
-   kalite_enabled: False
-   kalite_server_port: 8008
-   kalite_root: "/library/ka-lite"
-   # Unused in 2018; but remain as placeholders for Fedora 18 legacy (XO laptops)
-   kalite_cron_enabled: False
-   kalite_user: kalite
-   kalite_password_hash: $6$<salt>$KHET0XRRsgAY.wOWyTOI3W7dyDh0ESOr48uI5vtk2xdzsU7aw0TF4ZkNuM34RmHBGMJ1fTCmOyVobo0LOhBlJ/
-   kalite_password: kalite
-
-   # Kolibri
-   kolibri_install: False
-   kolibri_enabled: False
-   kolibri_http_port: 8009
-
-   # Kiwix
-   kiwix_install: True
-   kiwix_enabled: True
-   kiwix_port: 3000
-   iiab_zim_path: /library/zims
-
-   # Moodle
-   moodle_install: False
-   moodle_enabled: False
-
-   # OpenStreetMap (OSM)
-   osm_install: True
-   osm_enabled: False
-   # changed in June 2017 from:
-   # iiab_install: True
-   # iiab_enabled: False
-
-   # Sugarizer
-   # Might stall MongoDB on Power Failure: github.com/xsce/xsce/issues/879
-   # Sugarizer 1.0.1+ strategies to solve? github.com/iiab/iiab/pull/957
-   sugarizer_install: True
-   sugarizer_enabled: False
-   sugarizer_port: 8089
-
-
-   # 8-MGMT-TOOLS
-
-   # Transmission is a BitTorrent downloader for large Content Packs etc
-   transmission_install: False
-   transmission_enabled: False
-
-   # Transmission download directory & general owner/group
-   transmission_download_dir: "{{ content_base }}/transmission/"    # /library/transmission/
-   transmission_user: debian-transmission
-   transmission_group: root
-
-   # Monitor downloads at http://box:9091 or http://box:9091/transmission using Admin/changeme
-   transmission_http_port: 9091
-   transmission_url : "/transmission/"
-   transmission_peer_port: 51413
-
-   # Provision Transmission with torrent(s) from http://pantry.learningequality.org/downloads/ka-lite/0.17/content/
-   transmission_provision: True
-   transmission_kalite_version: 0.17
-
-   # A. Uncomment language(s) in /etc/iiab/local_vars.yml to download KA Lite videos to /library/transmission
-   transmission_kalite_languages:
-     - english
-     #- french
-     #- hindi
-     #- portugal-portuguese
-     #- brazilian-portuguese
-     #- spanish
-     #- swahili
-   # B. Monitor BitTorrent downloads at http://box:9091 using Admin/changeme
-   #    until the download is confirmed complete (can take hours if not days!)
-   # C. Carefully move all videos/thumbnails into /library/ka-lite/content
-   #    (DO NOT OVERWRITE SUBFOLDERS assessment, locale, srt !)
-   # D. Log in to KA Lite at http://box:8008/updates/videos/ using Admin/changeme
-   #    then click "Scan content folder for videos" (can take many minutes!)
-   # E. READ "KA Lite Administration: What tips & tricks exist?" AT http://FAQ.IIAB.IO
-
-   # Transmission administrative account
-   transmission_username: Admin
-   transmission_password: changeme
-
-   # AWStats - summarizes http access logs
-   awstats_install: True
-   awstats_enabled: False
-
-   # Monit
-   monit_install: False
-   monit_enabled: False
-   watchdog:
-     - sshd
-     - idmgr
-     - ejabberd
-     - httpd
-     - postgresql
-     - squid
-
-   # Munin
-   munin_install: True
-   munin_enabled: False
-
-   # Handy for maintaining tables, but DANGEROUS if not locked down
-   phpmyadmin_install: False
-   phpmyadmin_enabled: False
-
-   # sugar-stats - unmaintained
-   sugar_stats_install: False
-   sugar_stats_enabled: False
-
-   # TeamViewer - unmaintained (better to install from http://teamviewer.com)
-   teamviewer_install: False
-   teamviewer_enabled: False
-
-   # vnStat
-   vnstat_install: True
-   vnstat_enabled: False
-
-
-   # 9-LOCAL-ADDONS
-
-   # Calibre E-Book Library
-   # WARNING: CALIBRE INSTALLS GRAPHICAL LIBRARIES SIMILAR TO X WINDOWS & OPENGL
-   # ON (HEADLESS, SERVER, LITE) OS'S THAT DON'T ALREADY HAVE THESE INSTALLED.
-   calibre_install: True
-   calibre_enabled: True
-   # vars/raspbian-9.yml tries the .deb upgrade of Calibre, overriding this default:
-   calibre_via_debs: False
-   calibre_unstable_debs: False
-   # vars/<most-OS's>.yml use Calibre's python installer/upgrader (x86_64), overriding this default:
-   calibre_via_python: False
-   # Change calibre_port to 8010 if you're using XO laptops needing above idmgr
-   calibre_port: 8080
-   # Change calibre to XYZ add your own mnemonic URL like: http://box/XYZ
-   calibre_web_path: calibre  #NEEDS WORK: https://github.com/iiab/iiab/issues/529
-
-   # WARNING: Calibre-Web (below) depends on Calibre's own /usr/bin/ebook-convert
-   # program, so we recommend you also install Calibre (above!)
-
-   # Calibre-Web alternative to Calibre, offers a clean/modern UX
-   calibreweb_install: True
-   calibreweb_enabled: True
-   calibreweb_port: 8083
-   # http://box/books works.  Add {box/libros, box/livres, box/livros, box/liv} etc?
-   calibreweb_url: /books
-   calibreweb_home: "{{ content_base }}/calibre-web"    # /library/calibre-web
-
-
-   # TeamViewer - unmaintained (better to install from http://teamviewer.com or prep scripts at http://download.iiab.io)
-   # teamviewer_install: False
-   # teamviewer_enabled: False
-
-   # Docker - unmaintained
-   # docker_install: False
-   # docker_enabled: False
-
-   # SchoolTool - unmaintained
-   # schooltool_install: False
-   # schooltool_enabled: False
-
-   # Debian SchoolTool - nnmaintained
-   # debian_schooltool_install: False
-   # debian_schooltool_enabled: False
-
-   # Pathagar - unmaintained (consider Calibre or Calibre-Web above?)
-   # pathagar_install: False
-   # pathagar_enabled: False
-
-   # sugar-stats - unmaintained
-   # sugar_stats_install: False
-   # sugar_stats_enabled: False
-=======
-
-=======
-
->>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 # 6-GENERIC-APPS
 
 # DokuWiki
@@ -628,7 +392,6 @@ phpmyadmin_enabled: False
 # vnStat
 vnstat_install: True
 vnstat_enabled: False
->>>>>>> no changes to default_vars.yml
 
 
 # 9-LOCAL-ADDONS
@@ -669,16 +432,16 @@ calibreweb_home: "{{ content_base }}/calibre-web"    # /library/calibre-web
 # docker_enabled: False
 
 # SchoolTool - unmaintained
-schooltool_install: False
-schooltool_enabled: False
+# schooltool_install: False
+# schooltool_enabled: False
 
 # Debian SchoolTool - nnmaintained
 # debian_schooltool_install: False
 # debian_schooltool_enabled: False
 
 # Pathagar - unmaintained (consider Calibre or Calibre-Web above?)
-pathagar_install: False
-pathagar_enabled: False
+# pathagar_install: False
+# pathagar_enabled: False
 
 # sugar-stats - unmaintained
 # sugar_stats_install: False
@@ -698,16 +461,9 @@ pathagar_enabled: False
 # xovis_chart_heading: "My School: Usage Data Visualization"
 
 # ownCloud - unmaintained
-owncloud_install: False
-owncloud_enabled: False
-
-<<<<<<< HEAD
-# ownCloud - unmaintained
 # owncloud_install: False
 # owncloud_enabled: False
 
-=======
->>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 # Ajenti - unmaintained
 # ajenti_install: False
 # ajenti_enabled: False
