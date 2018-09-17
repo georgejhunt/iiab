@@ -29,7 +29,7 @@ j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=Tr
 INACTIVITY_TO = 30
 PORTAL_TO = 0 # delay after triggered by ajax upon click of link to home page
 # I had hoped that returning 204 status after some delay 
-#  would dispense with "sign-in to network" (no work)
+#  would dispense with android's "sign-in to network" (no work)
 
 
 # Get the IIAB variables
@@ -37,28 +37,47 @@ sys.path.append('/etc/iiab/')
 from iiab_env import get_iiab_env
 doc_root = get_iiab_env("WWWROOT")
 
-# set up some logging
-logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=logging.ERROR)
+# make a way to find new URLs queried by new clients
+# CATCH substitues this server for apache at port 80
 CATCH = False
 if len(sys.argv) > 1 and sys.argv[1] == '-d':
     CATCH = True
     PORT=80
 else:
     PORT=9090
+
+# set up some logging -- selectable for diagnostics
+# Create dummy iostream to capture stderr and stdout
+class StreamToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+    def __init__(self, logger, log_level=logging.INFO):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+
+     def write(self, buf):
+        for line in buf.rstrip().splitlines():
+        self.logger.log(self.log_level, line.rstrip())
+
 if len(sys.argv) > 1 and sys.argv[1] == '-l':
-    logging.setLevel(logging.DEBUG)
+    loggingLevel = logging.DEBUG
+else:
+    loggingLevel = logging.ERROR
+logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=loggingLevel)
 
-# Use a sqlite database to store per client information
-user_db = os.path.join(CAPTIVE_PORTAL_BASE,"users.sqlite")
-conn = sqlite3.connect(user_db)
-c = conn.cursor()
-c.row_factory = sqlite3.Row
-c.execute( """create table IF NOT EXISTS users 
-            (ip text PRIMARY KEY, mac text, current_ts integer,
-            lasttimestamp integer, send204after integer,
-            os text, os_version text,
-            ymd text)""")
+# divert stdout and stderr to logger
+stdout_logger = logging.getLogger('STDOUT')
+sl = StreamToLogger(stdout_logger, logging.INFO)
+sys.stdout = sl
 
+stderr_logger = logging.getLogger('STDERR')
+sl = StreamToLogger(stderr_logger, logging.ERROR)
+sys.stderr = sl
+
+
+# Define globals
 MAC_SUCCESS=False
 ANDROID_TRIGGERED=False
 
@@ -73,7 +92,18 @@ def tstamp(dtime):
     since_epoch_delta = newdtime - epoch
     return since_epoch_delta.total_seconds()
 
-# database operations
+# ##########database operations ##############
+# Use a sqlite database to store per client information
+user_db = os.path.join(CAPTIVE_PORTAL_BASE,"users.sqlite")
+conn = sqlite3.connect(user_db)
+c = conn.cursor()
+c.row_factory = sqlite3.Row
+c.execute( """create table IF NOT EXISTS users 
+            (ip text PRIMARY KEY, mac text, current_ts integer,
+            lasttimestamp integer, send204after integer,
+            os text, os_version text,
+            ymd text)""")
+
 def update_user(ip, mac, system, system_version, ymd):
     sql = "SELECT * FROM users WHERE ip = ?"
     c.execute(sql,(ip,))
@@ -136,6 +166,7 @@ def set_lasttimestamp(ip):
     c.execute(sql,(ts,ip,))
     conn.commit()
 
+#  ###################  Action routines based on OS  ################3
 def microsoft(environ,start_response):
     #logging.debug("sending microsoft response")
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
@@ -357,7 +388,7 @@ def application (environ, start_response):
         agent = environ['HTTP_USER_AGENT']
         data.append("AGENT: %s\n"%agent)
         logging.debug(data)
-        print(data)
+        #print(data)
         found = False
         return_204_flag = "False"
 
@@ -450,7 +481,6 @@ def application (environ, start_response):
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
     start_response(status, response_headers)
-
     return [response_body]
 
 # Instantiate the server
