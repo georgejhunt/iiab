@@ -180,7 +180,12 @@ wan_nameserver:
 
    # 1-PREP
 
+<<<<<<< HEAD
    # 2-COMMON
+=======
+
+# 4-SERVER-OPTIONS
+>>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 
    # 3-BASE-SERVER
 
@@ -226,6 +231,7 @@ wan_nameserver:
    # homepage.  For example one of the following: (if its service is enabled!)
 
 
+
 # 5-XO-SERVICES
 
    # PostgreSQL auto-installed by Moodle &/or Pathagar as nec, no need to touch!
@@ -250,6 +256,7 @@ wan_nameserver:
    usb_lib_enabled: True
    iiab_usb_lib_show_all: False
 
+<<<<<<< HEAD
 <<<<<<< HEAD
    # Toggle iiab-refresh-wiki-docs scraping for offline docs (http://box/info)
    nodocs: False
@@ -479,6 +486,9 @@ wan_nameserver:
    # sugar_stats_enabled: False
 =======
 
+=======
+
+>>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 # 6-GENERIC-APPS
 
 # DokuWiki
@@ -691,10 +701,13 @@ pathagar_enabled: False
 owncloud_install: False
 owncloud_enabled: False
 
+<<<<<<< HEAD
 # ownCloud - unmaintained
 # owncloud_install: False
 # owncloud_enabled: False
 
+=======
+>>>>>>> 922fb5894a7164a4b3342fbca29fbb24d0f3448d
 # Ajenti - unmaintained
 # ajenti_install: False
 # ajenti_enabled: False
