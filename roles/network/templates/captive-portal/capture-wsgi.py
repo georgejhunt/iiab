@@ -7,6 +7,7 @@ import subprocess
 from dateutil.tz import *
 import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import sys
 from jinja2 import Environment, FileSystemLoader
@@ -57,15 +58,21 @@ class StreamToLogger(object):
         self.log_level = log_level
         self.linebuf = ''
 
-     def write(self, buf):
+    def write(self, buf):
         for line in buf.rstrip().splitlines():
-        self.logger.log(self.log_level, line.rstrip())
+            self.logger.log(self.log_level, line.rstrip())
 
 if len(sys.argv) > 1 and sys.argv[1] == '-l':
     loggingLevel = logging.DEBUG
 else:
     loggingLevel = logging.ERROR
-logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M',level=loggingLevel)
+logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s.%(msecs)03d:%(name)s:%(message)s', datefmt='%M:%S',level=loggingLevel)
+
+
+logger = logging.getLogger('/var/log/apache2/portal.log')
+handler = RotatingFileHandler("/var/log/apache2/portal.log", maxBytes=100000, backupCount=2)
+logger.addHandler(handler)
+
 
 # divert stdout and stderr to logger
 stdout_logger = logging.getLogger('STDOUT')
@@ -83,7 +90,7 @@ ANDROID_TRIGGERED=False
 
 # what language are we speaking?
 lang = os.environ['LANG'][0:2]
-logging.debug('speaking: %s'%lang)
+logger.debug('speaking: %s'%lang)
 
 def tstamp(dtime):
     '''return a UNIX style seconds since 1970 for datetime input'''
@@ -144,7 +151,7 @@ def is_after204_timeout(ip):
     ts=tstamp(datetime.datetime.now(tzutc()))
     last_ts, send204after = timeout_info(ip) 
     if send204after == 0: return False
-    logging.debug("function: is_after204_timeout send204after:%s current: %s"%(send204after,ts,))
+    logger.debug("function: is_after204_timeout send204after:%s current: %s"%(send204after,ts,))
     if not send204after:
         return False
     if ts - int(send204after) > 0:
@@ -168,7 +175,7 @@ def set_lasttimestamp(ip):
 
 #  ###################  Action routines based on OS  ################3
 def microsoft(environ,start_response):
-    #logging.debug("sending microsoft response")
+    #logger.debug("sending microsoft response")
     en_txt={ 'message':"Click on the button to go to the IIAB home page",\
             'btn1':"GO TO IIAB HOME PAGE",'doc_root':get_iiab_env("WWWROOT")}
     es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
@@ -189,7 +196,7 @@ def android(environ, start_response):
     ip = environ['HTTP_X_FORWARDED_FOR'].strip()
     system,system_version = platform_info(ip)
     if system_version[0:1] < '6':
-        logging.debug("system < 6:%s"%system_version)
+        logger.debug("system < 6:%s"%system_version)
         location = '/android_splash'
         set_204after(ip,0)
     else:
@@ -290,7 +297,7 @@ def banner(environ, start_response):
     return [image]
 
 def bootstrap(environ, start_response):
-    logging.debug("in bootstrap")
+    logger.debug("in bootstrap")
     status = '200 OK'
     headers = [('Content-type', 'text/javascript')]
     start_response(status, headers)
@@ -298,7 +305,7 @@ def bootstrap(environ, start_response):
     return [boot]
 
 def jquery(environ, start_response):
-    logging.debug("in jquery")
+    logger.debug("in jquery")
     status = '200 OK'
     headers = [('Content-type', 'text/javascript')]
     start_response(status, headers)
@@ -306,7 +313,7 @@ def jquery(environ, start_response):
     return [boot]
 
 def bootstrap_css(environ, start_response):
-    logging.debug("in bootstrap_css")
+    logger.debug("in bootstrap_css")
     status = '200 OK'
     headers = [('Content-type', 'text/css')]
     start_response(status, headers)
@@ -325,7 +332,7 @@ def put_204(environ, start_response):
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
-    logging.debug("sending 204 html response")
+    logger.debug("sending 204 html response")
     return [response_body]
 
 def parse_agent(agent):
@@ -356,7 +363,7 @@ def application (environ, start_response):
     # This "CATCH" mode substitutes this server for apache at port 80
     # CATCH mode is started by "iiab-catch" and turned off by "iiab-uncath".
     if CATCH:
-        logging.debug("Checking for url %s. USER_AGENT:%s"%(environ['HTTP_HOST'],\
+        logger.debug("Checking for url %s. USER_AGENT:%s"%(environ['HTTP_HOST'],\
                environ['HTTP_USER_AGENT'],))
         if environ['HTTP_HOST'] == '/box.lan':
             return                            
@@ -373,10 +380,11 @@ def application (environ, start_response):
                outstr ="%s\n" %  (environ['HTTP_HOST']) 
                checkers.write(outstr)
             data = ['%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
-            logging.debug("This url was missing from checkurls:%s"%data)
+            logger.debug("This url was missing from checkurls:%s"%data)
     
     # Normal query for captive portal
     else:
+
         ip = environ['HTTP_X_FORWARDED_FOR'].strip()
         cmd="arp -an %s|gawk \'{print $4}\'" % ip
         mac = subprocess.check_output(cmd, shell=True)
@@ -387,7 +395,7 @@ def application (environ, start_response):
         data.append("ip: %s\n"%environ['HTTP_X_FORWARDED_FOR'])
         agent = environ['HTTP_USER_AGENT']
         data.append("AGENT: %s\n"%agent)
-        logging.debug(data)
+        logger.debug(data)
         #print(data)
         found = False
         return_204_flag = "False"
@@ -397,7 +405,7 @@ def application (environ, start_response):
         sql = "UPDATE  users SET current_ts = ? WHERE ip = ?" 
         c.execute(sql,(ts,ip,))
         if c.rowcount == 0:
-            logging.debug("failed UPDATE  users SET current_ts = %s WHERE ip = %s"%(ts,ip,)) 
+            logger.debug("failed UPDATE  users SET current_ts = %s WHERE ip = %s"%(ts,ip,)) 
         conn.commit()
         ymd=datetime.datetime.today().strftime("%y%m%d-%H%M")
 
@@ -423,11 +431,12 @@ def application (environ, start_response):
             return null(environ, start_response) 
 
         if  environ['PATH_INFO'] == "/home_selected":
-            ANDROID_TRIGGERED = True
             # the js link to home page triggers this ajax url 
             # mark the sign-in conversation completed, return 204
-            #update_user(ip,mac.strip(),ts,ymd,"True")
-            logging.debug("setting flag to return_204")
+            ANDROID_TRIGGERED = True
+            #data = ['%s: %s\n' % (key, value) for key, value in sorted(environ.items()) ]
+            #logger.debug("need the correct ip:%s"%data)
+            logger.debug("setting flag to return_204")
             set_204after(ip,PORTAL_TO)
             set_lasttimestamp(ip)
             status = '200 OK'
@@ -476,7 +485,7 @@ def application (environ, start_response):
            environ['HTTP_HOST'] == "teredo.ipv6.microsoft.com.nsatc.net": 
            return microsoft(environ, start_response) 
 
-    logging.debug("executing the defaut redirect. Agent:%s"%agent)
+    logger.debug("executing the defaut redirect. Agent:%s"%agent)
     response_body = "This worked"
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home')]
