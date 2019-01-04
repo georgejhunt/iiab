@@ -107,13 +107,6 @@ def main():
 
 def get_zim_list(path):
     files_processed = {}
-    try:
-       with open(zim_version_idx_dir + zim_version_idx_file, 'r') as fp:
-          zimVersionIdx = json.loads(fp.read())
-          for key,value in zimVersionIdx:
-             files_processed['content/' + zimVersionIdx['zimFileName'] + '.zim'] = 'index/' + zimVersionIdx['zimFileName'] + '.zim.idx'
-    except:
-       pass
     zim_list = []
     content = path + "/content/"
     index = path + "/index/"
