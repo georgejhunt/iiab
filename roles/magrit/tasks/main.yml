@@ -36,7 +36,7 @@
   get_url:
     url: '{{ iiab_download_url }}/gdal_2.2.3-1_armhf.deb'
     dest: '{{ downloads_dir }}'
-  when: p.stat.isdir is defined and p.stat.isdir and  internet_available and is_rpi
+  when: not p.stat.exists is defined or not p.stat.exists and  internet_available and is_rpi
 
 - name: Install GDAL
   shell: "apt-get install {{ downloads_dir }}/gdal_2.2.3-1_armhf.deb"
@@ -68,19 +68,24 @@
     virtualenv_python: python3.5
   when: internet_available and is_rpi
 
-- name: Install the magrit requirements
+- name: Install the magrit requirements--takes a long time (45min)
   pip:
     requirements: '{{ magrit_venv }}/requirements/dev.txt'
     virtualenv: "{{ magrit_venv }}"
 
-- name: Edit the python environment spec
+- name: Edit the python environment spec in the #! header
   lineinfile:
       path: '{{ magrit_venv }}/magrit_app/app.py'
       regexp: '^#!/usr/bin/env.*'
       line: '#!/usr/bin/env python3.5'
 
-- name: Compile the python helper stubs
-  shell: "{{ magrit_venv }}/bin/cythonize -i -b {{ magrit_venv }}/magrit_app/*.pyx"
+- name: Install a node binare magrit needs
+  npm:
+     name: topojson
+     global: yes
+
+- name: Compile the python helper stubs -- run cythonize
+  shell: "{{ magrit_venv }}/bin/cythonize -i -b {{ magrit_venv }}/magrit_app/helpers/*.pyx"
 
 - name: Put systemd service file
   template:
