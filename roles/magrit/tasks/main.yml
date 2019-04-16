@@ -61,6 +61,8 @@
       - libgdal1-dev
       - libgdal1i
       - libgdal-doc
+      - python3-ujson
+      - python3-gdal
     state: present
   when: internet_available and not is_rpi
   tags:
