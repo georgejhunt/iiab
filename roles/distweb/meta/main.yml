@@ -1,2 +1,0 @@
-dependencies:
-    - { role: nodejs, tags: ['nodejs'], when: distweb_install }
