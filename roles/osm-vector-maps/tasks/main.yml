@@ -23,7 +23,7 @@
 
 - name: Fetch the javascript bundle with openlayers for test page
   get_url:
-    url: "{{ osm_map_url }}/osm-source/test_page/build/main.js"
+    url: "{{ osm_map_url }}/osm-source/test-page/build/main.js"
     dest: '{{ vector_map_path }}/maplist/'
 
 - name: Fetch the index.html for test page
@@ -57,6 +57,15 @@
   with_fileglob:
         - assets/*
 
+- name: Copy the fonts for the general purpose map viewer
+  copy: src={{ item }}
+        dest="{{ doc_root }}/common/fonts/"
+        mode=0644
+        owner=root
+        group=root
+  with_fileglob:
+        - fonts/*
+
 - name: Install python-geojson package, that helps with geojson
   package:
     name: python-geojson
@@ -69,8 +78,8 @@
     mode: "0755"
 
 - name: Copy the Countries geojson to assets
-  copy:
-    src: countries.json
+  get_url:
+    url: "{{ osm_map_url }}/resources/countries.json"
     dest: '{{ vector_map_path }}/viewer/assets'
 
 #  It is too complicated to use a single file for both iiab and admin-console
