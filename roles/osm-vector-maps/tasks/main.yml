@@ -77,7 +77,7 @@
 - name: Copy the duplicated javascript to assets
   copy:
     src: map_functions.js
-    dest: '{{ vector_map_path }}/viewer'/
+    dest: '{{ vector_map_path }}/viewer/'
 
 - name: Install /etc/{{ apache_config_dir }}/osm-vector-maps.conf from template
   template:
