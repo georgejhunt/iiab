@@ -22,6 +22,7 @@
 - name: Stop named before copying files
   service: name={{ dns_service }} state=stopped
   when: not installing
+  ignore_errors: True
 
 - name: Set folder permission
   file: path={{ item }}

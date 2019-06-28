@@ -106,6 +106,8 @@ wan_nameserver:
 # 3-BASE
 
 # apache
+apache_install: True
+apache_enabled: True
 allow_apache_sudo: False
 
 # dhcpd
@@ -287,7 +289,7 @@ awstats_install: True
 awstats_enabled: False
 
 
-#  ================= turned off services at aggregate level ===========
+#  =========== Less-supported XO services need additional testing===========
 # 5-XO-SERVICES
 
 # ejabberd
