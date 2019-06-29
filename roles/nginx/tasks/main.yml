@@ -9,6 +9,7 @@
     - uwsgi
     - uwsgi-plugin-python
     - php-fpm
+    - libnginx-mod-http-subs-filter
 
 - name: put the config file in place
   template: src={{ item.src}}  dest={{ item.dest }}
@@ -17,6 +18,8 @@
      - { src: "server.conf",dest: "/etc/nginx/" }
      - { src: "nginx.conf",dest: "/etc/nginx/" }
      - { src: "admin-console.conf",dest: "/etc/nginx/conf.d/" }
+     - { src: "usb-lib.conf",dest: "/etc/nginx/conf.d/" }
+     - { src: "kiwix.conf",dest: "/etc/nginx/conf.d/" }
      - { src: "admin-console.ini",dest: "/etc/uwsgi/apps-enabled/" }
 
 - name: remove the nginx default config
