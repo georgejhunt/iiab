@@ -216,10 +216,19 @@ exFAT_enabled: True
 
 # 3-BASE-SERVER
 
+# variables related to introduction of nginx
 # apache
+apache_port: "8082"
+apache_interface: "127.0.0.1"
 apache_install: True
 apache_enabled: True
+# The following variable, if True, allows Admin Console to poweroff IIAB
 allow_apache_sudo: False
+
+nginx_port: "80"
+nginx_interface: "0.0.0.0"
+nginx_install: True
+nginx_enabled: True
 
 # Make this False to disable http://box/common/services/power_off.php button:
 apache_allow_sudo: True
