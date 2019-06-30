@@ -5,3 +5,4 @@
 # If nec, change them by editing /etc/iiab/local_vars.yml prior to installing!
 
 awstats_data_dir: "{{ content_base }}/awstats/"    # /library/awstats
+awstats_port: 8083
