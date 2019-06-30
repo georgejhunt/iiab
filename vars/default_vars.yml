@@ -215,6 +215,10 @@ exFAT_enabled: True
 
 # 3-BASE-SERVER
 
+# Variables fo Administrative Console
+admin_console_install: True
+admin_console_enabled: True
+
 # variables related to introduction of nginx
 # apache
 apache_port: "8082"
