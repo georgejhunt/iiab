@@ -18,6 +18,7 @@
      - { src: "nginx.conf",dest: "/etc/nginx/" }
      - { src: "usb-lib.conf",dest: "/etc/nginx/conf.d/" }
      - { src: "admin-console.ini",dest: "/etc/uwsgi/apps-enabled/" }
+     - { src: "uwsgi.unit",dest: "/etc/systemd/system/" }
 # optional services
      - { src: "kiwix.conf",dest: "/etc/nginx/conf.d/" }
 
@@ -26,8 +27,8 @@
 
 - name: Install config for Admin Console
   template: 
-        src=/etc/nginx/sites-available/admin-console.conf
-        dest=/etc/nginx/conf.d/admin-conole.conf
+        src=admin-console.conf
+        dest=/etc/nginx/conf.d/admin-console.conf
   when: admin_console_enabled | bool
 
 - name: remove the links 
@@ -35,6 +36,14 @@
      path=/etc/nginx/admin-conole.conf
      state=absent
   when: not admin_console_enabled | bool
+
+- name: Enable the uwsgi systemd service
+  service:
+      name: uwsgi
+      state: started
+      enabled: True
+  when: admin_console_enabled | bool
+
 
 - name: Make sure nginx picks up the config 
   service: name=nginx state=restarted
