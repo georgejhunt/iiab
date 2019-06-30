@@ -37,21 +37,12 @@
 
 - name: Install Apache's awstats.conf from template (debuntu)
   template:
-    src: apache.conf
-    dest: "/etc/{{ apache_config_dir }}/awstats.conf"
+    src: awstats-nginx.conf
+    dest: "/etc/nginx/conf.d/awstats-nginx.conf"
     owner: root
     group: root
     mode: 0644
   when: awstats_enabled and is_debuntu
-
-- name: Install Apache's awstats.conf from template (OS's other than debuntu)
-  template:
-    src: apache-awstats.conf
-    dest: "/etc/{{ apache_config_dir }}/awstats.conf"
-    owner: root
-    group: root
-    mode: 0644
-  when: awstats_enabled and not is_debuntu
 
 - name: Ensure logrotate doesn't make logs unreadable (debuntu)
   template:
