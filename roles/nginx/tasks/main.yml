@@ -5,7 +5,7 @@
 - name: Install nginx required  and helper packages
   package: name={{ item }} state=present
   with_items:
-    - nginx
+    - nginx-extras
     - uwsgi
     - uwsgi-plugin-python
     - php-fpm
