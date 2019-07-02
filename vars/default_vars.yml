@@ -465,7 +465,7 @@ transmission_password: changeme
 
 awstats_install: True
 awstats_enabled: True
-awstats_port: 8083
+awstats_port: 8084
 
 monit_install: False
 monit_enabled: False
