@@ -119,21 +119,14 @@
     name: /tmp/elggdb.sql
     state: absent
 
-- name: Install /etc/{{ apache_config_dir }}/elgg.conf from template, for http://box/elgg
+- name: Install /etc/nginx/conf.d/elgg-nginx.conf from template, for http://box/elgg
   template:
-    src: elgg.conf
-    dest: "/etc/{{ apache_config_dir }}/elgg.conf"
+    src: elgg-nginx.conf
+    dest: "/etc/nginx/conf.d/elgg.conf"
 
-- name: Create symlink elgg.conf from sites-enabled to sites-available (debuntu, not nec for redhat)
+- name: Remove elgg-nginx.conf (debuntu)
   file:
-    src: /etc/apache2/sites-available/elgg.conf
-    path: /etc/apache2/sites-enabled/elgg.conf
-    state: link
-  when: elgg_enabled and is_debuntu
-
-- name: Remove symlink /etc/apache2/sites-enabled/elgg.conf (debuntu)
-  file:
-    path: /etc/apache2/sites-enabled/elgg.conf
+    path: /etc/conf.d/elgg-nginx.conf
     state: absent
   when: not elgg_enabled and is_debuntu
 
