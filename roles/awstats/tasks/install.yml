@@ -37,11 +37,15 @@
 
 - name: Install nginx's awstats.conf from template (debuntu)
   template:
-    src: awstats-nginx.conf
-    dest: "/etc/nginx/sites-available/awstats-nginx.conf"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0644
+  with_items:
+     - { src: "awstats-nginx.conf", dest: "/etc/nginx/sites-available/" }
+     - { src: "awstats-vhost.conf", dest: "/etc/nginx/conf.d/" }
+     - { src: "cgi-bin.php", dest: "/etc/nginx/" }
   when: awstats_enabled and is_debuntu
 
 - name: Ensure logrotate doesn't make logs unreadable (debuntu)
