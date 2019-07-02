@@ -469,7 +469,7 @@ transmission_password: changeme
 
 awstats_install: True
 awstats_enabled: True
-awstats_port: 8083
+awstats_port: 8084
 
 # 2019-07-08 WARNING: both vars are IGNORED on Debian 10+ due to: github.com/iiab/iiab/issues/1849
 monit_install: False
