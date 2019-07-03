@@ -122,7 +122,7 @@
 - name: Install /etc/nginx/conf.d/elgg-nginx.conf from template, for http://box/elgg
   template:
     src: elgg-nginx.conf
-    dest: "/etc/nginx/conf.d/elgg.conf"
+    dest: "/etc/nginx/conf.d/elgg-nginx.conf"
 
 - name: Remove elgg-nginx.conf (debuntu)
   file:
