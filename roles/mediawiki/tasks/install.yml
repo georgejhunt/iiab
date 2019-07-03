@@ -62,25 +62,18 @@
 
 - name: Install /etc/{{ apache_config_dir }}/mediawiki.conf from template, for http://box{{ mediawiki_url }}
   template:
-    src: mediawiki.conf.j2
-    dest: "/etc/{{ apache_config_dir }}/mediawiki.conf"
-
-- name: Create softlink mediawiki.conf from sites-enabled to sites-available, if mediawiki_enabled (debuntu)
-  file:
-    src: /etc/apache2/sites-available/mediawiki.conf
-    dest: /etc/apache2/sites-enabled/mediawiki.conf
-    state: link
-  when: mediawiki_enabled and is_debuntu
+    src: mediawiki-nginx.conf.j2
+    dest: "/etc/nginx/conf.d/mediawiki.conf"
 
 - name: Remove mediawiki.conf if not mediawiki_enabled (debuntu)
   file:
-    path: /etc/apache2/sites-enabled/mediawiki.conf
+    path: /etc/nginx/conf.d/mediawiki.conf
     state: absent
   when: not mediawiki_enabled and is_debuntu
 
 - name: Restart Apache service ({{ apache_service }}) to enable/disable http://box{{ mediawiki_url }}
   systemd:
-    name: "{{ apache_service }}"
+    name: "nginx"
     state: restarted
 
 - name: Add 'mediawiki' variable values to {{ iiab_ini_file }}
