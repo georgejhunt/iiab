@@ -68,7 +68,7 @@
     mode: 0644
   with_items:
     - { src: 'calibre-web.service.j2', dest: '/etc/systemd/system/calibre-web.service' }
-    - { src: 'calibre-web.conf.j2', dest: '/etc/nginx/sites-available/calibre-web.conf' }
+    #- { src: 'calibre-web.conf.j2', dest: '/etc/nginx/sites-available/calibre-web.conf' }
     - { src: 'calibre-web-nginx.conf.j2', dest: '/etc/nginx/conf.d/calibre-web.conf' }
 
 - name: Does /library/calibre-web/metadata.db exist?
@@ -111,13 +111,6 @@
 
 # Default: http://box/books
 # SEE ALSO: https://github.com/janeczku/calibre-web/wiki/Setup-Reverse-Proxy
-- name: Enable http://box{{ calibreweb_url }} with Apache
-  command: a2ensite calibre-web.conf
-  when: calibreweb_enabled | bool
-
-#- name: Restart Apache after enabling calibre-web httpd2 site
-#  command: apachectl -k graceful
-#  when: calibreweb_enabled | bool
 
 - name: Disable 'calibre-web' systemd service
   systemd:
@@ -125,20 +118,11 @@
     daemon_reload: yes
     enabled: no
     state: stopped
-  when: not calibreweb_enabled
+  when: not calibreweb_enabled | bool
 
 - name: Disable http://box{{ calibreweb_url }} with Apache
   command: a2dissite calibre-web.conf
   when: not calibreweb_enabled
-
-#- name: Restart Apache after disabling calibre-web httpd2 site
-#  command: apachectl -k graceful
-#  when: not calibreweb_enabled
-
-- name: Restart Apache systemd service ({{ apache_service }})
-  systemd:
-    name: "{{ apache_service }}"    # httpd or apache2
-    state: restarted
 
 - name: Add 'calibre-web' variable values to {{ iiab_ini_file }}
   ini_file:
