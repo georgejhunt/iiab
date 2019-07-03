@@ -1,0 +1,3 @@
+location    {{ kolibri_url }} {
+   proxy_pass   http://localhost:{{ kolibri_http_port }}{{ kolibri_url }}/kolibri/;
+}
