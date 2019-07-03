@@ -27,7 +27,8 @@
 
 - name: Install config for Admin Console
   template: 
-        src=admin-console.conf
+#       src=admin-console.conf
+        src=admin-console-apache.conf
         dest=/etc/nginx/conf.d/admin-console.conf
   when: admin_console_enabled | bool
 
