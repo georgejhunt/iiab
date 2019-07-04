@@ -163,7 +163,6 @@
 
 - name: Install Apache's sites-available/nodered.conf from template
   template:
-    backup: yes
     src: nodered.conf.j2
     dest: /etc/apache2/sites-available/nodered.conf
     owner: root
@@ -173,7 +172,6 @@
 
 - name: Install nginx's conf.d file from template
   template:
-    backup: yes
     src: nodered-nginx.conf.j2
     dest: /etc/nginx/conf.d/nodered-nginx.conf
     owner: root
