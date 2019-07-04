@@ -1,0 +1,11 @@
+location /{{ nodered_web_path }}/debug/ws {
+   proxy_pass /{{ nodered_web_path }}/debug/ws ws://localhost:{{ nodered_port }}/{{ nodered_web_path }}/debug/ws;
+}
+
+location /{{ nodered_web_path }}/comms {
+   proxy_pass   ws://localhost:{{ nodered_port }}/{{ nodered_web_path }}/comms;
+}
+
+location /{{ nodered_web_path }} {
+   proxy_pass   http://localhost:{{ nodered_port }}/{{ nodered_web_path }}/;
+}
