@@ -63,12 +63,12 @@
   command: mv /etc/awstats/awstats.conf /etc/awstats/awstats.conf.dist
   when: awstats.stat.islnk is defined and not awstats.stat.islnk
 
-- name: Create symlink awstats.conf from sites-enabled to sites-available (debuntu)
-  file:
-    src: /etc/nginx/sites-available/awstats-nginx.conf
-    path: /etc/nginx/sites-enabled/awstats-nginx.conf
-    state: link
-  when: awstats_enabled and is_debuntu
+#- name: Create symlink awstats.conf from sites-enabled to sites-available (debuntu)
+#  file:
+#    src: /etc/nginx/sites-available/awstats-nginx.conf
+#    path: /etc/nginx/sites-enabled/awstats-nginx.conf
+#    state: link
+#  when: awstats_enabled and is_debuntu
 
 - name: Remove symlink from sites-enabled, to disable AWStats (debuntu)
   file:
