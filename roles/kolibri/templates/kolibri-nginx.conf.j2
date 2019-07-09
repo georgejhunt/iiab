@@ -2,4 +2,9 @@ location    {{ kolibri_url }} {
    proxy_set_header Host $host;
    proxy_pass   http://localhost:{{ kolibri_http_port }}{{ kolibri_url }};
 }
-
+location /kolibri/static {
+  alias /usr/local/kolibri/lib/python2.7/site-packages/kolibri/core/static;
+}
+location /kolibri/static/user_module {
+  alias /usr/local/kolibri/lib/python2.7/site-packages/kolibri/plugins/user/static/user_module;
+}
