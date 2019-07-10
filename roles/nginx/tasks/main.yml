@@ -34,7 +34,7 @@
 
 - name: remove the links 
   file: 
-     path=/etc/nginx/admin-conole.conf
+     path=/etc/nginx/admin-console.conf
      state=absent
   when: not admin_console_enabled | bool
 
