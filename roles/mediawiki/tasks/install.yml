@@ -74,7 +74,7 @@
 
 - name: Install nginx config file, if mediawiki_enabled (debuntu)
   template:
-    src: mediawiki-nginx.conf
+    src: mediawiki-nginx.conf.j2
     dest: /etc/nginx/mediawiki-nginx.conf
   when: mediawiki_enabled and is_debuntu
 
