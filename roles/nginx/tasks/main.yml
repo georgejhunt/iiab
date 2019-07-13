@@ -22,14 +22,19 @@
 # optional services
      - { src: "kiwix.conf",dest: "/etc/nginx/conf.d/" }
 
+- name: Add Apache user to shadow group, so it can authenticate user
+  user:
+      name: "{{ apache_user }}"
+      groups: shadow
+
 - name: Remove the nginx default config
   file: path=/etc/nginx/sites-enabled/default state=absent
 
 - name: Install config for Admin Console
   template: 
-#       src=admin-console.conf
-        src=admin-console-apache.conf
-        dest=/etc/nginx/conf.d/admin-console.conf
+        src: admin-console-nginx.conf
+#        src: admin-console-apache.conf
+        dest: /etc/nginx/conf.d/admin-console.conf
   when: admin_console_enabled | bool
 
 - name: remove the links 
