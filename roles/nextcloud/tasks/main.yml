@@ -5,7 +5,7 @@
 
 - name: FORCE INSTALL OR REINSTALL OR UPGRADE IF {{ nextcloud_prefix }}/nextcloud/version.php DOESN'T EXIST
   #set_fact:
-  #  nextcloud_force_install: True
+  #nextcloud_force_install: True
   include_tasks: install.yml
   when: nextcloud_install and not nextcloud_page.stat.exists
 
