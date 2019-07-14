@@ -1,5 +1,8 @@
-- name: insure than apache is not running
-  service: name=apache2 enabled=false state=stopped
+- name: Insure that apache2 is not running -- we may need port swap
+  service: 
+      name: apache2
+      enabled: False 
+      state: stopped
   ignore_errors: True
 
 - name: Install nginx required  and helper packages
@@ -11,7 +14,7 @@
     - php-fpm
     - libnginx-mod-http-subs-filter
 
-- name: put the config file in place
+- name: Put the config file in place
   template: src={{ item.src}}  dest={{ item.dest }}
   with_items:
      - { src: "server.conf",dest: "/etc/nginx/" }
@@ -22,7 +25,7 @@
 # optional services
      - { src: "kiwix.conf",dest: "/etc/nginx/conf.d/" }
 
-- name: Add Apache user to shadow group, so it can authenticate user
+- name: Add http server  user to shadow group, so it can authenticate Admin Console
   user:
       name: "{{ apache_user }}"
       groups: shadow
@@ -33,14 +36,16 @@
 - name: Install config for Admin Console
   template: 
         src: admin-console-nginx.conf
+# The comments will revert from nginx back to apache2, if required
 #        src: admin-console-apache.conf
         dest: /etc/nginx/conf.d/admin-console.conf
   when: admin_console_enabled | bool
 
-- name: remove the links 
-  file: src=/etc/nginx/sites-available/kalite-nginx.conf
-        dest=/etc/nginx/sites-enabled/kalite-nginx.conf
-        state=absent
+- name: Remove the links 
+  file: 
+      src: /etc/nginx/sites-available/kalite-nginx.conf
+      dest: /etc/nginx/sites-enabled/kalite-nginx.conf
+      state: absent
   when: not nginx_enabled | bool
 
 - name: Enable the uwsgi systemd service
@@ -48,11 +53,11 @@
       name: uwsgi
       state: started
       enabled: True
-  when: admin_console_enabled | bool
-
 
 - name: Make sure nginx picks up the config 
-  service: name=nginx state=restarted
+  service: 
+      name: nginx 
+      state: restarted
   when: nginx_enabled | bool
           
 # it might not be installed yet, so ignore errors

@@ -1,4 +1,6 @@
 <?php
+// This is interface between nginx fastcgi and older cgi perl script awstats.pl
+// Taken from https://wiki.archlinux.org/index.php/AWStats#Nginx
 $descriptorspec = array(
    0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
    1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
