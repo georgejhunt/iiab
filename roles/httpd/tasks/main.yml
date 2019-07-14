@@ -4,9 +4,8 @@
     #name: ['apache2', 'php{{ php_version }}', 'php{{ php_version }}-curl']       # WORKS?
     name:
       - apache2
-      - php{{ php_version }}
-      - php{{ php_version }}-curl
-      - libapache2-mod-php
+      - "php{{ php_version }}"
+      - "php{{ php_version }}-curl"
     state: present
   when: is_debian | bool
   tags:
