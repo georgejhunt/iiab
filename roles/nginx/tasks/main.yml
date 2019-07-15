@@ -15,7 +15,9 @@
     - libnginx-mod-http-subs-filter
 
 - name: Put the config file in place
-  template: src={{ item.src}}  dest={{ item.dest }}
+  template: 
+      src: {{ item.src}}  
+      dest: {{ item.dest }}
   with_items:
      - { src: "server.conf",dest: "/etc/nginx/" }
      - { src: "nginx.conf",dest: "/etc/nginx/" }
@@ -36,17 +38,10 @@
 - name: Install config for Admin Console
   template: 
         src: admin-console-nginx.conf
-# The comments will revert from nginx back to apache2, if required
+# Comment one or the other to revert from nginx back to apache2, if required
 #        src: admin-console-apache.conf
         dest: /etc/nginx/conf.d/admin-console.conf
   when: admin_console_enabled | bool
-
-- name: Remove the links 
-  file: 
-      src: /etc/nginx/sites-available/kalite-nginx.conf
-      dest: /etc/nginx/sites-enabled/kalite-nginx.conf
-      state: absent
-  when: not nginx_enabled | bool
 
 - name: Enable the uwsgi systemd service
   service:

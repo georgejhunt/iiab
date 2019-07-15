@@ -34,14 +34,14 @@
 
 - name: Enable the nginx proxying to apache
   template: src=nextcloud-nginx.conf dest=/etc/nginx/conf.d/nextcloud-nginx.conf
-  when: nextcloud_enabled
+  when: nextcloud_enabled | bool
 
 - name: Restart apache, so it picks up the new aliases
   service: name={{ apache_service }} state=restarted
 
 - name: Restart nnginx
   service: name=nginx state=restarted
-  when: nginx_enabled
+  when: nginx_enabled | bool
 
 - name: Restart Apache, enabling/disabling http://box/nextcloud
   service:
