@@ -3,7 +3,6 @@
     name: dhcpd
     enabled: no
   when: dhcpd_install and not dhcpd_enabled
-  ignore_errors: True
 
 # service is restarted with NM dispatcher.d script
 - name: Enable dhcpd service
