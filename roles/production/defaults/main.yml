@@ -1,5 +1,8 @@
 production_install: False
 production_enabled: False
 production_venv: /opt/iiab/production/venv
+ckeditor_url_base: https://github.com/georgejhunt/video/raw/master/assets
+ckeditor_filename: ckeditor_4.12.1_75e500cebeab.zip
+ckeditor_url: '{{ckeditor_url_base}}/{{ ckeditor_filename }}'
 
 

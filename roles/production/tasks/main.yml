@@ -41,7 +41,7 @@
       - flask 
     virtualenv: "{{ production_venv }}"
     virtualenv_python: python3
-  when: internet_available 
+  when: internet_available | bool
 
 - name: Configure Apache to serve wsgi python server for videos metadata update
   template:
@@ -54,3 +54,13 @@
       dest: /etc/apache2/sites-enabled/production.conf
       state: link
 
+- name: Get saved cut down version of ckeditor
+  get_url:
+      url: '{{ ckeditor_url }}'
+      dest: '{{ downloads_dir }}'
+  when: internet_available | bool
+
+- name: Expand the ckeditor zip file
+  unarchive:
+      src: '{{ downloads_dir }}/{{ ckeditor_filename }}'
+      dest: '{{ production_venv }}'
