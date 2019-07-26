@@ -21,6 +21,7 @@
       state: directory
   with_items:
       - '{{ production_venv }}/webpack'
+      - '{{ production_venv }}/static'
 
 - name: Copy the files needed
   copy:
@@ -30,7 +31,7 @@
       - { src: "package.json", dest: "{{ production_venv }}/webpack"  }
       - { src: "webpack.config.js", dest: "{{ production_venv }}/webpack"  }
       - { src: "index.html", dest: "{{ production_venv }}"  }
-      - { src: "viewer.css", dest: "{{ production_venv }}"  }
+      - { src: "viewer.css", dest: "{{ production_venv }}/static"  }
       - { src: "viewer.js", dest: "{{ production_venv }}"  }
       - { src: "videos-wsgi.py", dest: "{{ production_venv }}"  }
 
@@ -47,7 +48,7 @@
       dest: /etc/apache2/sites-available/production.conf
       src: production.conf.apache
 
-- name: Enagle the videos config for apache
+- name: Enable the videos config for apache
   file:
       src: /etc/apache2/sites-available/production.conf
       dest: /etc/apache2/sites-enabled/production.conf

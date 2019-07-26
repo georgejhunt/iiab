@@ -1,4 +1,4 @@
-#videos apache2 config file
+#video production apache2 config file
 
 WSGIScriptAlias /videos {{ production_venv }}/videos-wsgi.py
 WSGIScriptReloading On 
