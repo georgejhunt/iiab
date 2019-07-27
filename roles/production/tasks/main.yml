@@ -29,12 +29,13 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
   with_items:
-      - { src: "package.json", dest: "{{ production_venv }}/webpack"  }
-      - { src: "webpack.config.js", dest: "{{ production_venv }}/webpack"  }
-      - { src: "index.html", dest: "{{ production_dir }}/static"  }
+      - { src: "package.json", dest: "{{ production_dir }}/webpack"  }
+      - { src: "webpack.config.js", dest: "{{ production_dir }}/webpack"  }
+      - { src: "index.html", dest: "{{ production_dir }}/templates"  }
       - { src: "viewer.css", dest: "{{ production_dir }}/static"  }
       - { src: "viewer.js", dest: "{{ production_dir }}/static"  }
       - { src: "videos-wsgi.py", dest: "{{ production_dir }}"  }
+      - { src: "__init__.py", dest: "{{ production_dir }}"  }
 
 - name: Install flask with dependencies using pip, into virtualenv
   pip:
@@ -65,3 +66,4 @@
   unarchive:
       src: '{{ downloads_dir }}/{{ ckeditor_filename }}'
       dest: '{{ production_dir }}/static'
+      creates: '{{ production_dir }}/static/ckeditor'

@@ -1,11 +1,11 @@
 #video production apache2 config file
 
-WSGIScriptAlias /videos {{ production_venv }}/videos-wsgi.py
+WSGIScriptAlias /videos {{ production_dir }}/videos-wsgi.py
 WSGIScriptReloading On 
 
 Alias /videos-edit {{ production_venv }}
 
-<Directory {{ production_venv }}>
+<Directory {{ production_dir }}>
 #    AuthType Basic
 #    AuthName "Admin Console"
 #    AuthBasicProvider external

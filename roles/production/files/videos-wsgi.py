@@ -7,14 +7,21 @@ from flask import Flask,request
 from jinja2 import Environment, FileSystemLoader
 import json
 import sqlite3
+import sys
+
+NEW_PATH = '/opt/iiab'
+if not NEW_PATH in sys.path:
+  sys.path += [NEW_PATH]
+import production
 
 # avoid ansible template language, but make clear what locates the code
-VIDEOS_VENV = "/opt/iiab/production/venv"
-VIDEOS_BASE = VIDEOS_VENV + "/webpack/build"
+VIDEOS_BASE = "/opt/iiab/producion"
+TEMPLATE_DIR = VIDEOS_BASE + '/templates/'
+VIDEOS_VENV = VIDEOS_BASE + "/venv"
 VIDEOS_DATA_DIR = '/library/www/html/local_content'
 
 # Create the jinja2 environment.
-j2_env = Environment(loader=FileSystemLoader(VIDEOS_VENV),trim_blocks=True)
+j2_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR),trim_blocks=True)
 #import pdb;pdb.set_trace()
 
 # Create an interface to sqlite3 database
@@ -29,7 +36,7 @@ class Videos(object):
       self.c.close()
       del self.conn
 
-application = Flask(__name__)
+application = production.create_app()
 """
 # Config MySQL
 application.config['MYSQL_HOST'] = 'localhost'

@@ -1,9 +1,9 @@
 // viewer.js for videos 
 
 /////////////  GLOBALS /////////////////////////////
-window.$ = window.jQuery = require('jquery');
+//window.$ = window.jQuery = require('jquery');
 var metaData = '/library/videos/metadata/';
-var videosDir = '/library/videos/content/';;
+var videosDir = '/library/www/html/local_content/';;
 
 // initial values for on event variables to get through startup
 function getUrlParameter(name) {
@@ -12,7 +12,7 @@ function getUrlParameter(name) {
     var results = regex.exec(location.search);
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
-var path = getUrlParameter('path');
+var path = getUrlParameter('name');
 if ( path == '') {
    alert('Please specify "name=" in URL');
    exit();
@@ -43,11 +43,12 @@ function createEditor(html) {
    // Create a new editor instance inside the <div id="editor"> element,
    // setting its value to html.
    var config = {};
+   html = " content vor javascript";
    editor1 = CKEDITOR.appendTo('editor1', config, html);
 }
 
 
-$.when(readText(path)).then(createEditor);
+//$.when(readText(path)).then(createEditor);
  
 
-
+createEditor();
