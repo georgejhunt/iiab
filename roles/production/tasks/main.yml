@@ -20,8 +20,9 @@
       path: '{{ item }}'
       state: directory
   with_items:
-      - '{{ production_venv }}/webpack'
-      - '{{ production_venv }}/static'
+      - '{{ production_dir }}/webpack'
+      - '{{ production_dir }}/static'
+      - '{{ production_dir }}/templates'
 
 - name: Copy the files needed
   copy:
@@ -30,10 +31,10 @@
   with_items:
       - { src: "package.json", dest: "{{ production_venv }}/webpack"  }
       - { src: "webpack.config.js", dest: "{{ production_venv }}/webpack"  }
-      - { src: "index.html", dest: "{{ production_venv }}"  }
-      - { src: "viewer.css", dest: "{{ production_venv }}/static"  }
-      - { src: "viewer.js", dest: "{{ production_venv }}"  }
-      - { src: "videos-wsgi.py", dest: "{{ production_venv }}"  }
+      - { src: "index.html", dest: "{{ production_dir }}/static"  }
+      - { src: "viewer.css", dest: "{{ production_dir }}/static"  }
+      - { src: "viewer.js", dest: "{{ production_dir }}/static"  }
+      - { src: "videos-wsgi.py", dest: "{{ production_dir }}"  }
 
 - name: Install flask with dependencies using pip, into virtualenv
   pip:
@@ -54,7 +55,7 @@
       dest: /etc/apache2/sites-enabled/production.conf
       state: link
 
-- name: Get saved cut down version of ckeditor
+- name: Get saved local version of ckeditor
   get_url:
       url: '{{ ckeditor_url }}'
       dest: '{{ downloads_dir }}'
@@ -63,4 +64,4 @@
 - name: Expand the ckeditor zip file
   unarchive:
       src: '{{ downloads_dir }}/{{ ckeditor_filename }}'
-      dest: '{{ production_venv }}'
+      dest: '{{ production_dir }}/static'
