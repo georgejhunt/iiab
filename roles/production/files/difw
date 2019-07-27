@@ -1,0 +1,2 @@
+#!/bin/bash -x
+vimdiff ./videos-wsgi.py /opt/iiab/production/static/videos-wsgi.py

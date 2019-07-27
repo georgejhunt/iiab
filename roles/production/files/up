@@ -1,0 +1,6 @@
+#!/bin/bash -x
+cp -f ./index.html /opt/iiab/production/templates/index.html
+cp -f  ./viewer.js /opt/iiab/production/static/viewer.js
+cp -f  ./viewer.css /opt/iiab/production/static/viewer.css
+cp -f  ./videos-wsgi.py /opt/iiab/production/videos-wsgi.py
+systemctl restart apache2

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from flask import Flask,request
+from flask import Flask, request, abort
 #from flask_mysqldb import MySQL
 from jinja2 import Environment, FileSystemLoader
 import json
@@ -21,7 +21,7 @@ VIDEOS_VENV = VIDEOS_BASE + "/venv"
 VIDEOS_DATA_DIR = '/library/www/html/local_content'
 
 # Create the jinja2 environment.
-j2_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR),trim_blocks=True)
+j2_env = Environment(loader=FileSystemLoader('/opt/iiab/production/templates'),trim_blocks=True)
 #import pdb;pdb.set_trace()
 
 # Create an interface to sqlite3 database
@@ -63,14 +63,32 @@ def viewer_css():
     image = open("%s/assets/viewer.css"%VIDEOS_REPO_DIR, "rb").read() 
     return image
     
+@application.route('/reader')
+def reader():
+   filename = request.args.get('name')   
+   try:
+      data = open("%s/%s"%(VIDEOS_DATA_DIR,filename),'r').read()
+      return data
+   except:
+      return ''
+   
+@application.route('/writer')
+def writer():
+   filename = request.args.get('name')   
+   try:
+      data = open("%s/%s"%(VIDEOS_DATA_DIR,filename),'w').read()
+      return data
+   except:
+      abort(404)
+   
 @application.route('/metadata')
 def metadata():
    filename = request.args.get('name')   
    try:
-      data = open("%s%s"%(VIDEOS_DATA_DIR,filename)).read()
+      data = open("%s%s"%(VIDEOS_DATA_DIR,filename),'r').read()
       return data
    except:
-      return ''
+      abort(404)
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0',port=9458)

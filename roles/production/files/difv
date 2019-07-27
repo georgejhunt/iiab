@@ -1,0 +1,2 @@
+#!/bin/bash -x
+vimdiff ./viewer.js /opt/iiab/production/static/viewer.js
