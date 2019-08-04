@@ -59,7 +59,7 @@ $.when(readText(path)).then(createEditor);
  
 createEditor();
 
-$( #save ).on('click',function(){
+$( #save ).click(function(){
     if ( ! path ){
       alert("please specify a filename to save");
       return;
