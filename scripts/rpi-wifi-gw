@@ -72,6 +72,8 @@ for i in $ARGS; do
 done
 
 cp ./tasks $NEWROOT/tasks
+echo $2 > $NEWROOT/SSID
+echo $3 > $NEWROOT/PSK
 
 chmod 755 $NEWROOT/tasks
 chroot $NEWROOT ./tasks
