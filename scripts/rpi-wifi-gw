@@ -53,6 +53,8 @@ else
    unzip /home/pi/Downloads/$BASENAME | dd of=/dev/sda status=progress conv=fsync
 fi
 
+partprobe /dev/sda
+
 # automatic mounting is unpredictable 
 umount /dev/sda2
 mkdir -p /mnt/sda2
@@ -72,6 +74,9 @@ done
 cat <<CHROOTEOF > $NEWROOT/tasks
 #!/bin/bash -x
 # tasks executed in a chroot to split wifi for both upstream and downstream
+
+apt-get update
+apt-get -y upgrade
 
 # haveged adds entropy (randomness for hostapd)
 apt-get install iptables dnsmasq hostapd haveged
