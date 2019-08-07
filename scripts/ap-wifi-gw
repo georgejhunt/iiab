@@ -1,5 +1,5 @@
-#!/bin/bash -x
-# tasks executed in a chroot to split wifi for both upstream and downstream
+#!/bin/bash 
+# ap-wifi-gw: split wifi, enable upstream and downstream
 
 apt-get update
 apt-get -y upgrade
