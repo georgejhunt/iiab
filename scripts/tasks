@@ -39,15 +39,17 @@ cat <<EOF > /usr/local/bin/hostapdstart
       CHANNEL=\$(iw wlan0 info|grep channel|cut -d' ' -f2)
       echo \$CHANNEL
       /usr/bin/killall wpa_supplicant
-      /sbin/iw dev wlan0 interface add uap0 type __ap
 
-      # need unique MAC, so change mfg field, and pick 3 arbitrary octets
-      /sbin/ip link set wlan0 address b8:27:99:12:34:56
+      # We need second interface and a unique MAC address
+      /sbin/iw dev wlan0 interface add uap0 type __ap
+      /sbin/ip link set uap0 address b8:27:99:12:34:56
       /sbin/ifup uap0
+
+      # Set up for Proxying clients to the internet
       systemctl restart dnsmasq.service
       sysctl net.ipv4.ip_forward=1
       sysctl net.ipv6.all.disable=1
-      iptables -t nat -A POSTROUTING -s 172.18.96.0/19 ! 172.18.96.0/19 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -s 172.18.96.0/19 ! -d 172.18.96.0/19 -j MASQUERADE
 
       # get the channel that is in use -- supplied by upstream wifi
       if [ ! -z "\$CHANNEL" ]; then
