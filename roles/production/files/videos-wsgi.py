@@ -18,7 +18,7 @@ import production
 VIDEOS_BASE = "/opt/iiab/producion"
 TEMPLATE_DIR = VIDEOS_BASE + '/templates/'
 VIDEOS_VENV = VIDEOS_BASE + "/venv"
-VIDEOS_DATA_DIR = '/library/www/html/local_content'
+VIDEOS_DATA_DIR = '/library/www/html/info/videos'
 
 # Create the jinja2 environment.
 j2_env = Environment(loader=FileSystemLoader('/opt/iiab/production/templates'),trim_blocks=True)

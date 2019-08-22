@@ -2,8 +2,7 @@
 
 /////////////  GLOBALS /////////////////////////////
 //window.$ = window.jQuery = require('jquery');
-var metaData = '/library/videos/metadata/';
-var videosDir = '/library/www/html/local_content/';;
+var videosDir = '/library/www/html/info/videos/';;
 
 function UrlExists(url)
 {
@@ -19,25 +18,25 @@ function getUrlParameter(name) {
     var results = regex.exec(location.search);
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
-var path = getUrlParameter('name');
+var videoDir = getUrlParameter('name');
 if ( path == '') {
    alert('Please specify "name=" in URL');
    exit();
 }
 
-var html, editor1 = '';
-function readText(path){
+var html, editor1 = ''a;
+function readText(path, meta){
 	//console.log ("in readText");
   var resp = $.ajax({
     type: 'GET',
-    url: metaData + path,
+    url: videosDir + videoDir + meta,
     dataType: 'text/html'
   })
   .done(function( data ) {
   	 html = data;
   })
   .fail(function (){
-      consoleLog('readText failed');
+      console.log('readText failed. Path=' + metadata + path);
       html = '';
   })
   return resp;
@@ -54,12 +53,12 @@ function createEditor(html) {
    editor1 = CKEDITOR.appendTo('editor1', config, html);
 }
 
-
-$.when(readText(path)).then(createEditor);
+var meta = "description";
+$.when(readText(path,meta)).then(createEditor);
  
 createEditor();
 
-$( #save ).click(function(){
+$( "#save" ).click(function(){
     if ( ! path ){
       alert("please specify a filename to save");
       return;

@@ -22,12 +22,10 @@ body {
   width: 80%;
 }
 
-#editor_div {
-   flex-direction: row;
-   display: flex;
-   align: center;
-   flex:1;
+#editor1 {
+   height: 200px;
 }
+
 .wrapper {
   background-color: rgba(203,255,170,0.99);
   font-size: 100%;
@@ -85,7 +83,7 @@ background: #73b9ff;
 color: #913900;
 border-radius: 5px;
 margin: auto;
-display: flex;
+/*display: flex; */
 }
 
 #headerMobile {
@@ -96,7 +94,7 @@ min-height: 50px;
 
 #headerDesktop {
 font-weight: 600;
-height: 120px;
+height: 50px;
 }
 
 #content {
@@ -199,3 +197,6 @@ height: 120px;
 #results .url { font-size: 80%; color: green; margin: 5px 0 5px 0; }
 #results .description{ font-size: 90%; margin-bottom: 10px; }
 
+#editor1 {
+   height: 200px;
+}
