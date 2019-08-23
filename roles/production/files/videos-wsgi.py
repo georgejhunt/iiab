@@ -55,7 +55,8 @@ def one():
 
 @application.route('/viewer')
 def viewer():
-    response_body = str(j2_env.get_template("index.html").render())
+    video_folder = request.args.get('name')   
+    response_body = str(j2_env.get_template("index.html").render(video_folder='%s/%s'%(video_folder,video_folder,)))
     return response_body
     
 @application.route('/viewer.css')
@@ -63,6 +64,22 @@ def viewer_css():
     image = open("%s/assets/viewer.css"%VIDEOS_REPO_DIR, "rb").read() 
     return image
     
+@application.route('/langs')
+def langs():
+   vid_dir = request.args.get('name')   
+   path = VIDEOS_DATA_DIR + '/' + vid_dir
+   file_list = [f for f in os.listdir(path) if f.endswith('.vtt')]
+   lang_list = []
+   for f in file_list:
+      lang_list.append(f[-6:-4])
+   outstr = '[ '
+   for lang in lang_list:
+      outstr += lang + ', '
+   if len(outstr) > 2:
+      outstr = outstr[:-2]  
+   outstr += ' ]'
+   return outstr
+   
 @application.route('/reader')
 def reader():
    filename = request.args.get('name')   
@@ -81,11 +98,33 @@ def writer():
    except:
       abort(404)
    
+@application.route('/transcript')
+def transcript():
+   vid_dir = request.args.get('name')   
+   lang = request.args.get('lang')   
+   path = VIDEOS_DATA_DIR + '/' + vid_dir
+   filename = [f for f in os.listdir(path) if f.endswith(lang + '.vtt')]
+   filename = filename[0]
+   try:
+      outstr = ''
+      path ="%s/%s/%s"%(VIDEOS_DATA_DIR,vid_dir,filename)
+      with open(path,'r') as fh:
+         for line in fh:
+            if line.rstrip() == '': continue
+            if line.startswith('0'): continue
+            if line.startswith('WEB'): continue
+            if line.startswith('Kind:'): continue
+            if line.startswith('Language:'): continue
+            outstr += line + '<br>'
+      return outstr
+   except:
+      abort(404)
+
 @application.route('/metadata')
 def metadata():
    filename = request.args.get('name')   
    try:
-      data = open("%s%s"%(VIDEOS_DATA_DIR,filename),'r').read()
+      data = open("%s/%s"%(VIDEOS_DATA_DIR,filename),'r').read()
       return data
    except:
       abort(404)
