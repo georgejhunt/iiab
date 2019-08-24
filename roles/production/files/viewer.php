@@ -15,6 +15,12 @@
       $video_stem = pathinfo($video_name, PATHINFO_FILENAME);
       $video_full_path = "$video_base/$video_dirname$video_stem/$video_basename.$suffix";
    }
+   chdir("$video_base/$video_dirname$video_basename");
+   $vtt_files = glob("*.vtt");
+   $langs = array();
+   foreach ($vtt_files as $f){
+      array_push($langs,substr($f,-6,2));
+   }
 ?>
 <!DOCTYPE html>
 <html>
@@ -37,13 +43,19 @@
       <div class="flex-col">
       <div class = "h1" id="headerDesktop" style="align: center;">Internet in a Box</div> 
         <div id="content" class="flex-col">
-            <div id="video_div" class="row">
-               <video width="854" height="480" align="center" controls>
-                 <source src="
-                  <?php echo($video_full_path);?>
-                  " type="video/mp4">
-                 Your browser does not support the video tag.
-               </video>
+           <div id="video_div">
+           <video id="example_video_1" class="video-js" controls preload="none" :
+            width="720" height=540" poster="<?php echo($video_full_path);?>" data-setup="{}">
+             <source src="Headless1.mp4" type="video/mp4">
+               <?php
+               for (i=0; i<count($langs); i++){
+                  echo('<track kind="captions" src="./' + $vtt_files[i] + '" srclang="en"' +
+                        ' label="<?php echo($langs[i];?> + '">';
+               }
+               ?>
+             <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+           </video>
+
             </div>
             <span>
             Filename:

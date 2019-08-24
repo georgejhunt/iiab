@@ -4,6 +4,7 @@
 //window.$ = window.jQuery = require('jquery');
 var videosDir = '/info/videos/';;
 
+/////////////  FUNCTIONS  /////////////////////////////
 function UrlExists(url)
 {
     var http = new XMLHttpRequest();
@@ -18,6 +19,7 @@ function getUrlParameter(name) {
     var results = regex.exec(location.search);
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
+
 var videoDir = getUrlParameter('name');
 if ( videoDir == '') {
    alert('Please specify "name=" in URL');
@@ -25,17 +27,17 @@ if ( videoDir == '') {
 }
 
 var html, editor1 = '';
-function readText(videoDir, meta){
+function readText(videoDir, fname){
 	//console.log ("in readText");
   var resp = $.ajax({
     type: 'GET',
-    url: videosDir + videoDir + '/' + meta
+    url: videosDir + 'readtext.php?name=' + fname
   })
   .done(function( data ) {
   	 html = data;
   })
   .fail(function (){
-      console.log('readText failed. URL=' + videosDir + videoDir + '/' + meta);
+      console.log('readText failed. URL=' + videosDir + 'readtext.php?name=' + fname);
       html = '';
   })
   return resp;
@@ -75,3 +77,40 @@ $( "#save" ).click(function(){
      dataType: 'html'
    }); 
 })
+
+function video_div(src, poster, langs, transcripts){
+   var video_div = '<video id="example_video_1" class="video-js" controls ' +
+               'preload="none" width="720" height=540" poster="' + poster +
+               '" data-setup="{}"> <source src="' + src + '" type="video/mp4">';
+   for (var i=0; i++; i<langs.length){
+               video_div += '<track kind="captions" src="' + transcripts[i] +
+               '" srclang="en" + ' label=" + langs[i] + ">';
+   }
+   video_div += '<p class="vjs-no-js">To view this video please enable JavaScript, ' +
+                'and consider upgrading to a web browser that ' +
+                '<a href="https://videojs.com/html5-video-support/" target="_blank">' +
+                'supports HTML5 video</a></p></video>';
+   return video_div;
+} 
+
+function get_translations(video_path,lang=''){
+  var resp = $.ajax({
+    type: 'GET',
+    dataType: 'json',
+    url: videosDir + 'readtext.php?name=' + fname + lang;
+  })
+  .done(function( data ) {
+  	 html = data;
+  })
+  .fail(function (){
+      console.log('get_translations failed. URL=' + videosDir + 'readtext.php?name=' + fname);
+      html = '';
+  })
+  return resp;
+}
+$.when(get_translations(videoDir,meta)).then(function(data,textStatus,jqXHR){
+     createEditor(data);
+});
+
+// load the video div -- what are the particulars for this video?
+$( "#video_div" ).html = video_div(videosDir + '/' +videoDir,

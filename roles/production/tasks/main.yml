@@ -65,7 +65,7 @@
 
 - name: Get saved video.js which displays closed captions
   get_url:
-      url: '{{ iiab_download_url }}../content/videos/video.js'
+      url: '{{ iiab_download_url }}/../content/videos/video.js'
       dest: '{{ doc_root }}/info/videos/'
   when: internet_available | bool
 - name: Expand the ckeditor zip file
