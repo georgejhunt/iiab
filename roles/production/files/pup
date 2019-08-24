@@ -1,0 +1,7 @@
+#!/bin/bash
+# copy action routines to where they reside
+
+cp -f ./viewer.php /library/www/html/info/videos/viewer.php
+cp -f  ./viewer.js /library/www/html/info/videos/viewer.js
+cp -f  ./viewer.js /library/www/html/info/videos/viewer.js
+cp -f  ./cc_list.php /library/www/html/info/videos/
