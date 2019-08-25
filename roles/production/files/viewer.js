@@ -54,7 +54,7 @@ function createEditor(html) {
    editor1 = CKEDITOR.appendTo('editor1', config, html);
 }
 
-var meta = "description";
+var meta = "details";
 $.when(readText(videoDir,meta)).then(function(data,textStatus,jqXHR){
      createEditor(data);
 });
@@ -78,20 +78,6 @@ $( "#save" ).click(function(){
    }); 
 })
 
-function video_div(src, poster, langs, transcripts){
-   var video_div = '<video id="example_video_1" class="video-js" controls ' +
-               'preload="none" width="720" height=540" poster="' + poster +
-               '" data-setup="{}"> <source src="' + src + '" type="video/mp4">';
-   for (var i=0; i++; i<langs.length){
-               video_div += '<track kind="captions" src="' + transcripts[i] +
-               '" srclang="en" + ' label=" + langs[i] + ">';
-   }
-   video_div += '<p class="vjs-no-js">To view this video please enable JavaScript, ' +
-                'and consider upgrading to a web browser that ' +
-                '<a href="https://videojs.com/html5-video-support/" target="_blank">' +
-                'supports HTML5 video</a></p></video>';
-   return video_div;
-} 
 
 function get_translations(video_path,lang=''){
   var resp = $.ajax({

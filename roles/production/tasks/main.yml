@@ -29,13 +29,10 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
   with_items:
-      - { src: "package.json", dest: "{{ production_dir }}/webpack"  }
-      - { src: "webpack.config.js", dest: "{{ production_dir }}/webpack"  }
-      - { src: "index.html", dest: "{{ production_dir }}/templates"  }
-      - { src: "viewer.css", dest: "{{ production_dir }}/static"  }
-      - { src: "viewer.js", dest: "{{ production_dir }}/static"  }
-      - { src: "videos-wsgi.py", dest: "{{ production_dir }}"  }
-      - { src: "__init__.py", dest: "{{ production_dir }}"  }
+      - { src: "viewer.php", dest: "{{ doc_root }}/info/videos/"  }
+      - { src: "viewer.css", dest: "{{ doc_root }}/info/videos/"  }
+      - { src: "viewer.js", dest: "{{ doc_root }}/info/videos/"  }
+      - { src: "video-js.css", dest: "{{ doc_root }}/info/videos/"  }
 
 - name: Install flask with dependencies using pip, into virtualenv
   pip:
@@ -57,19 +54,8 @@
       dest: /etc/apache2/sites-enabled/production.conf
       state: link
 
-- name: Get saved local version of ckeditor
-  get_url:
-      url: '{{ ckeditor_url }}'
-      dest: '{{ downloads_dir }}'
-  when: internet_available | bool
-
 - name: Get saved video.js which displays closed captions
   get_url:
       url: '{{ iiab_download_url }}/../content/videos/video.js'
       dest: '{{ doc_root }}/info/videos/'
   when: internet_available | bool
-- name: Expand the ckeditor zip file
-  unarchive:
-      src: '{{ downloads_dir }}/{{ ckeditor_filename }}'
-      dest: '{{ production_dir }}/static'
-      creates: '{{ production_dir }}/static/ckeditor'
