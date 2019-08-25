@@ -94,9 +94,10 @@ function get_translations(video_path,lang=''){
   })
   return resp;
 }
-$.when(get_translations(videoDir,meta)).then(function(data,textStatus,jqXHR){
-     createEditor(data);
-});
+//$.when(get_translations(videoDir,meta)).then(function(data,textStatus,jqXHR){
+//     createEditor(data);
+//});
 
-// load the video div -- what are the particulars for this video?
-$( "#video_div" ).html = video_div(videosDir + '/' +videoDir,
+$.when(readText(videoDir, window.details)).then(function(data,textStatus,jqXHR){
+   $( "#details" ).html = data;
+})

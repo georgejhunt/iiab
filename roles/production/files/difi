@@ -1,2 +1,0 @@
-#!/bin/bash -x
-vimdiff ./index.html /opt/iiab/production/templates/index.html

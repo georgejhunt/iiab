@@ -52,8 +52,9 @@
     <link rel="stylesheet" href="/common/css/font-faces.css"/>
     <link rel="stylesheet" href="./viewer.css" type="text/css">
     <link href="./video-js.css" rel="stylesheet">
-    <script src="/common/js/jquery.min.js"></script>
-    <script src="/ckeditor/ckeditor.js" type="text/javascript"></script>
+    <script src="/common/js/jquery.min.js">
+      window.$ = jQuery;
+    </script>
     <script src="./video.js"></script>
   </head>
 
@@ -88,12 +89,17 @@
             </div> <!-- End editor1 -->
             <div id="details">
             </div>
+            <script>
+               window.details = <?php echo "$video_dirname$video_stem/details";?>;
+               window.langs = <?php echo print_r($langs); ?>;
+               window.vtt_files = <?php echo $vtt_files; ?>;
+            </script>
             <h3>Spoken Text</h3>
             <div id="lang_buttons"> </div>
             <div id="closed_captions"></div>
         </div> <!-- End content container -->
       </div> <!-- Flex -->
     </div> <!-- Wrapper -->
-  <script src="./static/viewer.js" type="text/javascript"></script>
+  <script src="./viewer.js" type="text/javascript"></script>
   </body>
 </html>

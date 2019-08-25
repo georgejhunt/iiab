@@ -11,6 +11,7 @@
       - cheese
       - vim-gtk3
       - python-flask
+      - php-getid3
     state: present
   tags:
     - download
