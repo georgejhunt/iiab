@@ -200,3 +200,19 @@ height: 50px;
 #editor1 {
    height: 200px;
 }
+.content-item {
+    font-size: 1em;
+    padding: 10px 10px 10px 10px;
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    margin: 3px;
+    background-color: #fff;
+    text-align: left;
+    width: 96%
+}
+.flex-col{
+  display: flex;
+  flex-direction: column;
+  width: auto;
+}
+

@@ -52,6 +52,7 @@
     <link rel="stylesheet" href="/common/css/font-faces.css"/>
     <link rel="stylesheet" href="./viewer.css" type="text/css">
     <link href="./video-js.css" rel="stylesheet">
+    <link rel="stylesheet" href="/js-menu/menu-files/css/js-menu-item.css" type="text/css">
     <script src="/common/js/jquery.min.js">
       window.$ = jQuery;
     </script>
