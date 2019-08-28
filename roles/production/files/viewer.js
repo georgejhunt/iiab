@@ -83,7 +83,7 @@ function get_translations(video_path,lang=''){
   var resp = $.ajax({
     type: 'GET',
     dataType: 'json',
-    url: videosDir + 'readtext.php?name=' + fname + lang;
+    url: videosDir + 'readtext.php?name=' + fname + lang
   })
   .done(function( data ) {
   	 html = data;
@@ -101,3 +101,6 @@ function get_translations(video_path,lang=''){
 $.when(readText(videoDir, window.details)).then(function(data,textStatus,jqXHR){
    $( "#details" ).html = data;
 })
+
+// Fill in the blanks
+console.log("title:" + window.full_path);

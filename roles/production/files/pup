@@ -6,4 +6,4 @@ cp -f  ./viewer.js /library/www/html/info/videos/viewer.js
 cp -f  ./viewer.css /library/www/html/info/videos/viewer.css
 cp -f  ./cc_list.php /library/www/html/info/videos/
 cp -f  ./readtext.php /library/www/html/info/videos/
-cp -f  ./walk.php /library/www/html/info/videos/
+cp -f  ./index.php /library/www/html/info/videos/

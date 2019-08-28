@@ -22,7 +22,9 @@
       $video_dirname = dirname($video_basename);
       if ($video_dirname != '.') $video_dirname = $video_dirname . '/';else $video_dirname = "";
       $video_stem = pathinfo($video_name, PATHINFO_FILENAME);
-      $video_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
+      $url_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
+      $full_path = "$$video_base/$video_dirname$video_stem";
+
    }
    chdir("$video_base/$video_dirname$video_basename");
    $vtt_files = glob("*.vtt");
@@ -38,7 +40,6 @@
    if ( count($poster) > 0 ) $poster = $poster[0]; else $poster = '';
    chdir($cwd);
    //die(print_r($langs));
-   //die($video_full_path);
 ?>
 <!DOCTYPE html>
 <html>
@@ -68,7 +69,7 @@
            <div id="video_div">
               <video id="example_video_1" class="video-js" controls preload="none" :
                width="720" height="540" poster='<?php echo("./$video_dirname$video_stem/$poster");?>' data-setup="{}">
-               <source src="<?php echo($video_full_path);?>" type="video/mp4">
+               <source src="<?php echo($url_full_path);?>" type="video/mp4">
                <?php
                   for ( $i=0; $i<$langs_count; $i++){ 
                      $src = "./$video_dirname$video_stem/$vtt_files[$i]"; 
@@ -78,24 +79,41 @@
                <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
               </video>
 
+
             </div> <!-- video-div -->
-            <span>
-            Filename:
-            <input id="filename" name="filename" type="text">
-            <button id="New File" value="save">New File</button>
-            <button id="Overwrite" value="save">Overwrite</button>
-            <button id="save" value="save">Save</button>
-            </span>
+            <fieldset>
+              <legend>MetaData</legend>
+            <table style="text-align: left"><tr><td>
+            Title:</td><td>
+            <input id="title" size="64" name="title" type="text"></td></tr><tr><td>
+            One line description:</td><td>
+            <input id="oneliner" name="oneliner" type="text" size="80"></td></tr>
+            <tr><td>Details:</td><td>
+               <textarea id="Detail" cols="80" rows="10">
+               </textarea></td></tr>
+            </table>
+            </fieldset>
+            <h3>Spoken Text:</h3>
+
+            <div id="details">
+               <textarea id="translation" cols="120" rows='15'>
+               </textarea>
+            </div>
             <div id="editor1" class="row">
             </div> <!-- End editor1 -->
-            <div id="details">
-            </div>
+               <?php
+                  for ( $i=0; $i<$langs_count; $i++){ 
+                     $src = "./$video_dirname$video_stem/$vtt_files[$i]"; 
+                     $lang = $langs[$i];
+               ?>
+            <?php } ?>
+            <button id="save" value="save">Save</button>
             <script>
                window.details = <?php echo "$video_dirname$video_stem/details";?>;
-               window.langs = <?php echo print_r($langs); ?>;
+               window.langs = <?php json_encode($langs); ?>;
                window.vtt_files = <?php echo $vtt_files; ?>;
+               window.full_path = <?=$full_path?>;
             </script>
-            <h3>Spoken Text</h3>
             <div id="lang_buttons"> </div>
             <div id="closed_captions"></div>
         </div> <!-- End content container -->
