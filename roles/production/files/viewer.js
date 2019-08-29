@@ -101,6 +101,3 @@ function get_translations(video_path,lang=''){
 $.when(readText(videoDir, window.details)).then(function(data,textStatus,jqXHR){
    $( "#details" ).html = data;
 })
-
-// Fill in the blanks
-console.log("title:" + window.full_path);

@@ -23,7 +23,7 @@
       if ($video_dirname != '.') $video_dirname = $video_dirname . '/';else $video_dirname = "";
       $video_stem = pathinfo($video_name, PATHINFO_FILENAME);
       $url_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
-      $full_path = "$$video_base/$video_dirname$video_stem";
+      $full_path = "$video_base/$video_dirname$video_stem";
 
    }
    chdir("$video_base/$video_dirname$video_basename");
@@ -33,6 +33,8 @@
       $langs[] = substr($f,-6,2);
    }
    $langs_count = count($langs);
+   //die(json_encode($vtt_files));
+   
    // find any images to use as poster
    $cwd = getcwd();
    chdir("$video_base/$video_dirname$video_basename");
@@ -40,6 +42,39 @@
    if ( count($poster) > 0 ) $poster = $poster[0]; else $poster = '';
    chdir($cwd);
    //die(print_r($langs));
+  $path = $full_path;
+  $filename = "$path/$video_basename" . $suffix; 
+  $title = getOneLine("$path/title");
+  if ($title === '') $title = $video_basename . $suffix;
+  $oneliner = getOneLine("$path/oneliner");
+  $filesize = filesize($filename);
+  $pretty = human_filesize($filesize);
+  $video_time = getDuration($filename);
+  $modate = date ("F d Y", filemtime($filename));
+  $details = getLines("$path/details");
+  $info = "$pretty Duration: $video_time Recorded: $modate";
+
+function human_filesize($bytes, $decimals = 1) {
+    $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
+    $factor = floor((strlen($bytes) - 1) / 3);
+    return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
+}
+
+function getDuration($file){
+   include_once("/usr/share/php/getid3/getid3.php");
+   $getID3 = new getID3;
+   $file = $getID3->analyze($file);
+   return $file['playtime_string'];
+}
+function getOneLine($file){
+  $lines = file($file);
+  if ($lines !== FALSE) return $lines[0]; else return '';
+}
+  
+function getLines($file){
+  $lines = file($file);
+  if ($lines !== FALSE) return $lines; else return [];
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -85,35 +120,56 @@
               <legend>MetaData</legend>
             <table style="text-align: left"><tr><td>
             Title:</td><td>
-            <input id="title" size="64" name="title" type="text"></td></tr><tr><td>
+            <input id="title" size="40" name="title" type="text" 
+               value="<?=$title?>"></td></tr>
+            <tr><td>
             One line description:</td><td>
-            <input id="oneliner" name="oneliner" type="text" size="80"></td></tr>
-            <tr><td>Details:</td><td>
+            <input id="oneliner" name="oneliner" type="text" size="80" 
+               value="<?=$oneliner?>"></td></tr>
+            <tr><td>
+            Details:</td><td>
+            <input id="details" name="details" type="text" size="80" 
+               value="<?=$info?>"></td></tr>
+            <tr><td>More Information:</td><td>
                <textarea id="Detail" cols="80" rows="10">
-               </textarea></td></tr>
+               <?=implode($details);?> </textarea></td></tr>
             </table>
             </fieldset>
             <h3>Spoken Text:</h3>
 
             <div id="details">
-               <textarea id="translation" cols="120" rows='15'>
-               </textarea>
-            </div>
-            <div id="editor1" class="row">
-            </div> <!-- End editor1 -->
+               <div>
+               <span id="buttons">
                <?php
                   for ( $i=0; $i<$langs_count; $i++){ 
-                     $src = "./$video_dirname$video_stem/$vtt_files[$i]"; 
                      $lang = $langs[$i];
                ?>
+               <button id="lang-<?=$langs[$i]?>" class="lang_select"                   
+                  type="button" onclick="display_it()"><?=$lang?></button>
             <?php } ?>
+               </span>
+               </div>
+               <?php
+                  for ( $i=0; $i<$langs_count; $i++){ 
+                     $outstr = '';
+                     $text = getLines("$path/$vtt_files[$i]"); 
+                     foreach($text as $line){
+                        if (substr($line,0,9) == "Language:") continue;
+                        if (substr($line,0,5) == "Kind:") continue;
+                        if (rtrim($line) == '') continue;
+                        if (substr($line,0,1) == '0') continue;
+                        $outstr .= $line;
+                     }
+               ?>
+                  <button id="lang-<?=$langs[$i]?>" class="lang_select"                   
+                     onclick="display_it() value=<?=$langs[$i]?>">
+                  <textarea id="trans-<?=$langs[$i]?>" cols="120" rows='15'
+                        class="translated">
+                        <?=$outstr?>
+                  </textarea>
+               <?php } ?>
+            </div>
             <button id="save" value="save">Save</button>
-            <script>
-               window.details = <?php echo "$video_dirname$video_stem/details";?>;
-               window.langs = <?php json_encode($langs); ?>;
-               window.vtt_files = <?php echo $vtt_files; ?>;
-               window.full_path = <?=$full_path?>;
-            </script>
             <div id="lang_buttons"> </div>
             <div id="closed_captions"></div>
         </div> <!-- End content container -->
