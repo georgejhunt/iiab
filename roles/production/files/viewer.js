@@ -5,6 +5,15 @@
 var videosDir = '/info/videos/';;
 
 /////////////  FUNCTIONS  /////////////////////////////
+function display_it(btn){
+  // turn off all translations
+  $( ".translated" ).each(function (index,data) {
+    if (data) data.style.display = "none";
+  })
+  var trans_id = document.getElementById('trans-' + btn.name);
+  trans_id.style.display = "block";
+}
+
 function UrlExists(url)
 {
     var http = new XMLHttpRequest();
@@ -43,40 +52,6 @@ function readText(videoDir, fname){
   return resp;
 }
 
-function createEditor(html) {
-   if (editor1)
-     return;
-
-   // Create a new editor instance inside the <div id="editor"> element,
-   // setting its value to html.
-   var config = {"rows":"10","cols":"80"};
-   //html = "Path is " + videoDir;
-   editor1 = CKEDITOR.appendTo('editor1', config, html);
-}
-
-var meta = "details";
-$.when(readText(videoDir,meta)).then(function(data,textStatus,jqXHR){
-     createEditor(data);
-});
- 
-//createEditor();
-
-$( "#save" ).click(function(){
-    if ( ! videoDir ){
-      alert("please specify a filename to save");
-      return;
-    }
-    var data = CKEDITOR.instances.editor1.getData();
-   $.ajax({
-     type: "POST",
-     url: './videos/writer',
-     data: data,
-     fail: function(data){
-      alert('Failed to write ' + videoDir)
-     },
-     dataType: 'html'
-   }); 
-})
 
 
 function get_translations(video_path,lang=''){
@@ -98,6 +73,3 @@ function get_translations(video_path,lang=''){
 //     createEditor(data);
 //});
 
-$.when(readText(videoDir, window.details)).then(function(data,textStatus,jqXHR){
-   $( "#details" ).html = data;
-})

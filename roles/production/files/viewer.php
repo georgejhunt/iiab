@@ -75,6 +75,7 @@ function getLines($file){
   $lines = file($file);
   if ($lines !== FALSE) return $lines; else return [];
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -89,9 +90,8 @@ function getLines($file){
     <link rel="stylesheet" href="./viewer.css" type="text/css">
     <link href="./video-js.css" rel="stylesheet">
     <link rel="stylesheet" href="/js-menu/menu-files/css/js-menu-item.css" type="text/css">
-    <script src="/common/js/jquery.min.js">
-      window.$ = jQuery;
-    </script>
+    <script src="/common/js/jquery.min.js"></script>
+    <script src="./viewer.js" type="text/javascript"></script>
     <script src="./video.js"></script>
   </head>
 
@@ -117,6 +117,40 @@ function getLines($file){
 
             </div> <!-- video-div -->
             <fieldset>
+              <legend>Spoken Text</legend>
+
+            <div id="details">
+               <div>
+               <span id="buttons">
+               <?php
+                  for ( $i=0; $i<$langs_count; $i++){ 
+                     $lang = $langs[$i];
+               ?>
+               <button id="lang-<?=$langs[$i]?>" class="lang_select" name="<?=$lang?>"
+                  type="button" onclick="display_it(this)"><?=$lang?></button>
+            <?php } ?>
+               </span>
+               </div>
+               <?php
+                  for ( $i=0; $i<$langs_count; $i++){ 
+                     $outstr = '';
+                     $text = getLines("$path/$vtt_files[$i]"); 
+                     foreach($text as $line){
+                        if (substr($line,0,6) == "WEBVTT") continue;
+                        if (substr($line,0,9) == "Language:") continue;
+                        if (substr($line,0,5) == "Kind:") continue;
+                        if (rtrim($line) == '') continue;
+                        if (substr($line,0,1) == '0') continue;
+                        $outstr .= $line;
+                     }
+               ?>
+                  <div id="trans-<?=$langs[$i]?>" class="translated" >
+                     <textarea cols="120" rows='15'> <?=$outstr?> </textarea>
+                  </div>
+               <?php } ?>
+            </div>
+                  </fieldset>
+            <fieldset>
               <legend>MetaData</legend>
             <table style="text-align: left"><tr><td>
             Title:</td><td>
@@ -135,46 +169,9 @@ function getLines($file){
                <?=implode($details);?> </textarea></td></tr>
             </table>
             </fieldset>
-            <h3>Spoken Text:</h3>
-
-            <div id="details">
-               <div>
-               <span id="buttons">
-               <?php
-                  for ( $i=0; $i<$langs_count; $i++){ 
-                     $lang = $langs[$i];
-               ?>
-               <button id="lang-<?=$langs[$i]?>" class="lang_select"                   
-                  type="button" onclick="display_it()"><?=$lang?></button>
-            <?php } ?>
-               </span>
-               </div>
-               <?php
-                  for ( $i=0; $i<$langs_count; $i++){ 
-                     $outstr = '';
-                     $text = getLines("$path/$vtt_files[$i]"); 
-                     foreach($text as $line){
-                        if (substr($line,0,9) == "Language:") continue;
-                        if (substr($line,0,5) == "Kind:") continue;
-                        if (rtrim($line) == '') continue;
-                        if (substr($line,0,1) == '0') continue;
-                        $outstr .= $line;
-                     }
-               ?>
-                  <button id="lang-<?=$langs[$i]?>" class="lang_select"                   
-                     onclick="display_it() value=<?=$langs[$i]?>">
-                  <textarea id="trans-<?=$langs[$i]?>" cols="120" rows='15'
-                        class="translated">
-                        <?=$outstr?>
-                  </textarea>
-               <?php } ?>
-            </div>
             <button id="save" value="save">Save</button>
-            <div id="lang_buttons"> </div>
-            <div id="closed_captions"></div>
         </div> <!-- End content container -->
       </div> <!-- Flex -->
     </div> <!-- Wrapper -->
-  <script src="./viewer.js" type="text/javascript"></script>
   </body>
 </html>

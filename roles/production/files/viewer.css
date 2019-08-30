@@ -216,3 +216,6 @@ height: 50px;
   width: auto;
 }
 
+.translated {
+  display: none;
+}
