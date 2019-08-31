@@ -219,3 +219,15 @@ height: 50px;
 .translated {
   display: none;
 }
+fieldset {
+    background: #73b9ff;
+    border-radius: 10px;
+    width: auto;
+}
+#info {
+    margin: 3px;
+    padding: 10px 10px 10px 10px;
+    background-color: #fff;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+}

@@ -1,4 +1,5 @@
 <?php
+   $edit_enable = false;
    $video_base = '/library/www/html/info/videos';
    $video_url = '/info/videos';
    if ( ! isset($_REQUEST['name'])){
@@ -6,6 +7,9 @@
       exit(1);
    } else {
       $suffix = '.mp4';
+      if ( isset($_REQUEST['edit'])){
+         $edit_enable = true;
+      }
 
       //name may include a category in path preceeding video directory specifier
       $video_name = $_REQUEST['name'];
@@ -26,6 +30,7 @@
       $full_path = "$video_base/$video_dirname$video_stem";
 
    }
+   $cwd = getcwd();
    chdir("$video_base/$video_dirname$video_basename");
    $vtt_files = glob("*.vtt");
    $langs = array();
@@ -36,24 +41,29 @@
    //die(json_encode($vtt_files));
    
    // find any images to use as poster
-   $cwd = getcwd();
-   chdir("$video_base/$video_dirname$video_basename");
    $poster = glob("*.{jpg,jpeg,png}",GLOB_BRACE);
    if ( count($poster) > 0 ) $poster = $poster[0]; else $poster = '';
-   chdir($cwd);
    //die(print_r($langs));
   $path = $full_path;
   $filename = "$path/$video_basename" . $suffix; 
   $title = getOneLine("$path/title");
   if ($title === '') $title = $video_basename . $suffix;
   $oneliner = getOneLine("$path/oneliner");
+  $details = getOneLine("$path/details");
   $filesize = filesize($filename);
   $pretty = human_filesize($filesize);
   $video_time = getDuration($filename);
   $modate = date ("F d Y", filemtime($filename));
-  $details = getLines("$path/details");
-  $info = "$pretty Duration: $video_time Recorded: $modate";
+  $info = getLines("$path/info");
+  $info_md = implode('<br>',$info);
+  if (! $edit_enable){
+      $text_html = shell_exec("pandoc -f markdown $path/info");
+  } else $text_html = $info_md;
 
+  $info = "$pretty Duration: $video_time Recorded: $modate";
+  chdir($cwd);
+
+//  Start of Functions  #################
 function human_filesize($bytes, $decimals = 1) {
     $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
     $factor = floor((strlen($bytes) - 1) / 3);
@@ -75,8 +85,8 @@ function getLines($file){
   $lines = file($file);
   if ($lines !== FALSE) return $lines; else return [];
 }
-
 ?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -87,12 +97,12 @@ function getLines($file){
 
     <link rel="stylesheet" href="/common/css/fa.all.min.css"/>
     <link rel="stylesheet" href="/common/css/font-faces.css"/>
-    <link rel="stylesheet" href="./viewer.css" type="text/css">
-    <link href="./video-js.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?=$video_url?>/viewer.css" type="text/css">
+    <link href="<?=$video_url?>/video-js.css" rel="stylesheet">
     <link rel="stylesheet" href="/js-menu/menu-files/css/js-menu-item.css" type="text/css">
     <script src="/common/js/jquery.min.js"></script>
-    <script src="./viewer.js" type="text/javascript"></script>
-    <script src="./video.js"></script>
+    <script src="<?=$video_url?>/viewer.js" type="text/javascript"></script>
+    <script src="<?=$video_url?>/video.js"></script>
   </head>
 
   <body>
@@ -103,11 +113,11 @@ function getLines($file){
         <div id="content" class="flex-col">
            <div id="video_div">
               <video id="example_video_1" class="video-js" controls preload="none" :
-               width="720" height="540" poster='<?php echo("./$video_dirname$video_stem/$poster");?>' data-setup="{}">
+               width="720" height="540" poster='<?php echo("$video_url/$video_dirname$video_stem/$poster");?>' data-setup="{}">
                <source src="<?php echo($url_full_path);?>" type="video/mp4">
                <?php
                   for ( $i=0; $i<$langs_count; $i++){ 
-                     $src = "./$video_dirname$video_stem/$vtt_files[$i]"; 
+                     $src = "$video_url/$video_dirname$video_stem/$vtt_files[$i]"; 
                ?>
                <track kind="captions" src="<?=$src?>" srclang="en" label="<?=$langs[$i]?>">
                <?php } ?>
@@ -116,10 +126,9 @@ function getLines($file){
 
 
             </div> <!-- video-div -->
-            <fieldset>
+            <fieldset >
               <legend>Spoken Text</legend>
 
-            <div id="details">
                <div>
                <span id="buttons">
                <?php
@@ -129,6 +138,8 @@ function getLines($file){
                <button id="lang-<?=$langs[$i]?>" class="lang_select" name="<?=$lang?>"
                   type="button" onclick="display_it(this)"><?=$lang?></button>
             <?php } ?>
+               <button id="hide" class="lang_select" name="hide"
+                  type="button" onclick="display_it(this)">hide</button>
                </span>
                </div>
                <?php
@@ -148,28 +159,41 @@ function getLines($file){
                      <textarea cols="120" rows='15'> <?=$outstr?> </textarea>
                   </div>
                <?php } ?>
-            </div>
                   </fieldset>
+            <div class="panel">
             <fieldset>
               <legend>MetaData</legend>
-            <table style="text-align: left"><tr><td>
+            <table style="text-align: left" ><tr><td>
             Title:</td><td>
             <input id="title" size="40" name="title" type="text" 
                value="<?=$title?>"></td></tr>
             <tr><td>
-            One line description:</td><td>
+            One line <br>Description:</td><td>
             <input id="oneliner" name="oneliner" type="text" size="80" 
                value="<?=$oneliner?>"></td></tr>
             <tr><td>
             Details:</td><td>
             <input id="details" name="details" type="text" size="80" 
-               value="<?=$info?>"></td></tr>
-            <tr><td>More Information:</td><td>
-               <textarea id="Detail" cols="80" rows="10">
-               <?=implode($details);?> </textarea></td></tr>
+               value="<?=$details?>"></td></tr>
+            <tr><td>More <br>Information:</td><td>
+               <div id="info">
+               <?php
+                  echo($text_html);
+               ?> </div></td></tr>
+
+
             </table>
             </fieldset>
-            <button id="save" value="save">Save</button>
+            </div>
+            <?php 
+               if ($edit_enable){
+            ?>
+            <span>
+               <button id="edit" value="edit">Edit</button>
+               <button id="preview" value="preview">Preview</button>
+               <button id="save" value="save">Save</button>
+             </span>
+               <?php } ?>
         </div> <!-- End content container -->
       </div> <!-- Flex -->
     </div> <!-- Wrapper -->
