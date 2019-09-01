@@ -11,8 +11,11 @@
          $edit_enable = true;
       } else $edit_enable = false;
       if ( isset($_REQUEST['markdown'])){
-         $markdown_enable = true;
-      } else $markdown_enable = false;
+         $markdown = $_REQUEST['markdown'];
+      } else $markdown= '';
+      if ( isset($_REQUEST['save'])){
+         $save = $_REQUEST['save'];
+      } else $save = '';
 
       //name may include a category in path preceeding video directory specifier
       $video_name = $_REQUEST['name'];
@@ -36,11 +39,15 @@
    chdir("$video_base/$video_dirname$video_basename");
    //  End of boilerplate /////////////
    $file_path = "./info";
-   if ($markdown_enable){
-      $text_html = shell_exec("pandoc -f markdown $file_path");
-      echo $text_html;
-   } else {
-      $file = file($file_path);
-      echo json_encode($file);
-   }
+   if ($markdown !== ''){
+      if ($save !== ''){
+         //$fp = open($file_path,'w');
+         //$fp.write($markdown);
+         //$fp.close();
+         echo "Data to save: $markdown";
+      } else {
+         $text_html = shell_exec("echo $markdown |pandoc -f markdown");
+         echo $text_html;
+      }
+   } else echo 'markdown not true';
 ?>
