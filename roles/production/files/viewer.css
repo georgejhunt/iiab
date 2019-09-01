@@ -224,7 +224,7 @@ fieldset {
     border-radius: 10px;
     width: auto;
 }
-#info {
+#info, #info_textarea{
     margin: 3px;
     padding: 10px 10px 10px 10px;
     background-color: #fff;

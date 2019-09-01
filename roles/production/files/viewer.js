@@ -52,7 +52,27 @@ function readText(videoDir, fname){
   return resp;
 }
 
+var info_md;
+function get_info_md(){
+  info_md = $( "#info_textarea" ).html();
+  return info_md;
+}
+$(document).ready(function(){
+  $( "#preview" ).click(function(){
+  var current = get_info_md();
+  console.log(current);
+  $.ajax({
+    method: "GET",
+    url: videosDir + "metadata.php?name=" + name + "&markdown=" + current,
+    data: "*italics*",
+    success: function(data) {
+      console.log(data);
+      alert(data);
+    }
+  })
+})
 
+})
 
 function get_translations(video_path,lang=''){
   var resp = $.ajax({

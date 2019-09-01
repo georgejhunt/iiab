@@ -55,10 +55,11 @@
   $video_time = getDuration($filename);
   $modate = date ("F d Y", filemtime($filename));
   $info = getLines("$path/info");
-  $info_md = implode('<br>',$info);
+  $info_html = implode('<br>',$info);
+  $text_md = implode($info);
   if (! $edit_enable){
       $text_html = shell_exec("pandoc -f markdown $path/info");
-  } else $text_html = $info_md;
+  } else $text_html = $info_html;
 
   $info = "$pretty Duration: $video_time Recorded: $modate";
   chdir($cwd);
@@ -86,7 +87,9 @@ function getLines($file){
   if ($lines !== FALSE) return $lines; else return [];
 }
 ?>
-
+<script type="text/javascript">
+var name="<?=$video_basename?>";
+</script>
 <!DOCTYPE html>
 <html>
   <head>
@@ -176,12 +179,16 @@ function getLines($file){
             <input id="details" name="details" type="text" size="80" 
                value="<?=$details?>"></td></tr>
             <tr><td>More <br>Information:</td><td>
+            <?php if (! $edit_enable){ ?>
                <div id="info">
-               <?php
-                  echo($text_html);
-               ?> </div></td></tr>
-
-
+               <?php  echo($text_html); ?>
+                </div>
+             <?php } else { ?>
+               <textarea id="info_textarea" rows="7" cols="80">
+                  <?php  echo($text_md); ?>
+               </textarea>
+            <?php } ?>
+              </td></tr>
             </table>
             </fieldset>
             </div>
