@@ -15,12 +15,12 @@ function getDuration($file){
    return $file['playtime_string'];
 }
 function getOneLine($file){
-  $lines = file($file);
+  $lines = @file($file);
   if ($lines !== FALSE) return $lines[0]; else return '';
 }
   
 function getLines($file){
-  $lines = file($file);
+  $lines = @file($file);
   if ($lines !== FALSE) return $lines; else return [];
 }
 ?>
@@ -36,10 +36,6 @@ function getLines($file){
     <link rel="stylesheet" href="/common/css/font-faces.css"/>
     <link rel="stylesheet" href="./viewer.css" type="text/css">
     <link rel="stylesheet" href="./viewer.css" type="text/css">
-    <script src="/common/js/jquery.min.js">
-      window.$ = jQuery;
-    </script>
-    <script src="./video.js"></script>
   </head>
 
   <body>
@@ -82,7 +78,7 @@ foreach ($treeIter as $filename=>$cur) {
   $video_link = "<a href=$href >$title</a>";
   $oneliner = getOneLine("$path/oneliner");
   $details = getOneLine("$path/details");
-  if ($detaisl) === '') {
+  if ( $details == '') {
     $filesize=$cur->getSize();
     $bytestotal+=$filesize;
     $nbfiles++;
@@ -90,15 +86,16 @@ foreach ($treeIter as $filename=>$cur) {
     $video_time = getDuration($filename);
     $modate = date ("F d Y", filemtime($filename));
     $details =  "$pretty, Duration: $video_time h:m:s, $modate";
-    $fd = open('details','w');
-    $fd.write("$details\n");
-    $fs.close();
+    $fd = fopen("$path/details",'w');
+    fwrite($fd,"$details\n");
+    fclose($fd);
   }
-  $menuhtml .= "<br>$video_link -- $oneliner <br>$details<br>";
+  $menuhtml .= "<br>$video_link -- $oneliner<br>" . trim($details) ."<br>";
 }
 $bytestotal=human_filesize($bytestotal);
 $menuhtml .= "<br>Total: $nbfiles files,  $bytestotal . bytes\n";
 $menuhtml .= "</div>";
+//die($menuhtml);
 echo $menuhtml;
 ?>
 <!--   </div>  End content-->
