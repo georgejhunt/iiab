@@ -78,10 +78,10 @@ foreach ($treeIter as $filename=>$cur) {
   $video_link = "<a href=$href >$title</a>";
   $oneliner = getOneLine("$path/oneliner");
   $details = getOneLine("$path/details");
+  $nbfiles++;
+  $filesize=$cur->getSize();
+  $bytestotal+=$filesize;
   if ( $details == '') {
-    $filesize=$cur->getSize();
-    $bytestotal+=$filesize;
-    $nbfiles++;
     $pretty = human_filesize($filesize);
     $video_time = getDuration($filename);
     $modate = date ("F d Y", filemtime($filename));
@@ -90,7 +90,7 @@ foreach ($treeIter as $filename=>$cur) {
     fwrite($fd,"$details\n");
     fclose($fd);
   }
-  $menuhtml .= "<br>$video_link -- $oneliner<br>" . trim($details) ."<br>";
+  $menuhtml .= "$video_link -- $oneliner<br>" . trim($details) ."<br>";
 }
 $bytestotal=human_filesize($bytestotal);
 $menuhtml .= "<br>Total: $nbfiles files,  $bytestotal . bytes\n";
