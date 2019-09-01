@@ -81,13 +81,20 @@ foreach ($treeIter as $filename=>$cur) {
   if ($title === '') $title = $fname;
   $video_link = "<a href=$href >$title</a>";
   $oneliner = getOneLine("$path/oneliner");
-  $filesize=$cur->getSize();
-  $bytestotal+=$filesize;
-  $nbfiles++;
-  $pretty = human_filesize($filesize);
-  $video_time = getDuration($filename);
-  $modate = date ("F d Y", filemtime($filename));
-  $menuhtml .= "<br>$video_link -- $oneliner <br>   $pretty, Duration: $video_time h:m:s, $modate<br>";
+  $details = getOneLine("$path/details");
+  if ($detaisl) === '') {
+    $filesize=$cur->getSize();
+    $bytestotal+=$filesize;
+    $nbfiles++;
+    $pretty = human_filesize($filesize);
+    $video_time = getDuration($filename);
+    $modate = date ("F d Y", filemtime($filename));
+    $details =  "$pretty, Duration: $video_time h:m:s, $modate";
+    $fd = open('details','w');
+    $fd.write("$details\n");
+    $fs.close();
+  }
+  $menuhtml .= "<br>$video_link -- $oneliner <br>$details<br>";
 }
 $bytestotal=human_filesize($bytestotal);
 $menuhtml .= "<br>Total: $nbfiles files,  $bytestotal . bytes\n";
