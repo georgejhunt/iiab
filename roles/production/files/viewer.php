@@ -13,6 +13,8 @@
 
       //name may include a category in path preceeding video directory specifier
       $video_name = $_REQUEST['name'];
+      if (substr($video_name,0,1) == '.') $video_name = substr($video_name,1);
+      if (substr($video_name,0,1) == '/') $video_name = substr($video_name,1);
       $video_basename = basename($video_name);
 
       // look for video extension
@@ -23,15 +25,17 @@
       }
 
       // look for a category (folder name) preceeding actual filename
-      $video_dirname = dirname($video_basename);
-      if ($video_dirname != '.') $video_dirname = $video_dirname . '/';else $video_dirname = "";
+      $video_dirname = dirname($video_name);
+      if ($video_dirname != '.') $video_dirname = $video_dirname . '/' ;else $video_dirname = "";
       $video_stem = pathinfo($video_name, PATHINFO_FILENAME);
-      $url_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
-      $full_path = "$video_base/$video_dirname$video_stem";
-
+      //$url_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
+      $url_full_path = "./$video_dirname$video_basename$suffix";
+      $full_path = "$video_base/$video_dirname";
+      print($url_full_path);
    }
    $cwd = getcwd();
-   chdir("$video_base/$video_dirname$video_basename");
+   //chdir("$video_base/$video_dirname$video_basename");
+   chdir("$full_path");
    $vtt_files = glob("*.vtt");
    $langs = array();
    foreach ($vtt_files as $f){
@@ -45,11 +49,11 @@
    if ( count($poster) > 0 ) $poster = $poster[0]; else $poster = '';
    //die(print_r($langs));
   $path = $full_path;
-  $filename = "$path/$video_basename" . $suffix; 
-  $title = getOneLine("$path/title");
+  $filename = "$path$video_basename" . $suffix; 
+  $title = getOneLine("${path}title");
   if ($title === '') $title = $video_basename . $suffix;
-  $oneliner = getOneLine("$path/oneliner");
-  $details = getOneLine("$path/details");
+  $oneliner = getOneLine("${path}oneliner");
+  $details = getOneLine("${path}details");
   $filesize = filesize($filename);
   $pretty = human_filesize($filesize);
   $video_time = getDuration($filename);
@@ -78,12 +82,12 @@ function getDuration($file){
    return $file['playtime_string'];
 }
 function getOneLine($file){
-  $lines = file($file);
+  $lines = @file($file);
   if ($lines !== FALSE) return $lines[0]; else return '';
 }
   
 function getLines($file){
-  $lines = file($file);
+  $lines = @file($file);
   if ($lines !== FALSE) return $lines; else return [];
 }
 ?>

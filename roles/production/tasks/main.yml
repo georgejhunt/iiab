@@ -12,6 +12,7 @@
       - vim-gtk3
       - python-flask
       - php-getid3
+      - gnome-screenshot
     state: present
   tags:
     - download

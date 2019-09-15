@@ -85,10 +85,12 @@ foreach ($treeIter as $filename=>$cur) {
     $pretty = human_filesize($filesize);
     $video_time = getDuration($filename);
     $modate = date ("F d Y", filemtime($filename));
-    $details =  "$pretty, Duration: $video_time h:m:s, $modate";
-    $fd = fopen("$path/details",'w');
-    fwrite($fd,"$details\n");
-    fclose($fd);
+    $details =  "$pretty, Duration: $video_time m:s, $modate";
+    $fd = @fopen("$path/details",'w');
+    if ($fd){
+       fwrite($fd,"$details\n");
+       fclose($fd);
+    }
   }
   $menuhtml .= "$video_link -- $oneliner<br>" . trim($details) ."<br>";
 }
