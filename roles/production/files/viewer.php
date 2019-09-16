@@ -31,7 +31,8 @@
       //$url_full_path = "./$video_dirname$video_stem/$video_basename$suffix";
       $url_full_path = "./$video_dirname$video_basename$suffix";
       $full_path = "$video_base/$video_dirname";
-      print($url_full_path);
+      //print($url_full_path);
+      //die("$video_url/$video_dirname$video_stem/"); 
    }
    $cwd = getcwd();
    //chdir("$video_base/$video_dirname$video_basename");
@@ -124,7 +125,7 @@ var name="<?=$video_basename?>";
                <source src="<?php echo($url_full_path);?>" type="video/mp4">
                <?php
                   for ( $i=0; $i<$langs_count; $i++){ 
-                     $src = "$video_url/$video_dirname$video_stem/$vtt_files[$i]"; 
+                     $src = "$video_url/$video_dirname$vtt_files[$i]"; 
                ?>
                <track kind="captions" src="<?=$src?>" srclang="en" label="<?=$langs[$i]?>">
                <?php } ?>
