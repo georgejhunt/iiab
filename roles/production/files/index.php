@@ -27,19 +27,19 @@ function getLines($file){
 
 function menu_item($path){
      global $video_url, $video_base, $nbfiles, $menuhtml, $bytestotal;
-     //`$menuhtml .= 'Menu Item:' .$path . '<br>';
+     //$menuhtml .= 'Menu Item:' .$path . '<br>';
      $video_basename = basename($path);
      $video_stem = substr($video_basename,0,-4);
      $after_video = substr($path,strlen($video_base));
      $href = $video_url . "/viewer.php?name=" . $after_video;
-     $title = getOneLine("$path/title");
-     if ($title === '') $title = basename($path);
+     $title = getOneLine(dirname($path) ."/title");
+     if ($title === '') $title = dirname($path);
      $video_link = "<a href=$href >$title</a>";
-     $oneliner = getOneLine(basename($path) . "/oneliner");
-     $details = getOneLine(basename($path) . "/details");
+     $oneliner = getOneLine(dirname($path) . "/oneliner");
+     $details = getOneLine(dirname($path) . "/details");
      $nbfiles++;
      $stat = stat($path);
-     $filesize=$stat['size'];;
+     $filesize=$stat['size'];
      $bytestotal+=$filesize;
      if ( $details == '') {
         $pretty = human_filesize($filesize);
@@ -82,11 +82,13 @@ $group_list = array();
 $mp4_type = array('mp4','m4v');
 
 $glob_list = glob($video_base . "/group*",GLOB_ONLYDIR);
+// First render videos that have been grouped
 if ($glob_list){
    $last_heading = $heading = '';
    foreach ($glob_list as $cur){
        //$menuhtml .= $cur . '<br>';
-       $regex = "@.*group.*-([A-Za-z0-9-_.]+)/.*@";
+       //print($cur);
+       $regex = "@.*group.*-([A-Za-z0-9-_.]+).*@";
        preg_match($regex,$cur,$matches);
        if ($matches) {
            $heading = $matches[1];
@@ -94,7 +96,6 @@ if ($glob_list){
        if ($heading != $last_heading){
          $menuhtml .= "<h3>$heading</h3>";
          $last_heading = $heading;
-         continue;
       }
       $iter=new recursivedirectoryiterator($cur);
       $treeIter = new RecursiveIteratorIterator($iter);
@@ -105,6 +106,30 @@ if ($glob_list){
          }
       }
   }
+}
+// Now render Videos that are not in a group
+$glob_list = glob($video_base . "/*",GLOB_ONLYDIR);
+if ($glob_list){
+   $last_heading = $heading = '';
+   foreach ($glob_list as $cur){
+      //$menuhtml .= $cur . '<br>';
+      $after_video = substr($cur,strlen($video_base));
+      //$menuhtml .= $after_video . '<br>';
+      if (substr($after_video,0,6) == '/group') continue;
+      $heading = 'Other Videos';
+      if ($heading != $last_heading){
+         $menuhtml .= "<h3>$heading</h3>";
+         $last_heading = $heading;
+      }
+      $iter=new recursivedirectoryiterator($cur);
+      $treeIter = new RecursiveIteratorIterator($iter);
+      foreach ($treeIter as $filename=>$fname) {
+         //$menuhtml .= $fname.'<br>';
+         if (in_array(substr($fname,-3), $mp4_type)){
+            menu_item($fname); 
+         }
+      }
+   }
 }
 $bytestotal=human_filesize($bytestotal);
 $menuhtml .= "<br>Total: $nbfiles files,  $bytestotal . bytes\n";
