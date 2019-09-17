@@ -121,7 +121,7 @@ var name="<?=$video_basename?>";
         <div id="content" class="flex-col">
            <div id="video_div">
               <video id="example_video_1" class="video-js" controls preload="none" :
-               width="720" height="540" poster='<?php echo("$video_url/$video_dirname$video_stem/$poster");?>' data-setup="{}">
+               width="720" height="540" poster='<?php echo("$video_url/$video_dirname$poster");?>' data-setup="{}">
                <source src="<?php echo($url_full_path);?>" type="video/mp4">
                <?php
                   for ( $i=0; $i<$langs_count; $i++){ 

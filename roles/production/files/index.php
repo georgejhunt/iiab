@@ -14,6 +14,7 @@ function getDuration($file){
    $file = $getID3->analyze($file);
    return $file['playtime_string'];
 }
+
 function getOneLine($file){
   $lines = @file($file);
   if ($lines !== FALSE) return $lines[0]; else return '';
@@ -23,13 +24,43 @@ function getLines($file){
   $lines = @file($file);
   if ($lines !== FALSE) return $lines; else return [];
 }
+
+function menu_item($path){
+     global $video_url, $video_base, $nbfiles, $menuhtml, $bytestotal;
+     //`$menuhtml .= 'Menu Item:' .$path . '<br>';
+     $video_basename = basename($path);
+     $video_stem = substr($video_basename,0,-4);
+     $after_video = substr($path,strlen($video_base));
+     $href = $video_url . "/viewer.php?name=" . $after_video;
+     $title = getOneLine("$path/title");
+     if ($title === '') $title = basename($path);
+     $video_link = "<a href=$href >$title</a>";
+     $oneliner = getOneLine(basename($path) . "/oneliner");
+     $details = getOneLine(basename($path) . "/details");
+     $nbfiles++;
+     $stat = stat($path);
+     $filesize=$stat['size'];;
+     $bytestotal+=$filesize;
+     if ( $details == '') {
+        $pretty = human_filesize($filesize);
+        $video_time = getDuration($path);
+        $modate = date ("f d y", filemtime($path));
+        $details =  "   $pretty, duration: $video_time m:s, $modate";
+        $fd = @fopen(basename($path) . "/details",'w');
+        if ($fd){
+          fwrite($fd,"$details\n");
+          fclose($fd);
+        }
+     }
+     $menuhtml .= "$video_link -- $oneliner<br>&nbsp&nbsp" . trim($details) ."<br>";
+}
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
 
-    <title>Internet in a Box - Videos</title>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>internet in a box - videos</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="/common/css/fa.all.min.css"/>
@@ -39,60 +70,41 @@ function getLines($file){
   </head>
 
   <body>
-      <div class = "h1" id="headerDesktop" style="align: center;">Internet in a Box -- HowTo Videos</div> 
+      <div class = "h1" id="headerdesktop" style="align: center;">internet in a box -- howto videos</div> 
     <!--<div id="content" class="flex-col"> -->
     <!--<div class="content-item"> -->
 <?php
-$iter=new RecursiveDirectoryIterator($video_base);
 
 $bytestotal=0;
 $nbfiles=0;
 $menuhtml =  '<div class="content-item" >';
-$dir_list = array();
-$treeIter = new RecursiveIteratorIterator($iter);
-foreach ($treeIter as $filename=>$cur) {
-  //$menuhtml .= $cur . '<br>';
-  if (is_dir($cur)) {
-    $regex = "@.*/videos/([A-Za-z0-9-_.]+)/\.$@";
-    preg_match($regex,$cur,$matches);
-    if ($matches) {
-      if (substr($matches[1],0,5) == 'group'){
-        $heading = substr($matches[1],6);
-      } else $heading = 'General';
-    } else continue;
-    $menuhtml .= "<h3>$heading</h3>";
-    continue;
+$group_list = array();
+$mp4_type = array('mp4','m4v');
+
+$glob_list = glob($video_base . "/group*",GLOB_ONLYDIR);
+if ($glob_list){
+   $last_heading = $heading = '';
+   foreach ($glob_list as $cur){
+       //$menuhtml .= $cur . '<br>';
+       $regex = "@.*group.*-([A-Za-z0-9-_.]+)/.*@";
+       preg_match($regex,$cur,$matches);
+       if ($matches) {
+           $heading = $matches[1];
+       }
+       if ($heading != $last_heading){
+         $menuhtml .= "<h3>$heading</h3>";
+         $last_heading = $heading;
+         continue;
+      }
+      $iter=new recursivedirectoryiterator($cur);
+      $treeIter = new RecursiveIteratorIterator($iter);
+      foreach ($treeIter as $filename=>$fname) {
+         //$menuhtml .= $fname.'<br>';
+         if (in_array(substr($fname,-3), $mp4_type)){
+            menu_item($fname); 
+         }
+      }
   }
-  $regex = "@(/[A-Za-z0-9-_.]+/)([A-Za-z0-9-_.]+/)([A-Za-z0-9-_.]+)(\.mp4|m4v|mov)$@"; preg_match($regex,$cur,$matches);
-  if ( ! $matches ) continue;
-  //$menuhtml .= (print_r($matches));
-  $fname = $matches[2] . $matches[3] . $matches[4];
-  $after_video = $fname;
-  if ($matches[1] !== '/videos/') $after_video = $matches[1].$fname;
-  $href = $video_url . "/viewer.php?name=" . $after_video;
-  $category_dir = $matches[1]; 
-  if ($category_dir == '/videos/')  $category_dir = '';
-  $path = $video_base . "$category_dir/$matches[3]";
-  $title = getOneLine("$path/title");
-  if ($title === '') $title = $fname;
-  $video_link = "<a href=$href >$title</a>";
-  $oneliner = getOneLine("$path/oneliner");
-  $details = getOneLine("$path/details");
-  $nbfiles++;
-  $filesize=$cur->getSize();
-  $bytestotal+=$filesize;
-  if ( $details == '') {
-    $pretty = human_filesize($filesize);
-    $video_time = getDuration($filename);
-    $modate = date ("F d Y", filemtime($filename));
-    $details =  "$pretty, Duration: $video_time m:s, $modate";
-    $fd = @fopen("$path/details",'w');
-    if ($fd){
-       fwrite($fd,"$details\n");
-       fclose($fd);
-    }
-  }
-  $menuhtml .= "$video_link -- $oneliner<br>" . trim($details) ."<br>";
 }
 $bytestotal=human_filesize($bytestotal);
 $menuhtml .= "<br>Total: $nbfiles files,  $bytestotal . bytes\n";
