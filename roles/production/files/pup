@@ -8,3 +8,4 @@ cp -f  ./cc_list.php /library/www/html/info/videos/
 cp -f  ./metadata.php /library/www/html/info/videos/
 cp -f  ./metadata.php /opt/admin/console/
 cp -f  ./index.php /library/www/html/info/videos/
+cp -f  ./js-menu.js /library/www/html/info/videos/

@@ -27,21 +27,29 @@ if not IIAB_PATH in sys.path:
 from iiab_env import get_iiab_env
 
 menu_defs_path = '/library/www/html/videos/menu-defs/'
-video_url = '/videos/'
+video_url = '/info/videos/viewer.php?name='
 source_root = '/library/www/html/info/videos'
 
 def write_menu_def(path,filename,video_directory):
    menuDef = {}
    menu_def_lang = 'en'
    #default_logo = get_default_logo(perma_ref,menu_def_lang)
-   menuDef["intended_use"] = "oer2go"
+   menuDef["intended_use"] = "external"
    menuDef["lang"] = menu_def_lang
    menuDef["logo_url"] = 'image-video.jpg'
    menuDef["title"] = get_file_contents(path + '/title')
    menuitem = menu_def_lang + '-' + filename 
+   dot_index = menuitem.rfind('.')
+   if dot_index != -1:
+      menuitem = menuitem[:dot_index]
    default_name = menuitem + '.json'
    menuDef["menu_item_name"] = menuitem
-   menuDef["start_url"] = video_url + filename
+   menuDef["parent"] = video_directory
+   menuDef["moddir"] = ''
+   target_url = video_url
+   if video_directory != '':
+      target_url += video_directory + '/'
+   menuDef["start_url"] = target_url + os.path.basename(path) + '/' +filename
    menuDef["description"] = get_file_contents(path + '/oneliner')
    menuDef["extra_description"] = ""
    menuDef["extra_html"] = ""
@@ -70,9 +78,12 @@ def get_file_contents(file):
 video_suffixes = ('.mp4','.m4v')
 for root,dirname,files in os.walk(source_root):
    for filename in files:
+      #print(f"{root}, {dirname}, {filename}")
       dot_index = filename.rfind('.')
       if dot_index != -1 and filename[dot_index:] in video_suffixes:
-         video_directory = root[len(source_root):]
-         print(root + '/' + filename)
-         write_menu_def(root,filename,video_directory)
+         grand_parent = os.path.basename(os.path.dirname(root))
+         #print("grand_parent {}".format(grand_parent))
+         if grand_parent[0:5] != 'group':
+            grand_parent = ''
+         write_menu_def(root,filename,grand_parent)
       
