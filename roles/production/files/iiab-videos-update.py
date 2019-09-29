@@ -26,7 +26,8 @@ if not IIAB_PATH in sys.path:
     sys.path.append(IIAB_PATH)
 from iiab_env import get_iiab_env
 
-menu_defs_path = '/library/www/html/videos/menu-defs/'
+videos_root = '/library/www/html/videos'
+menu_defs_path = videos_root + '/menu-defs/'
 video_url = '/info/videos/viewer.php?name='
 source_root = '/library/www/html/info/videos'
 
@@ -76,6 +77,9 @@ def get_file_contents(file):
       return ''
 
 video_suffixes = ('.mp4','.m4v')
+grand_parents = {}
+grand_parents["other_videos"] = []
+
 for root,dirname,files in os.walk(source_root):
    for filename in files:
       #print(f"{root}, {dirname}, {filename}")
@@ -83,7 +87,30 @@ for root,dirname,files in os.walk(source_root):
       if dot_index != -1 and filename[dot_index:] in video_suffixes:
          grand_parent = os.path.basename(os.path.dirname(root))
          #print("grand_parent {}".format(grand_parent))
-         if grand_parent[0:5] != 'group':
+         if grand_parent[0:5] == 'group':
+            if grand_parent in grand_parents:
+               grand_parents[grand_parent].append(root + '/' + filename)
+            else:
+               grand_parents[grand_parent] = [root + '/' + filename]
+         else:
             grand_parent = ''
+            grand_parents['other_videos'].append(root + '/' + filename)
          write_menu_def(root,filename,grand_parent)
-      
+for parent in sorted(grand_parents):
+   for child in grand_parents[parent]:
+      #print("parent:{} child:{}".format(os.path.basename(parent),os.path.basename(child)))
+      pass
+
+# update the list of menu items in <vidoes location>/menu.json
+with open(videos_root + '/menu.json','r') as menu_fp:
+   menu_items = json.loads(menu_fp.read())
+menu_items['menu_items_1'] = []
+for parent in sorted(grand_parents):
+   for child in grand_parents[parent]:
+      #print("parent:{} child:{}".format(os.path.basename(parent),os.path.basename(child)))
+      dot_index = os.path.basename(child).rfind('.')
+      item_id = 'en-' + os.path.basename(child)[:dot_index]
+      menu_items['menu_items_1'].append(item_id)
+with open(videos_root + '/menu.json','w') as menu_fp:
+   menu_fp.write(json.dumps(menu_items, indent=2))
+print(json.dumps(menu_items, indent=2))
