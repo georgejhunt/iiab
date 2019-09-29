@@ -44,9 +44,9 @@ function menu_item($path){
      if ( $details == '') {
         $pretty = human_filesize($filesize);
         $video_time = getDuration($path);
-        $modate = date ("f d y", filemtime($path));
+        $modate = date ("F d, Y", $stat['ctime']);
         $details =  "   $pretty, duration: $video_time m:s, $modate";
-        $fd = @fopen(basename($path) . "/details",'w');
+        $fd = @fopen(dirname($path) . "/details",'w');
         if ($fd){
           fwrite($fd,"$details\n");
           fclose($fd);
@@ -70,7 +70,7 @@ function menu_item($path){
   </head>
 
   <body>
-      <div class = "h1" id="headerdesktop" style="align: center;">internet in a box -- howto videos</div> 
+      <div class = "h1" id="headerdesktop" style="align: center;">Internet in a Box -- Howto Videos</div> 
     <!--<div id="content" class="flex-col"> -->
     <!--<div class="content-item"> -->
 <?php
