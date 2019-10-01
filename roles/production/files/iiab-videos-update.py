@@ -3,17 +3,13 @@
 """
    Author: George Hunt <georgejhunt <at> gmail.com>
 """
-# reminders:
-# zim_name in menu-def is search item in common/assets/zim_versions_idx.json
-# file_name in zim_versions_idx referenced by zim_name is href:<target url>
-# To avoid collisions with rachel, or embedded '.', menu-def filename may differ
-# To find search items (size, articleCount, etc) menu_item_name in menu-def
-#      must match zim_versions_idx['menu_item']
 
 import os, sys, syslog
 import json
 import subprocess
 import shlex
+import glob
+import shutil
 from datetime import date
 
 SCRIPT_DIR = '/opt/admin/cmdsrv/scripts'
@@ -28,8 +24,10 @@ from iiab_env import get_iiab_env
 
 videos_root = '/library/www/html/videos'
 menu_defs_path = videos_root + '/menu-defs/'
+images_path = videos_root + '/images/'
 video_url = '/info/videos/viewer.php?name='
 source_root = '/library/www/html/info/videos'
+poster_suffixes = ('.png','.jpg','.jpeg')
 
 def write_menu_def(path,filename,video_directory):
    menuDef = {}
@@ -39,6 +37,14 @@ def write_menu_def(path,filename,video_directory):
    menuDef["lang"] = menu_def_lang
    menuDef["logo_url"] = 'image-video.jpg'
    menuDef["title"] = get_file_contents(path + '/title')
+   menuDef["poster"] = ''
+   for suffix in poster_suffixes:
+      print(path + '/*' + suffix)
+      found = glob.glob(path + '/*' + suffix)
+      if len(found)!= 0:
+         menuDef["logo_url"] = os.path.basename(found[0])
+         menuDef["poster"] = os.path.basename(found[0])
+         shutil.copyfile(found[0],images_path + '/' + os.path.basename(found[0]))
    menuitem = menu_def_lang + '-' + filename 
    dot_index = menuitem.rfind('.')
    if dot_index != -1:
