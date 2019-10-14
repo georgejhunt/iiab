@@ -1,5 +1,5 @@
 ### Transition to NGINX
-1. Initial testing strategy is to insert nginx under apache, and proxy everything to apache -- creating a shim.
+1. Initial testing strategy is to move nginx to port 80, and proxy everything to apache on port 8090-- creating a shim.
 2. Without php available via fastcgi, any function at all for php based applications validates nginx.
 3. Current state (7/15/19):
     1. Principal functions migrated to nginx.
