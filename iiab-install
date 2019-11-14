@@ -74,6 +74,7 @@ echo "Found Kernel ""$CURR_KERN"
 if [ "$OS" == "raspbian" ] && version_gt $MIN_RPI_KERN $CURR_KERN ; then
     echo -e "\nEXITING: Kernel ""$MIN_RPI_KERN"" or higher required with Raspbian."
     echo -e "PLEASE RUN 'apt update' then 'apt install raspberrypi-kernel' then reboot."
+    echo -e "IF TRULY NEC: run 'rpi-update' to install a very recent kernel, then reboot."
     echo -e "IIAB INSTALL INSTRUCTIONS: https://github.com/iiab/iiab/wiki/IIAB-Installation"
     exit 1
 fi
@@ -110,7 +111,7 @@ STAGE=0
 if [ -f /etc/iiab/iiab.env ]; then
     if grep -q STAGE= /etc/iiab/iiab.env ; then
         source /etc/iiab/iiab.env
-        echo "Extracted STAGE=$STAGE (counter) from /etc/iiab/iiab.env"
+        echo "Extracted STAGE=""$STAGE"" (counter) from /etc/iiab/iiab.env"
         if ! [ "$STAGE" -eq "$STAGE" ] 2> /dev/null; then
             echo -e "\nEXITING: STAGE (counter) value == ""$STAGE"" is non-integer in /etc/iiab/iiab.env"
             exit 1
