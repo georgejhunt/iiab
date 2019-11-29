@@ -1,10 +1,10 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 # using Python's bundled WSGI server
 
 from wsgiref.simple_server import make_server
 import subprocess
-from dateutil.tz import *
+#from dateutil.tz import *
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
@@ -78,7 +78,7 @@ sys.stdout = sl
 stderr_logger = logging.getLogger('STDERR')
 sl = StreamToLogger(stderr_logger, logging.ERROR)
 sys.stderr = sl
-PORT={{ captive_portal_port }}
+PORT={{ captiveportal_port }}
 
 
 # Define globals
