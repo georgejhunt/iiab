@@ -23,7 +23,7 @@ import re
 # 
 
 # Create the jinja2 environment.
-CAPTIVE_PORTAL_BASE = "/opt/iiab/captive-portal"
+CAPTIVE_PORTAL_BASE = "/opt/iiab/captiveportal"
 j2_env = Environment(loader=FileSystemLoader(CAPTIVE_PORTAL_BASE),trim_blocks=True)
 
 # Define time outs
@@ -41,43 +41,11 @@ fully_qualified_domain_name = get_iiab_env("FQDN")
 
 
 # set up some logging -- selectable for diagnostics
-# Create dummy iostream to capture stderr and stdout
-class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
-    def __init__(self, logger, log_level=logging.INFO):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ''
-
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            self.logger.log(self.log_level, line.rstrip())
-
-#if len(sys.argv) > 1 and sys.argv[1] == '-l':
-if True:
-    loggingLevel = logging.DEBUG
-    try:
-      os.remove('/var/log/apache2/portal.log')
-    except:
-      pass
-else:
-    loggingLevel = logging.ERROR
-
-# divert stdout and stderr to logger
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s.%(msecs)03d:%(name)s:%(message)s', datefmt='%M:%S',level=loggingLevel)
 logger = logging.getLogger('/var/log/apache2/portal.log')
 handler = RotatingFileHandler("/var/log/apache2/portal.log", maxBytes=100000, backupCount=2)
 logger.addHandler(handler)
 
-stdout_logger = logging.getLogger('STDOUT')
-sl = StreamToLogger(stdout_logger, logging.ERROR)
-sys.stdout = sl
-
-stderr_logger = logging.getLogger('STDERR')
-sl = StreamToLogger(stderr_logger, logging.ERROR)
-sys.stderr = sl
 PORT={{ captiveportal_port }}
 
 
@@ -545,5 +513,5 @@ if __name__ == "__main__":
     )
 
     httpd.serve_forever()
-#vim: tabstop=3 expandtab shiftwidth=3 softtabstop=3 background=dark
+#vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 background=dark
 
