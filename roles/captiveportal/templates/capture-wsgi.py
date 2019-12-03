@@ -47,7 +47,7 @@ logger = logging.getLogger('/var/log/apache2/portal.log')
 handler = RotatingFileHandler("/var/log/apache2/portal.log", maxBytes=100000, backupCount=2)
 logger.addHandler(handler)
 
-#PORT={{ captive_portal_port }}
+#PORT={{ captiveportal_port }}
 PORT=9090
 
 
