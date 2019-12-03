@@ -147,26 +147,27 @@ def set_lasttimestamp(ip):
 
 #  ###################  Action routines based on OS  ################3
 def microsoft(environ,start_response):
+    print('in microsoft')
     # firefox -- seems both mac and Windows use it
     agent = environ.get('HTTP_USER_AGENT','default_agent')
     if agent.startswith('Mozilla'):
        return home(environ, start_response) 
     logger.debug(b"sending microsoft redirect")
-    response_body = ""
-    status = b'302 Moved Temporarily'
-    response_headers = [(b'Location',b'http://box.lan/home'),
-            (b'Content-type',b'text/html'),
-            (b'Content-Length',encode(str(len(response_body))))]
+    response_body = b""
+    status = '302 Moved Temporarily'
+    response_headers = [('Location','http://box.lan/home'),
+            ('Content-type','text/html'),
+            ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
     return [response_body]
 
 def home(environ,start_response):
     logger.debug("sending direct to home")
-    response_body = ""
-    status = b'302 Moved Temporarily'
-    response_headers = [(b'Location',b'http://' + encode(fully_qualified_domain_name) + b'/home'),
-            (b'Content-type',b'text/html'),
-            (b'Content-Length',encode(str(len(response_body))))]
+    response_body = b""
+    status = '302 Moved Temporarily'
+    response_headers = [(b'Location',b'http://' + fully_qualified_domain_name.encode('utf-8') + b'/home'),
+            ('Content-type','text/html'),
+            ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
     return [response_body]
 
@@ -189,7 +190,7 @@ def android(environ, start_response):
         #set_204after(ip,20)
         location = '/android_https'
     agent = environ.get('HTTP_USER_AGENT','default_agent')
-    response_body = "hello"
+    response_body = b"hello"
     status = '302 Moved Temporarily'
     response_headers = [('Location',location)]
     start_response(status, response_headers)
@@ -209,6 +210,7 @@ def android_splash(environ, start_response):
     elif lang == "es":
         txt = es_txt
     response_body = str(j2_env.get_template("simple.template").render(**txt))
+    response_body = response_body.encode()
     status = '200 OK'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -230,6 +232,7 @@ def android_https(environ, start_response):
     elif lang == "es":
         txt = es_txt
     response_body = str(j2_env.get_template("simple.template").render(**txt))
+    response_body = response_body.encode()
     status = '200 OK'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -237,9 +240,10 @@ def android_https(environ, start_response):
     return [response_body]
 
 def mac_splash(environ,start_response):
+    print('in mac_splash')
     logger.debug("in function mac_splash")
-    en_txt={ 'message':"Click on the button to go to the IIAB home page",\
-            'btn1':"GO TO IIAB HOME PAGE",'success_token': 'Success',
+    en_txt={ 'message': "Click on the button to go to the IIAB home page",\
+            'btn1': "GO TO IIAB HOME PAGE",'success_token': 'Success',
             "FQDN": fully_qualified_domain_name, \
             'doc_root':get_iiab_env("WWWROOT")}
     es_txt={ 'message':"Haga clic en el botón para ir a la página de inicio de IIAB",\
@@ -252,6 +256,7 @@ def mac_splash(environ,start_response):
         txt = es_txt
     set_lasttimestamp(ip)
     response_body = str(j2_env.get_template("mac.template").render(**txt))
+    response_body = response_body.encode()
     status = '200 Success'
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
@@ -259,6 +264,7 @@ def mac_splash(environ,start_response):
     return [response_body]
 
 def macintosh(environ, start_response):
+    print('in macintosh')
     global ip
     logger.debug("in function mcintosh")
     #print >> sys.stderr , "Geo Print to stderr" + environ['HTTP_HOST']
@@ -271,8 +277,8 @@ def macintosh(environ, start_response):
         response_body = b"""<html><head><script>
             window.location.reload(true)
             </script></body></html>"""
-        status = b'302 Moved Temporarily'
-        response_headers = [(b'content',b'text/html')]
+        status = '302 Moved Temporarily'
+        response_headers = [('content','text/html')]
         start_response(status, response_headers)
         return [response_body]
     else:
@@ -320,18 +326,18 @@ def null(environ, start_response):
     status = '404 Not Found'
     headers = [('Content-type', 'text/html')]
     start_response(status, headers)
-    return [""]
+    return [b""]
 
 def success(environ, start_response):
     status = '200 ok'
-    html = '<html><head><title>Success</title></head><body>Success</body></html>'
+    html = b'<html><head><title>Success</title></head><body>Success</body></html>'
     headers = [('Content-type', 'text/html')]
     start_response(status, headers)
     return [html]
 
 def put_204(environ, start_response):
     status = '204 No Data'
-    response_body = ''
+    response_body = b''
     response_headers = [('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
@@ -340,7 +346,7 @@ def put_204(environ, start_response):
 
 def put_302(environ, start_response):
     status = '302 Moved Temporarily'
-    response_body = ''
+    response_body = b''
     location = "http://" + fully_qualified_domain_name + "/home"
     response_headers = [('Content-type','text/html'),
             ('Location',location), 
