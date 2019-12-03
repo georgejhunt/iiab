@@ -4,7 +4,7 @@
 
 from wsgiref.simple_server import make_server
 import subprocess
-#from dateutil.tz import *
+from dateutil.tz import *
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
@@ -40,13 +40,14 @@ doc_root = get_iiab_env("WWWROOT")
 fully_qualified_domain_name = get_iiab_env("FQDN")
 
 
+loggingLevel = "DEBUG"
 # set up some logging -- selectable for diagnostics
 logging.basicConfig(filename='/var/log/apache2/portal.log',format='%(asctime)s.%(msecs)03d:%(name)s:%(message)s', datefmt='%M:%S',level=loggingLevel)
 logger = logging.getLogger('/var/log/apache2/portal.log')
 handler = RotatingFileHandler("/var/log/apache2/portal.log", maxBytes=100000, backupCount=2)
 logger.addHandler(handler)
 
-PORT={{ captiveportal_port }}
+PORT={{ captive_portal_port }}
 
 
 # Define globals
@@ -150,22 +151,22 @@ def microsoft(environ,start_response):
     agent = environ.get('HTTP_USER_AGENT','default_agent')
     if agent.startswith('Mozilla'):
        return home(environ, start_response) 
-    logger.debug("sending microsoft redirect")
+    logger.debug(b"sending microsoft redirect")
     response_body = ""
-    status = '302 Moved Temporarily'
-    response_headers = [('Location','http://box.lan/home'),
-            ('Content-type','text/html'),
-            ('Content-Length',str(len(response_body)))]
+    status = b'302 Moved Temporarily'
+    response_headers = [(b'Location',b'http://box.lan/home'),
+            (b'Content-type',b'text/html'),
+            (b'Content-Length',encode(str(len(response_body))))]
     start_response(status, response_headers)
     return [response_body]
 
 def home(environ,start_response):
     logger.debug("sending direct to home")
     response_body = ""
-    status = '302 Moved Temporarily'
-    response_headers = [('Location','http://' + fully_qualified_domain_name + '/home'),
-            ('Content-type','text/html'),
-            ('Content-Length',str(len(response_body)))]
+    status = b'302 Moved Temporarily'
+    response_headers = [(b'Location',b'http://' + encode(fully_qualified_domain_name) + b'/home'),
+            (b'Content-type',b'text/html'),
+            (b'Content-Length',encode(str(len(response_body))))]
     start_response(status, response_headers)
     return [response_body]
 
@@ -267,11 +268,11 @@ def macintosh(environ, start_response):
     # determine if it is time to redirect again
     if is_after204_timeout(ip):
         set_204after(ip,10)
-        response_body = """<html><head><script>
+        response_body = b"""<html><head><script>
             window.location.reload(true)
             </script></body></html>"""
-        status = '302 Moved Temporarily'
-        response_headers = [('content','text/html')]
+        status = b'302 Moved Temporarily'
+        response_headers = [(b'content',b'text/html')]
         start_response(status, response_headers)
         return [response_body]
     else:
