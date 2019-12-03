@@ -47,7 +47,8 @@ logger = logging.getLogger('/var/log/apache2/portal.log')
 handler = RotatingFileHandler("/var/log/apache2/portal.log", maxBytes=100000, backupCount=2)
 logger.addHandler(handler)
 
-PORT={{ captive_portal_port }}
+#PORT={{ captive_portal_port }}
+PORT=9090
 
 
 # Define globals
@@ -274,21 +275,16 @@ def macintosh(environ, start_response):
     # determine if it is time to redirect again
     if is_after204_timeout(ip):
         set_204after(ip,10)
-        response_body = b"""<html><head><script>
+        response_body = """<html><head><script>
             window.location.reload(true)
             </script></body></html>"""
+        response_body = response_body.encode()
         status = '302 Moved Temporarily'
         response_headers = [('content','text/html')]
         start_response(status, response_headers)
         return [response_body]
     else:
         return mac_splash(environ,start_response)
-
-def microsoft_connect(environ,start_response):
-    status = '200 ok'
-    headers = [('Content-type', 'text/html')]
-    start_response(status, headers)
-    return ["Microsoft Connect Test"]
 
 # =============  Return html pages  ============================
 def banner(environ, start_response):
