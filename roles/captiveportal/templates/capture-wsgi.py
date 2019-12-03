@@ -152,7 +152,7 @@ def microsoft(environ,start_response):
     agent = environ.get('HTTP_USER_AGENT','default_agent')
     if agent.startswith('Mozilla'):
        return home(environ, start_response) 
-    logger.debug(b"sending microsoft redirect")
+    logger.debug("sending microsoft redirect")
     response_body = b""
     status = '302 Moved Temporarily'
     response_headers = [('Location','http://box.lan/home'),
@@ -165,7 +165,7 @@ def home(environ,start_response):
     logger.debug("sending direct to home")
     response_body = b""
     status = '302 Moved Temporarily'
-    response_headers = [(b'Location',b'http://' + fully_qualified_domain_name.encode('utf-8') + b'/home'),
+    response_headers = [('Location','http://' + fully_qualified_domain_name + '/home'),
             ('Content-type','text/html'),
             ('Content-Length',str(len(response_body)))]
     start_response(status, response_headers)
