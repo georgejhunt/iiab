@@ -48,25 +48,6 @@
     state: link
   when: captiveportal_enabled | bool
 
-- name: Copy unit file for uWSGI service
-  template:
-    src: roles/captiveportal/templates/uwsgi-captiveportal.service
-    dest: /etc/systemd/system/
-
-- name: Start or restart server which responds to browsers trying to detect a captive portal
-  systemd: 
-    name: uwsgi-captiveportal.service
-    state: restarted
-    enabled: True
-  when: captiveportal_enabled | bool
-
-- name: Stop uWSGI server if captive portal has been disabled
-  systemd: 
-    name: uwsgi-captiveportal.service
-    state: stopped
-    enabled: False
-  when: not captiveportal_enabled | bool
-
 - name: Run divert to generate diversion lists for nginx
   shell: /usr/sbin/iiab-divert-to-nginx
      
