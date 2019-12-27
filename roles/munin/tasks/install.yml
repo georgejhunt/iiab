@@ -6,6 +6,7 @@
       - munin-plugins-extra
       - libcgi-fast-perl
       - libapache2-mod-fcgid
+      - python3-passlib
     state: present
   tags:
     - download
