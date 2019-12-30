@@ -9,7 +9,7 @@ import sys, os
 import argparse
 #import curses
 import urllib3
-import certifi
+#import certifi
 #import tools
 import subprocess
 import json

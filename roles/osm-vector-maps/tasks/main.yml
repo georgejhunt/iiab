@@ -15,7 +15,7 @@
     url: "{{ osm_map_url }}/resources/regions.json"
     dest: /etc/iiab/
 
-- name: Check for existenct of cities database
+- name: Check for existence of cities database
   stat:
     path: "{{ vector_map_path }}/cities1000.sqlite"
   register: cities_installed
@@ -55,7 +55,7 @@
     url: "{{ osm_map_url }}/osm-source/regional-base/build/index.html"
     dest: '{{ vector_map_path }}/maplist/index.html'
 
- name: Copy the common assets for the general purpose map viewer
+- name: Copy the common assets for the general purpose map viewer
   copy: src={{ item }}
         dest="{{ vector_map_path }}/viewer/assets"
         mode=0644
@@ -105,10 +105,6 @@
   template:
     src: osm-vector-maps-nginx.conf.j2
     dest: "/etc/nginx/conf.d/osm-vector-maps-nginx.conf"
-
-- name: Install certificates for downloading maps via https
-  pip:
-    name: certifi
 
 - name: Copy the redirect to the test page -- delete this if more than one map
   copy:
