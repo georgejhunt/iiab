@@ -51,15 +51,6 @@
     url: "{{ osm_map_url }}/osm-source/regional-base/build/index.html"
     dest: '{{ vector_map_path }}/maplist/index.html'
 
-# Bboxes (bounding boxes) are currently square.  But geofabrik has non-rectangular bboxes.
-# So bring the bounding box definition from cloud (bboxes.geojson is big)
-- name: Fetch the bounding box description for osm maps
-  get_url:
-    url: "{{ osm_map_url }}/resources/{{ item }}"
-    dest: '{{ vector_map_path }}/viewer/assets/'
-  with_items:
-      - bboxes.geojson
-
 - name: Copy the common assets for the general purpose map viewer
   copy: src={{ item }}
         dest="{{ vector_map_path }}/viewer/assets"
@@ -85,10 +76,11 @@
     dest: /usr/bin/iiab-update-map
     mode: "0755"
 
-- name: Copy the Countries geojson to assets
-  get_url:
-    url: "{{ osm_map_url }}/resources/countries.json"
-    dest: '{{ vector_map_path }}/viewer/assets'
+- name: Install the script to download map resources
+  copy:
+    src: aggregate.py
+    dest: /usr/bin/iiab-aggregate.py
+    mode: "0755"
 
 #  It is too complicated to use a single file for both iiab and admin-console
 - name: Copy the duplicated javascript to assets
@@ -101,9 +93,17 @@
     src: osm-vector-maps-nginx.conf.j2
     dest: "/etc/nginx/conf.d/osm-vector-maps-nginx.conf"
 
+- name: Install certificates for downloading maps via https
+  pip:
+    name: certifi
 
 - name: Copy the redirect to the test page -- delete this if more than one map
   copy:
     src: test-index.redirect
     dest: "{{ vector_map_path }}/index.html"
 
+- name: Get packages necessary for map installation
+  package:
+      state: present
+      name:
+         - python-urllib3
