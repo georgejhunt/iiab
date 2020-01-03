@@ -196,6 +196,7 @@ def copy_to_iiab_format(start_from):
    global tile_id_is_valid_hash 
    # IIAB format uses md5 hexdigest as link between maps and images
    total_copied = 0.0
+   print("Copying zoom level %s and above"%args.zoom)
    if not args.mbtiles:
       print("Please specify sqlite database to operate upon with -m option")
       sys.exit(1)
@@ -299,6 +300,7 @@ def sec2hms(n):
 def chop_zoom_and_below(max_to_chop):
    # chop a copied database
    total_copied = 0.0
+   print("Removing tiles at zoom level %s, and below"%(args.zoom,))
    if not args.mbtiles:
       print("Pliease specify sqlite database to chop with -m option")
       sys.exit(1)
@@ -306,7 +308,8 @@ def chop_zoom_and_below(max_to_chop):
       print("Failed to open %s"%args.mbtiles)
       sys.exit(1)
    dbname = './work/%s'%os.path.basename(args.mbtiles)
-   shutil.copy(args.mbtiles,dbname)
+   if not os.path.isfile(dbname):
+      shutil.copy(args.mbtiles,dbname)
    # open the database  
    db = MBTiles(dbname)
    for zoom in range(args.zoom + 1):
@@ -356,7 +359,6 @@ def main():
    args = parse_args()
    # The --zoom option uses MBTiles class to truncate bottom of tile pyramid.
    if args.zoom:
-      print("Copying zoom level %s and above"%args.zoom)
       #copy_to_iiab_format(args.zoom)
       chop_zoom_and_below(args.zoom)
       elapsed = time.time() - start_time
@@ -403,7 +405,6 @@ def main():
    # now see if satellite needs updating
    #dest = viewer_path + '/' + sat_file
    #init_dest(dest)
-   time.sleep(2)
    elapsed = time.time() - start_time
    print(sec2hms(elapsed))
    
