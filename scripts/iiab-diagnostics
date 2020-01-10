@@ -196,6 +196,7 @@ cat_tail /opt/iiab/iiab/iiab-install.log 100
 cat_tail /opt/iiab/iiab/iiab-network.log 100
 cat_tail /opt/iiab/iiab/iiab-debug.log 100
 cat_tail /opt/iiab/iiab-admin-console/admin-install.log 100
+cat_tail /var/log/nginx/portal.log 100
 
 linecount=$(wc -l $outfile | sed 's/\s.*$//')
 sizecount=$(du -h $outfile | sed 's/\s.*$//')
