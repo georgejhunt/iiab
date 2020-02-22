@@ -61,6 +61,9 @@
   with_items:
       - index.html
       - main.js
+      - ../ol-contextmenu.css
+      - ../popup.css
+
 #  get_url:
 #    url: "{{ osm_repo_url }}/osm-source/regional-base/build/index.html"
 #    dest: '{{ vector_map_path }}/maplist/index.html'
