@@ -2,7 +2,6 @@
   package:
     name: vnstat
     state: present
-  #tags: download
 
 - name: Install /etc/vnstat.conf from template
   template:
@@ -19,12 +18,28 @@
   shell: /usr/bin/vnstat -i {{ iiab_lan_iface }}
   when: iiab_lan_iface is defined
 
-- name: Enable & Start vnStat's systemd service
+
+# RECORD vnStat AS INSTALLED
+
+- name: "Set 'vnstat_installed: True'"
+  set_fact:
+    vnstat_installed: True
+
+- name: "Add 'vnstat_installed: True' to {{ iiab_state_file }}"
+  lineinfile:
+    path: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
+    regexp: '^vnstat_installed'
+    line: 'vnstat_installed: True'
+
+
+- name: Enable & (Re)Start 'vnstat' systemd service, if vnstat_enabled
   systemd:
     name: vnstat
     daemon_reload: yes
     enabled: yes
-    state: started
+    state: restarted
+  when: vnstat_enabled | bool
+
 
 - name: Add 'vnstat' variable values to {{ iiab_ini_file }}
   ini_file:
@@ -37,7 +52,7 @@
       value: vnStat
     - option: description
       value: '"vnStat is a console-based network traffic monitor for Linux and BSD that keeps a log of network traffic for the selected interface(s)."'
-    - option: installed
+    - option: install
       value: "{{ vnstat_install }}"
     - option: enabled
       value: "{{ vnstat_enabled }}"

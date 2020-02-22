@@ -1,7 +1,53 @@
-- name: Install 'sugarizer' if sugarizer_install and not Debian 10+
-  include_tasks: install.yml
-  when: not sugarizer_installed is defined and sugarizer_install and not ((is_debian and not is_raspbian) and (not is_debian_8) and (not is_debian_9))
+# "How do i fail a task in Ansible if the variable contains a boolean value?
+# I want to perform input validation for Ansible playbooks"
+# https://stackoverflow.com/questions/46664127/how-do-i-fail-a-task-in-ansible-if-the-variable-contains-a-boolean-value-i-want/46667499#46667499
 
-- name: Enable 'sugarizer' if sugarizer_enabled
-  include_tasks: enable.yml
-  when: (sugarizer_install or sugarizer_installed is defined) and not ((is_debian and not is_raspbian) and (not is_debian_8) and (not is_debian_9))
+# We assume 0-init/tasks/validate_vars.yml has DEFINITELY been run, so no need
+# to re-check whether vars are defined here.  As Ansible vars cannot be unset:
+# https://serverfault.com/questions/856729/how-to-destroy-delete-unset-a-variable-value-in-ansible
+
+- name: Assert that "sugarizer_install is sameas true" (boolean not string etc)
+  assert:
+    that: sugarizer_install is sameas true
+    fail_msg: "PLEASE SET 'sugarizer_install: True' e.g. IN: /etc/iiab/local_vars.yml"
+    quiet: yes
+
+- name: Assert that "sugarizer_enabled | type_debug == 'bool'" (boolean not string etc)
+  assert:
+    that: sugarizer_enabled | type_debug == 'bool'
+    fail_msg: "PLEASE GIVE VARIABLE 'sugarizer_enabled' A PROPER (UNQUOTED) ANSIBLE BOOLEAN VALUE e.g. IN: /etc/iiab/local_vars.yml"
+    quiet: yes
+
+
+# 3 stanzas moved up from install.yml, so Debian finishes "BIG" IIAB install:
+# (WITH LOUD RED WARNINGS!)
+
+- name: "Set 'mongodb_install: True' and 'mongodb_enabled: True'"
+  set_fact:
+    mongodb_install: True
+    mongodb_enabled: True
+
+- name: MONGODB - run 'mongodb' role (attempt to install & enable MongoDB)
+  include_role:
+    name: mongodb
+
+- name: EXIT 'sugarizer' ROLE & CONTINUE, IF 'mongodb_installed is undefined'
+  fail:    # FORCE IT RED THIS ONCE!
+    msg: MongoDB INSTALLATION FAILED, likely because your OS is Debian.  Nevertheless IIAB will continue (consider this a warning!)
+  when: mongodb_installed is undefined
+  ignore_errors: yes
+
+# ELSE...
+
+- name: Install/Enable/Disable/Record Sugarizer (main2.yml) IF 'mongodb_installed is defined'
+  include_tasks: main2.yml
+  when: mongodb_installed is defined
+
+# THE block: APPROACH BELOW WORKS JUST LIKE main2.yml ABOVE.
+# BUT IT VISUALLY POLLUTES: MANY BLUE "skipping:" MESSAGES IN ANSIBLE'S OUTPUT.
+
+# - block:    # ENTIRE BLOCK CONDITIONED ON 'when: mongodb_installed is defined'
+#
+#   [MOVED TO main2.yml]
+#
+#   when: mongodb_installed is defined    # CONDITION FOR ENTIRE ABOVE block:

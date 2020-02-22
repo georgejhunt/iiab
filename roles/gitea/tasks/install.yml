@@ -1,100 +1,92 @@
-# Prepare to install Gitea: create user and directory structure
+# 1. Prepare to install Gitea: create user and directory structure
 
 - name: Shut down existing Gitea instance (if we're reinstalling)
   systemd:
     name: gitea
     state: stopped
-  #tags: pre-install
   ignore_errors: yes
 
 - name: Ensure group gitea exists
   group:
     name: gitea
     state: present
-  #tags: pre-install
 
 - name: Create user gitea
   user:
     name: gitea
     comment: Gitea daemon account
     groups: gitea
-    home: "{{ gitea_home }}"
-  #tags: pre-install
+    home: "{{ gitea_home }}"    # /home/gitea
 
 - name: Create Gitea directory structure
   file:
-    path: "{{ gitea_root_directory }}/{{ item }}"
+    path: "{{ gitea_root_directory }}/{{ item }}"    # /library/gitea
     state: directory
     owner: gitea
     group: gitea
   with_items: "{{ gitea_subdirectories }}"
-  #tags: pre-install
 
 - name: Make directories data, indexers, and log writable
   file:
-    path: "{{ gitea_root_directory }}/{{ item }}"
+    path: "{{ gitea_root_directory }}/{{ item }}"    # /library/gitea
     mode: '0750'
   with_items:
     - data
     - indexers
     - log
-  #tags: pre-install
 
-# Download, verify, and link Gitea binary
+
+# 2. Download, verify, and link Gitea binary
 
 - name: Fail if we detect unknown architecture
   fail:
     msg: "Could not find a binary for the CPU architecture \"{{ ansible_architecture }}\""
   when: gitea_iset_suffix == "unknown"
 
-- name: Download Gitea binary
+- name: Download Gitea binary {{ gitea_download_url }} to {{ gitea_install_path }}
   get_url:
     url: "{{ gitea_download_url }}"
     dest: "{{ gitea_install_path }}"
     mode: '0775'
-  #tags: install
   when: internet_available | bool
 
 - name: Download Gitea GPG signature
   get_url:
     url: "{{ gitea_integrity_url }}"
     dest: "{{ gitea_checksum_path }}"
-  #tags: never, verify
   when: internet_available | bool
 
 - name: Verify Gitea binary with GPG signature
   shell: |
     gpg --keyserver pgp.mit.edu --recv {{ gitea_gpg_key }}
     gpg --verify {{ gitea_checksum_path }} {{ gitea_install_path }}
-  #tags: never, verify
   ignore_errors: yes
 
-- name: Link Gitea
+- name: Symlink {{ gitea_link_path }} -> {{ gitea_install_path }}
   file:
     src: "{{ gitea_install_path }}"
-    dest: "{{ gitea_link_path }}"
+    path: "{{ gitea_link_path }}"
     owner: gitea
     group: gitea
     state: link
-  #tags: install
 
-# Configure Gitea
+
+# 3. Configure Gitea
 
 # For security reasons, the Gitea developers recommend removing group write
 # permissions from /etc/gitea/ and /etc/gitea/app.ini after the first run of 
 # Gitea. User gitea needs write permissions during the first run but not 
 # subsequent runs.
 
-- name: Create Gitea config directory
+- name: mkdir /etc/gitea
   file:
-    path: /etc/gitea
     state: directory
+    path: /etc/gitea
     owner: root
     group: gitea
     mode: '0770'
-  #tags: config
 
-- name: Create app.ini
+- name: Install /etc/gitea/app.ini from template
   template:
     src: app.ini.j2
     dest: /etc/gitea/app.ini
@@ -102,7 +94,8 @@
     group: gitea
     mode: '0664'
 
-# Create systemd service & prepare Apache for http://box/gitea
+
+# 4. Create systemd service & prepare Apache for http://box/gitea
 
 - name: "Install from templates: /etc/systemd/system/gitea.service, /etc/apache2/sites-available/gitea.conf"
   template:
@@ -110,10 +103,17 @@
     dest: "{{ item.dest }}"
   with_items:
     - { src: 'gitea.service.j2', dest: '/etc/systemd/system/gitea.service' }
-    - { src: 'gitea.conf.j2', dest: "/etc/{{ apache_config_dir }}/gitea.conf" }
+    - { src: 'gitea.conf.j2', dest: "/etc/{{ apache_conf_dir }}/gitea.conf" }
+
+
+# 5. RECORD Gitea AS INSTALLED
+
+- name: "Set 'gitea_installed: True'"
+  set_fact:
+    gitea_installed: True
 
 - name: "Add 'gitea_installed: True' to {{ iiab_state_file }}"
   lineinfile:
-    dest: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
+    path: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
     regexp: '^gitea_installed'
     line: 'gitea_installed: True'

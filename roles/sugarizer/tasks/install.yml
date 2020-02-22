@@ -1,10 +1,32 @@
-- name: FAIL (STOP INSTALLING) IF nodejs_version is not set to 12.x
+# 0. INSTALL/ASSERT PREREQ #1: MongoDB
+
+# 3 stanzas moved up to main.yml, so Debian finishes "BIG-sized" IIAB install
+# (WITH LOUD RED WARNINGS!)
+
+
+# 1. INSTALL/ASSERT PREREQ #2: Node.js
+
+- name: "Set 'nodejs_install: True' and 'nodejs_enabled: True'"
+  set_fact:
+    nodejs_install: True
+    nodejs_enabled: True
+
+- name: NODEJS - run 'nodejs' role (attempt to install & enable Node.js)
+  include_role:
+    name: nodejs
+
+- name: FAIL (STOP THE INSTALL) IF 'nodejs_installed is undefined'
   fail:
-    msg: "Sugarizer install cannot proceed, as it currently requires Node.js 12.x, and your nodejs_version is set to {{ nodejs_version }}.  Please check the value of nodejs_version in /opt/iiab/iiab/vars/default_vars.yml and possibly also /etc/iiab/local_vars.yml"
-  when: sugarizer_install and (nodejs_version != "12.x")
+    msg: "Sugarizer install cannot proceed, as Node.js is not installed."
+  when: nodejs_installed is undefined
+
+- name: FAIL (STOP THE INSTALL) IF 'nodejs_version != "12.x"'
+  fail:
+    msg: "Sugarizer install cannot proceed, as it currently requires Node.js 12.x, whereas nodejs_version is set to {{ nodejs_version }}.  Please check the value of nodejs_version in /opt/iiab/iiab/vars/default_vars.yml, /etc/iiab/local_vars.yml, /opt/iiab/iiab/roles/nodejs, etc."
+  when: nodejs_version != "12.x"
 
 
-# 1. DOWNLOAD+LINK /opt/iiab/sugarizer
+# 2. DOWNLOAD+LINK /opt/iiab/sugarizer
 
 - name: Clone llaske/sugarizer ({{ sugarizer_git_version }} branch/version) from GitHub to /opt/iiab/{{ sugarizer_dir_version }} (MAY DOWNLOAD 600+ MB)
   git:
@@ -15,14 +37,14 @@
     depth: 1
   when: internet_available | bool
 
-- name: Create symlink /opt/iiab/sugarizer -> /opt/iiab/{{ sugarizer_dir_version }}
+- name: Symlink /opt/iiab/sugarizer -> /opt/iiab/{{ sugarizer_dir_version }}
   file:
     src: "{{ iiab_base }}/{{ sugarizer_dir_version }}"
     dest: "{{ iiab_base }}/sugarizer"
     state: link
 
 
-# 2. DOWNLOAD+LINK /opt/iiab/sugarizer-server
+# 3. DOWNLOAD+LINK /opt/iiab/sugarizer-server
 
 # 2018-07-11: http://download.iiab.io/packages/sugarizer-server-1.0.tar.gz
 # was flawed, as documented at:
@@ -48,20 +70,14 @@
     depth: 1
   when: internet_available | bool
 
-- name: Create symlink /opt/iiab/sugarizer-server -> /opt/iiab/{{ sugarizer_server_dir_version }}
+- name: Symlink /opt/iiab/sugarizer-server -> /opt/iiab/{{ sugarizer_server_dir_version }}
   file:
     src: "{{ iiab_base }}/{{ sugarizer_server_dir_version }}"
     dest: "{{ iiab_base }}/sugarizer-server"
     state: link
 
 
-# 3. INSTALL A GOOD VERSION OF Node.js AND npm
-
-# 2019-01-16/29: @jvonau's PR #1403 moved install of Node.js (10.x for now) &
-# npm to roles/nodejs/tasks/main.yml, triggered by roles/sugarizer/meta/main.yml
-
-
-# 4. RUN "npm install" TO POPULATE ~35MB /opt/iiab/sugarizer-server/node_modules
+# 4. RUN "npm install" TO POPULATE ~35MB /opt/iiab/sugarizer-server/node_modules (TWICE, BIG JOB THEN SMALL JOB)
 
 # Re-running "npm install" USED TO fail on Raspbian 9 if not other OS's ?
 # Strategies considered to avoid re-running it:
@@ -141,7 +157,7 @@
     # mode: '0644'
   with_items:
     - { src: 'sugarizer.service', dest: '/etc/systemd/system/sugarizer.service' }
-    - { src: 'sugarizer.conf.j2', dest: "/etc/{{ apache_config_dir }}/sugarizer.conf" }
+    - { src: 'sugarizer.conf.j2', dest: "/etc/{{ apache_conf_dir }}/sugarizer.conf" }
     #- { src: 'sugarizer.ini.j2', dest: '{{ iiab_base }}/sugarizer-server/env/sugarizer.ini' }
     #- { src: 'sugarizer.js', dest: '{{ iiab_base }}/sugarizer-server' }
 
@@ -215,8 +231,15 @@
 #    # Use this instead, if tabs are truly nec:
 #    # block: "\tvar pathPrefix = '/sugarizer';\n\tapp.use(pathPrefix, require('path-prefix-proxy')(pathPrefix));"
 
+
+# 6. RECORD Sugarizer AS INSTALLED
+
+- name: "Set 'sugarizer_installed: True'"
+  set_fact:
+    sugarizer_installed: True
+
 - name: "Add 'sugarizer_installed: True' to {{ iiab_state_file }}"
   lineinfile:
-    dest: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
+    path: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
     regexp: '^sugarizer_installed'
     line: 'sugarizer_installed: True'

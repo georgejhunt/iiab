@@ -1,11 +1,54 @@
-# 2019-07-08: mongodb_install is completely ignored.  FYI mongodb_enabled: False
-# works but is ineffective, as Sugarizer starts mongodb's systemd svc on its own
+# "How do i fail a task in Ansible if the variable contains a boolean value?
+# I want to perform input validation for Ansible playbooks"
+# https://stackoverflow.com/questions/46664127/how-do-i-fail-a-task-in-ansible-if-the-variable-contains-a-boolean-value-i-want/46667499#46667499
 
-- name: Install 'mongodb' if not Debian 10+
-  include_tasks: install.yml
-  when: not ((is_debian and not is_raspbian) and (not is_debian_8) and (not is_debian_9)) and not mongodb_installed is defined
+# We assume 0-init/tasks/validate_vars.yml has DEFINITELY been run, so no need
+# to re-check whether vars are defined here.  As Ansible vars cannot be unset:
+# https://serverfault.com/questions/856729/how-to-destroy-delete-unset-a-variable-value-in-ansible
 
-- name: Enable 'mongodb' if not Debian 10+
-  include_tasks: enable.yml
-  when: not ((is_debian and not is_raspbian) and (not is_debian_8) and (not is_debian_9)) or mongodb_installed is defined
+- name: Assert that "mongodb_install is sameas true" (boolean not string etc)
+  assert:
+    that: mongodb_install is sameas true
+    fail_msg: "PLEASE SET 'mongodb_install: True' e.g. IN: /etc/iiab/local_vars.yml"
+    quiet: yes
 
+- name: Assert that "mongodb_enabled | type_debug == 'bool'" (boolean not string etc)
+  assert:
+    that: mongodb_enabled | type_debug == 'bool'
+    fail_msg: "PLEASE GIVE VARIABLE 'mongodb_enabled' A PROPER (UNQUOTED) ANSIBLE BOOLEAN VALUE e.g. IN: /etc/iiab/local_vars.yml"
+    quiet: yes
+
+- debug:
+    var: mongodb_install
+- debug:
+    var: mongodb_enabled
+- debug:
+    var: mongodb_installed
+
+
+- debug:
+    var: is_debian
+- debug:
+    var: is_raspbian
+
+- name: EXIT 'mongodb' ROLE & CONTINUE, IF 'is_debian and not is_raspbian' i.e. TRUE DEBIAN (where MongoDB no longer exists)
+  fail:    # FORCE IT RED THIS ONCE!
+    msg: ATTEMPTED MongoDB INSTALLATION WITH (TRUE) DEBIAN, which is no longer supported.  Nevertheless IIAB will continue (consider this a warning!)
+  when: is_debian and not is_raspbian
+  #when: (is_debian and not is_raspbian) and (not is_debian_8) and (not is_debian_9)    # Test for Debian 10+
+  ignore_errors: yes
+
+# ELSE...
+
+- name: Install/Enable/Disable/Record MongoDB (main2.yml) if is_raspbian or not is_debian, i.e. not True Debian
+  include_tasks: main2.yml
+  when: is_raspbian or not is_debian
+
+# THE block: APPROACH BELOW WORKS JUST LIKE main2.yml ABOVE.
+# BUT IT VISUALLY POLLUTES: MANY BLUE "skipping:" MESSAGES IN ANSIBLE'S OUTPUT.
+
+# - block:    # ENTIRE BLOCK CONDITIONED ON 'when: is_raspbian or not is_debian'
+#
+#   [MOVED TO main2.yml]
+#
+#   when: is_raspbian or not is_debian    # CONDITION FOR ENTIRE ABOVE block: 

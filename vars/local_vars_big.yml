@@ -36,7 +36,7 @@ iiab_domain: lan
 iiab_home_url: /home
 # You might also want to set captiveportal_splash_page (below!)
 
-# Raspbian requires WiFi country since March 2018.  Please set it here:
+# Raspbian requires Wi-Fi country since March 2018.  Please set it here:
 host_country_code: US
 host_ssid: "Internet in a Box"
 host_wifi_mode: g
@@ -101,7 +101,7 @@ bluetooth_term_enabled: False
 # (prior to IIAB 6.7, this had used https://github.com/iiab/iiab-menu)
 js_menu_install: True
 
-# Unmaintained as of October 2017: https://github.com/iiab/iiab/pull/382
+# UNMAINTAINED as of October 2017: https://github.com/iiab/iiab/pull/382
 # wondershaper_install: False
 # wondershaper_enabled: False
 
@@ -136,19 +136,19 @@ pi_swap_file_size: 1024
 
 # 3-BASE-SERVER
 
-# See also Apache vars {default_language, language_priority} @ top of this file
-#
-# For schools that use WordPress/Nextcloud/Moodle intensively:  iiab/iiab#1147
-apache_high_php_limits: False
+# roles/mysql runs here (mandatory)
+
+# For schools that use WordPress/Nextcloud/Moodle intensively:
+nginx_high_php_limits: False
 # WARNING: Enabling this might cause excess use of RAM/disk or other resources!
 # SO AFTER INSTALLING IIAB, VERIFY THAT THESE 5 SETTINGS...
-# https://github.com/iiab/iiab/blob/master/roles/httpd/tasks/main.yml#L80-L84
-# ...ARE SUITABLE FOR YOUR HARDWARE IN /etc/php/<VERSION>/apache2/php.ini
+# https://github.com/iiab/iiab/blob/master/roles/www_back_end/tasks/main.yml#L23-L27
+# ...ARE SUITABLE FOR YOUR HARDWARE, for: /etc/php/<VERSION>/fpm/php.ini
+
+# See also Apache vars {default_language, language_priority} @ top of this file
 #
 # Make this False to disable http://box/common/services/power_off.php button:
 apache_allow_sudo: True
-
-# roles/mysql runs here (mandatory)
 
 
 # 4-SERVER-OPTIONS
@@ -163,14 +163,6 @@ squid_enabled: False
 # DansGuardian is NO LONGER AVAILABLE in Debian Buster i.e. since June 2019.
 dansguardian_install: False
 dansguardian_enabled: False
-
-# PostgreSQL - auto-installed by Moodle and/or Pathagar - no need to touch!
-postgresql_install: False
-postgresql_enabled: False
-
-# Unmaintained
-# authserver_install: False
-# authserver_enabled: False
 
 # Common UNIX Printing System (CUPS)
 cups_install: True
@@ -189,16 +181,20 @@ iiab_usb_lib_show_all: True
 # Lesser-supported XO services need additional testing.  Please contact
 # http://lists.laptop.org/pipermail/server-devel/ if you're able to help test.
 
+# UNMAINTAINED
 # xo_services_install: False
 # xo_services_enabled: False
 
+# UNMAINTAINED
 # activity_server_install: False
 # activity_server_enabled: False
 
+# UNMAINTAINED
 # Please instead consider 'ejabberd' in Stage 6-GENERIC-APPS below
 # ejabberd_xs_install: False
 # ejabberd_xs_enabled: False
 
+# UNMAINTAINED
 # Change calibre_port from 8080 to 8010 below, if you enable idmgr
 # idmgr_install: False
 # idmgr_enabled: False
@@ -209,16 +205,13 @@ iiab_usb_lib_show_all: True
 azuracast_install: False
 azuracast_enabled: False
 
-# Unmaintained as of January 2020: https://github.com/iiab/iiab/issues/2056
-dokuwiki_install: False
-dokuwiki_enabled: False
+# UNMAINTAINED as of January 2020: https://github.com/iiab/iiab/issues/2056
+# dokuwiki_install: False
+# dokuwiki_enabled: False
 
-mediawiki_install: True
-mediawiki_enabled: True
-
-# Unmaintained as of November 2019
-ejabberd_install: False
-ejabberd_enabled: False
+# UNMAINTAINED as of November 2019
+# ejabberd_install: False
+# ejabberd_enabled: False
 
 elgg_install: True
 elgg_enabled: True
@@ -231,6 +224,9 @@ gitea_enabled: True
 lokole_install: True
 lokole_enabled: True
 
+mediawiki_install: True
+mediawiki_enabled: True
+
 # MQTT pub-sub broker for IoT on Raspberry Pi etc
 mosquitto_install: True
 mosquitto_enabled: True
@@ -240,17 +236,20 @@ nodered_install: True
 nodered_enabled: True
 
 # Store your docs, calendar, contacts & photos on your local server not cloud!
-# If using WordPress intensively, set apache_high_php_limits in 3-BASE-SERVER
+# If using Nextcloud intensively, set nginx_high_php_limits further above.
 nextcloud_install: True
 nextcloud_enabled: True
-nextcloud_allow_public_ips: False
+#
+# 2020-02-15: UNUSED at this time.  Legacy remains from Apache:
+# nextcloud_allow_public_ips: True
+#
 # Configuration tips for IPv4 access controls and tuning RAM/resources:
 # https://github.com/iiab/iiab/blob/master/roles/nextcloud/README.md
 #
 # 2020-01-07: If installing IIAB often, download.nextcloud.com may throttle
 # you to ~100 kbit/sec, delaying your IIAB install by an hour or more (#2112).
 # Uncomment the following line to end that: (might install an older Nextcloud!)
-# nextcloud_dl_url: http://d.iiab.io/packages
+# nextcloud_dl_url: http://d.iiab.io/packages/latest.tar.bz2
 
 # A full-featured PBX (for rural telephony, etc) based on Asterisk and FreePBX.
 # Works on Ubuntu 18.04, Debian 9 w/ Node.js 10.x.  Experimental on RPi 3.
@@ -258,7 +257,7 @@ pbx_install: False
 pbx_enabled: False
 asterisk_chan_dongle: False
 
-# If using WordPress intensively, set apache_high_php_limits in 3-BASE-SERVER
+# If using WordPress intensively, set nginx_high_php_limits further above.
 wordpress_install: True
 wordpress_enabled: True
 
@@ -268,8 +267,6 @@ wordpress_enabled: True
 # KA Lite - SEE THE "Transmission" BITTORRENT DOWNLOADER FURTHER BELOW, TO INSTALL THOUSANDS OF VIDEOS
 kalite_install: True
 kalite_enabled: True
-# Unused in 2018; but remains as placeholder for Fedora 18 legacy (XO laptops)
-kalite_cron_enabled: True
 
 kolibri_install: True
 kolibri_enabled: True
@@ -282,7 +279,7 @@ kiwix_enabled: True
 # Warning: Moodle is a serious LMS, that takes a while to install
 moodle_install: True
 moodle_enabled: True
-# If using Moodle intensively, set apache_high_php_limits in 3-BASE-SERVER
+# If using Moodle intensively, set nginx_high_php_limits further above.
 
 # Regional OSM vector maps use far less disk space than bitmap/raster versions.
 # Instructions: https://github.com/iiab/iiab/wiki/IIAB-Maps
@@ -371,18 +368,3 @@ calibreweb_url1: /books     # For SHORT URL http://box/books  (English)
 calibreweb_url2: /libros    # For SHORT URL http://box/libros (Spanish)
 calibreweb_url3: /livres    # For SHORT URL http://box/livres (French)
 calibreweb_home: "{{ content_base }}/calibre-web"    # /library/calibre-web
-
-
-# CONSIDER THESE NEW OPENSTREETMAP (OSM) APPROACHES INSTEAD:
-#
-# 2019: https://github.com/iiab/iiab/wiki/IIAB-Maps SEE ABOVE osm_vector_maps_*
-# 2018: http://download.iiab.io/content/OSM/vector-tiles/
-# 2017: http://oer2go.org/viewmod/en-worldmap-10
-#
-# Unmaintained
-# osm_install: False
-# osm_enabled: False
-
-# Unmaintained
-# docker_install: False
-# docker_enabled: False

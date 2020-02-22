@@ -5,15 +5,15 @@
       - transmission-cli
     state: present
 
-- name: Create download dir {{ transmission_download_dir }}, owned by {{ transmission_user }}:{{ transmission_group }}    # /library/transmission
+- name: Create download dir {{ transmission_download_dir }}, owned by {{ transmission_user }}:{{ transmission_group }}
   file:
-    path: "{{ transmission_download_dir }}"
-    owner: "{{ transmission_user }}"
-    group: "{{ transmission_group }}"
-    mode: 0755
     state: directory
+    path: "{{ transmission_download_dir }}"    # /library/transmission
+    owner: "{{ transmission_user }}"    # debian-transmission
+    group: "{{ transmission_group }}"    # root
+    # mode: '0755'
 
-- name: Stop transmission-daemon before modifying its settings
+- name: Stop 'transmission-daemon' systemd service, before modifying its settings
   systemd:
     name: transmission-daemon
     state: stopped
@@ -23,11 +23,25 @@
   template:
     src: settings.json.j2
     dest: /etc/transmission-daemon/settings.json
-    mode: 0644
-    owner: "{{ transmission_user }}"
-    group: "{{ transmission_group }}"
+    owner: "{{ transmission_user }}"    # debian-transmission
+    group: "{{ transmission_group }}"    # root
+    # mode: '0644'
 
-- name: Enable & Restart transmission-daemon systemd service, incl daemon-reload
+
+# RECORD Transmission AS INSTALLED
+
+- name: "Set 'transmission_installed: True'"
+  set_fact:
+    transmission_installed: True
+
+- name: "Add 'transmission_installed: True' to {{ iiab_state_file }}"
+  lineinfile:
+    path: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
+    regexp: '^transmission_installed'
+    line: 'transmission_installed: True'
+
+
+- name: Enable & Restart 'transmission-daemon' systemd service, incl daemon-reload
   systemd:
     name: transmission-daemon
     daemon_reload: yes
@@ -45,13 +59,14 @@
   when: transmission_enabled and transmission_provision and transmission_kalite_languages is defined and transmission_kalite_languages is not none
   ignore_errors: yes
 
-- name: Disable transmission-daemon service, if not transmission_enabled
+- name: Disable & Stop 'transmission-daemon' service, if not transmission_enabled
   systemd:
     name: transmission-daemon
     daemon_reload: yes
     enabled: no
     state: stopped
   when: not transmission_enabled
+
 
 - name: Add 'transmission' variable values to {{ iiab_ini_file }}
   ini_file:
@@ -61,7 +76,7 @@
     value: "{{ item.value | string }}"
   with_items:
     - option: name
-      value: transmission
+      value: Transmission
     - option: description
       value: '"Transmission is a set of lightweight BitTorrent clients (in GUI, CLI and daemon form)."'
     - option: transmission_install

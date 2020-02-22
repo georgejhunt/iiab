@@ -2,7 +2,6 @@
   package:
     name: dansguardian
     state: present
-  #tags: download
 
 - name: Install /etc/dansguardian/dansguardian.conf from template (Fedora)
   template:
@@ -51,6 +50,6 @@
 
 - name: "Add 'dansguardian_installed: True' to {{ iiab_state_file }}"
   lineinfile:
-    dest: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
+    path: "{{ iiab_state_file }}"    # /etc/iiab/iiab_state.yml
     regexp: '^dansguardian_installed'
     line: 'dansguardian_installed: True'
