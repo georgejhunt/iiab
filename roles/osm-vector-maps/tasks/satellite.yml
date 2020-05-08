@@ -1,5 +1,5 @@
 - name: Put the small files
-  file:
+  copy:
      src: '{{ item }}'
      dest: '{{ satellite_dir }}'
   with_items:
