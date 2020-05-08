@@ -1,0 +1,28 @@
+- name: Put the small files
+  file:
+     src: '{{ item }}'
+     dest: '{{ satellite_dir }}'
+  with_items:
+     - tileserver.php
+     - style_osm.json 
+     - .htaccess
+     - index.html
+     - map_functions.js
+
+- name: Get the javascript bundle from unleashkids.org
+  get_url:
+     src: '(( item }}' 
+     dest: '{{ satellite_dir }}'
+  with_items:
+     - '{{iiab_download_url }}/content/OSM/vector-tiles/satellite/main.js'
+     - '{{iiab_download_url }}/content/OSM/vector-tiles/satellite/planet_z0-z5.mgtiles'
+     
+- name: Creaate link for vector detail.mbtiles
+  file:
+    src: '{{ satellite_dir }}/planet_z0-z5.mbtiles'
+    dest: '{{ satellite_dir }}/detail.mbtiles'
+
+- name: Create a link for regions.json
+  file:
+    src: /etc/iiab/regions.json
+    dest: '{{ satellite_dir }}'  
