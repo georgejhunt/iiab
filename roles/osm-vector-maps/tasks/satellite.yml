@@ -3,6 +3,13 @@
     path: '{{ satellite_dir }}'
     state: directory
 
+- name: Get the paackages
+  package:
+    name:
+      - python3-geojson
+      - python3-pil
+    state: present
+
 - name: Put the small files
   copy:
      src: '{{ item }}'
