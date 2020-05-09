@@ -13,6 +13,7 @@
      - .htaccess
      - index.html
      - map_functions.js
+     - map.css
 
 - name: Get the javascript bundle from unleashkids.org
   get_url:
