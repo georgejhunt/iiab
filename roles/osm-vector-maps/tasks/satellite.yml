@@ -17,7 +17,7 @@
 - name: Get the map_functions version used by admin-console, work toward unification
   copy:
      src: /opt/iiab/iiab-admin-console/roles/console/files/js/map_functions.js
-     dest: '{{ satellite_dir }}
+     dest: '{{ satellite_dir }}'
 
 - name: Get the javascript bundle from unleashkids.org
   get_url:
