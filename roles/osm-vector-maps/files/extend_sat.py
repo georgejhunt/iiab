@@ -15,14 +15,13 @@ import sys, os
 import argparse
 import certifi
 import urllib3
-import tools
 import math
 from geojson import Feature, Point, FeatureCollection, Polygon
 import geojson
 import shutil
 import json
 import time
-#import StringIO
+import uuid
 import io
 from PIL import Image
 #import ipdb; ipdb.set_trace()
@@ -45,6 +44,88 @@ VERSION = os.environ.get('METADATA_VERSION', '3.3')
 work_dir = '/library/working/maps'
 osm_dir = 'library/www/osm-vector-maps/maplist/assets'
 sat_dir = '/library/www/osm-vector-maps/viewer/tiles'
+
+# Translates between lat/long and the slippy-map tile numbering scheme
+# 
+# http://wiki.openstreetmap.org/index.php/Slippy_map_tilenames
+# https://svn.openstreetmap.org/applications/routing/pyroute/tilenames.py
+# 
+# Written by Oliver White, 2007
+# This file is public-domain
+#-------------------------------------------------------
+from math import *
+
+class Tools(object):
+   def numTiles(self,z):
+     return(pow(2,z))
+
+   def sec(self,x):
+     return(1/cos(x))
+
+   def latlon2relativeXY(self,lat,lon):
+     x = (lon + 180) / 360
+     y = (1 - log(tan(radians(lat)) + self.sec(radians(lat))) / pi) / 2
+     return(x,y)
+
+   def latlon2xy(self,lat,lon,z):
+     n = self.numTiles(z)
+     x,y = self.latlon2relativeXY(lat,lon)
+     return(n*x, n*y)
+     
+   def tileXY(self,lat, lon, z):
+     x,y = self.latlon2xy(lat,lon,z)
+     return(int(x),int(y))
+
+   def xy2latlon(self,x,y,z):
+     n = numTiles(z)
+     relY = y / n
+     lat = self.mercatorToLat(pi * (1 - 2 * relY))
+     lon = -180.0 + 360.0 * x / n
+     return(lat,lon)
+     
+   def latEdges(self,y,z):
+     n = numTiles(z)
+     unit = 1 / n
+     relY1 = y * unit
+     relY2 = relY1 + unit
+     lat1 = self.mercatorToLat(pi * (1 - 2 * relY1))
+     lat2 = self.mercatorToLat(pi * (1 - 2 * relY2))
+     return(lat1,lat2)
+
+   def lonEdges(self,x,z):
+     n = numTiles(z)
+     unit = 360 / n
+     lon1 = -180 + x * unit
+     lon2 = lon1 + unit
+     return(lon1,lon2)
+     
+   def tileEdges(self,x,y,z):
+     lat1,lat2 = latEdges(y,z)
+     lon1,lon2 = lonEdges(x,z)
+     return((lat2, lon1, lat1, lon2)) # S,W,N,E
+
+   def mercatorToLat(self,mercatorY):
+     return(degrees(atan(sinh(self.mercatorY))))
+
+   def tileSizePixels(self):
+     return(256)
+
+   def tileLayerExt(self,layer):
+     if(layer in ('oam')):
+       return('jpg')
+     return('png')
+
+   def tileLayerBase(self,layer):
+     layers = { \
+       "tah": "http://cassini.toolserver.org:8080/http://a.tile.openstreetmap.org/+http://toolserver.org/~cmarqu/hill/",
+      #"tah": "http://tah.openstreetmap.org/Tiles/tile/",
+       "oam": "http://oam1.hypercube.telascience.org/tiles/1.0.0/openaerialmap-900913/",
+       "mapnik": "http://tile.openstreetmap.org/mapnik/"
+       }
+     return(layers[layer])
+     
+   def tileURL(self,x,y,z,layer):
+     return "%s%d/%d/%d.%s" % (self.tileLayerBase(layer),z,x,y,self.tileLayerExt(layer))
 
 class MBTiles():
    def __init__(self, filename):
@@ -443,8 +524,8 @@ def get_degree_extent(lat_deg,lon_deg,radius_km,zoom=13):
    (minX,maxX,minY,maxY) = get_bounds(lat_deg,lon_deg,radius_km,zoom)
    print('minX:%s,maxX:%s,minY:%s,maxY:%s'%(minX,maxX,minY,maxY))
    # following function returns (y,x)
-   north_west_point = tools.xy2latlon(minX,minY,zoom)
-   south_east_point = tools.xy2latlon(maxX+1,maxY+1,zoom)
+   north_west_point = xytools.xy2latlon(minX,minY,zoom)
+   south_east_point = xytools.xy2latlon(maxX+1,maxY+1,zoom)
    print('north_west:%s south_east:%s'%(north_west_point, south_east_point))
    # returns (west, south, east, north)
    return (north_west_point[1],south_east_point[0],south_east_point[1],north_west_point[0])
@@ -556,12 +637,13 @@ def replace_tile(src,zoom,tileX,tileY):
    if r.status == 200:
       raw = r.data
       line = bytearray(raw)
-      if line.find("DOCTYPE") != -1:
+      if line.find(b"DOCTYPE") != -1:
          print('still getting html from sentinel cloudless')
          return False
       else:
          try:
-            image = Image.open(io.StringIO(raw))
+            #image = Image.open(io.StringIO(raw))
+            image = Image.open(io.BytesIO(raw))
             #image.show(io.StringIO(raw))
          except Exception as e:
             print('exception:%s'%e)
@@ -597,8 +679,8 @@ def set_up_target_db(name='sentinel'):
       os.mkdir('./work')
       work_dir = './work'
    dbpath = '%s/%s'%(work_dir,dbname)
-   #if not os.path.exists(dbpath):
-   if True:
+   if not os.path.exists(dbpath):
+   #if True:
       shutil.copyfile('%s/satellite.mbtiles'%sat_dir,dbpath) 
    mbTiles = MBTiles(dbpath)
    mbTiles.CheckSchema()
@@ -627,6 +709,8 @@ def main():
    global mbTiles
    global url
    global bounds
+   global xytools
+   xytools = Tools()
    args = parse_args()
    # Default to standard source
    if not os.path.isdir('./work'):
@@ -664,10 +748,10 @@ def main():
       args.lon = -122.14 
       args.lat = 37.46
    print('inputs to tileXY: lat:%s lon:%s zoom:%s'%(args.lat,args.lon,args.zoom))
-   args.x,args.y = tools.tileXY(args.lat,args.lon,args.zoom)
+   args.x,args.y = xytools.tileXY(args.lat,args.lon,args.zoom)
 
-   debug_one_tile()
-   sys.exit()
+   #debug_one_tile()
+   #sys.exit()
    do_downloads() 
 
 if __name__ == "__main__":
