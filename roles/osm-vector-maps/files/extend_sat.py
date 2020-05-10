@@ -449,6 +449,14 @@ class Extract(object):
             "filesize": os.path.getsize(extract_file)
         }
 
+def dhms_from_seconds(s):
+   """ translate seconds into days, hour, minutes """
+   days, remainder = divmod(s, 86400)
+   hours, remainder = divmod(remainder, 3600)
+   minutes, remainder = divmod(remainder, 60)
+   seconds, remainder = divmod(remainder, 60)
+   return (days, hours, minutes, seconds)
+
 def debug_one_tile():
    if not args.x:
       args.x = 3
@@ -662,10 +670,12 @@ def replace_tile(src,zoom,tileX,tileY):
 def download_tiles(src,lat_deg,lon_deg,zoom,radius):
    global mbTiles
    global total_tiles
+   global start
    tileX_min,tileX_max,tileY_min,tileY_max = get_bounds(lat_deg,lon_deg,radius,zoom)
    for tileX in range(tileX_min,tileX_max+1):
       for tileY in range(tileY_min,tileY_max+1):
-         print('tileX:%s tileY:%s'%(tileX,tileY))
+         if (start - time.time()) % 10 == 0:
+            print('tileX:%s tileY:%s zoom:%s added:%s'%(tileX,tileY,zoom,total_tiles))
          replace_tile(src,zoom,tileX,tileY)
 
 def set_up_target_db(name='sentinel'):
@@ -692,6 +702,8 @@ def set_up_target_db(name='sentinel'):
 def do_downloads():
    # Open a WMTS source
    global src # the opened url for satellite images
+   global start
+   global total_tiles
    try:
       src = WMTS(url)
    except:
@@ -699,10 +711,13 @@ def do_downloads():
       sys.exit(1)
    set_up_target_db(args.name)
    start = time.time()
+   sat_bboxes(args.lat,args.lon,args.zoom.args.radius)
    for zoom in range(args.zoom,14):
       print("new zoom level:%s"%zoom)
       download_tiles(src,args.lat,args.lon,zoom,args.radius)
-   print('Total time:%s Total_tiles:%s'%(time.time()-start,total_tiles))
+   seconds =(time.time()-start)
+   d,h,m.s = dhms_from_seconds(seconds)
+   print('Total time:%s:%s:%s hr:min:sec Total_tiles Added:%s'%(h,m,s,total_tiles))
 
 def main():
    global args
