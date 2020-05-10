@@ -1,0 +1,56 @@
+- name: Make the Satellite directory
+  file: 
+    path: '{{ satellite_dir }}'
+    state: directory
+
+- name: Get the paackages
+  package:
+    name:
+      - python3-geojson
+      - python3-pil
+    state: present
+
+- name: Put the small files
+  copy:
+     src: '{{ item }}'
+     dest: '{{ satellite_dir }}{{ item }}'
+  with_items:
+     - tileserver.php
+     - style_osm.json 
+     - .htaccess
+     - index.html
+     - map.css
+
+- name: Get the map_functions version used by admin-console, work toward unification
+  copy:
+     src: /opt/iiab/iiab-admin-console/roles/console/files/js/map_functions.js
+     dest: '{{ satellite_dir }}'
+
+- name: Get the javascript bundle from unleashkids.org
+  get_url:
+     url: '{{ sat_download_url }}/content/OSM/vector-tiles/satellite/{{ item }}'
+     dest: '{{ satellite_dir }}'
+  with_items:
+     - main.js
+     - planet_z0-z5.mbtiles
+
+- name: Get the javascript bundle from unleashkids.org
+  get_url:
+     url: 'http://download.iiab.io/content/OSM/vector-tiles/satellite/planet_z0-z5.mbtiles'
+     dest: '{{ satellite_dir }}'
+
+  with_items:
+     - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/main.js'
+     - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/planet_z0-z5.mbtiles'
+     
+- name: Creaate link for vector detail.mbtiles
+  file:
+    src: '{{ satellite_dir }}planet_z0-z5.mbtiles'
+    dest: '{{ satellite_dir }}detail.mbtiles'
+    state: link
+
+- name: Create a link for regions.json
+  file:
+    src: /etc/iiab/regions.json
+    dest: '{{ satellite_dir }}regions.json'  
+    state: link
