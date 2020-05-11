@@ -10,12 +10,8 @@
 global $config;
 $config['serverTitle'] = 'Maps hosted with TileServer-php v2.0';
 $config['availableFormats'] = array('png', 'jpg', 'jpeg', 'gif', 'webp', 'pbf', 'hybrid');
-<<<<<<< HEAD
 $config['dataRoot'] = '/library/www/osm-vector-maps/viewer/tiles/';
 //$config['dataRoot'] = '';
-=======
-$config['dataRoot'] = '';
->>>>>>> satellite
 //$config['template'] = 'template.php';
 //$config['baseUrls'] = array('t0.server.com', 't1.server.com');
 
@@ -78,28 +74,16 @@ class Server {
 
     //Get config from enviroment
     $envServerTitle = getenv('serverTitle');
-<<<<<<< HEAD
     if($envServerTitle !== false){
       $this->config['serverTitle'] = $envServerTitle;
     }
     $envBaseUrls = getenv('baseUrls');
     if($envBaseUrls !== false){
-=======
-    if($envServerTitle !== FALSE){
-      $this->config['serverTitle'] = $envServerTitle;
-    }
-    $envBaseUrls = getenv('baseUrls');
-    if($envBaseUrls !== FALSE){
->>>>>>> satellite
       $this->config['baseUrls'] = is_array($envBaseUrls) ?
               $envBaseUrls : explode(',', $envBaseUrls);
     }
     $envTemplate = getenv('template');
-<<<<<<< HEAD
     if($envBaseUrls !== false){
-=======
-    if($envBaseUrls !== FALSE){
->>>>>>> satellite
       $this->config['template'] = $envTemplate;
     }
   }
@@ -137,11 +121,7 @@ class Server {
       $this->x = $params[1];
       $file = explode('.', $params[0]);
       $this->y = $file[0];
-<<<<<<< HEAD
       $this->ext = isset($file[1]) ? $file[1] : null;
-=======
-      $this->ext = isset($file[1]) ? $file[1] : NULL;
->>>>>>> satellite
     }
   }
 
@@ -157,11 +137,7 @@ class Server {
         return $value;
       }
     }
-<<<<<<< HEAD
     return false;
-=======
-    return FALSE;
->>>>>>> satellite
   }
 
   /**
@@ -171,15 +147,9 @@ class Server {
    */
   public function isDBLayer($layer) {
     if (is_file($this->config['dataRoot'] . $layer . '.mbtiles')) {
-<<<<<<< HEAD
       return true;
     } else {
       return false;
-=======
-      return TRUE;
-    } else {
-      return FALSE;
->>>>>>> satellite
     }
   }
 
@@ -190,15 +160,9 @@ class Server {
    */
   public function isFileLayer($layer) {
     if (is_dir($layer)) {
-<<<<<<< HEAD
       return true;
     } else {
       return false;
-=======
-      return TRUE;
-    } else {
-      return FALSE;
->>>>>>> satellite
     }
   }
 
@@ -360,15 +324,9 @@ class Server {
     header('Etag:' . $eTag);
     if (@strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $lastModifiedTime ||
             @trim($_SERVER['HTTP_IF_NONE_MATCH']) == $eTag) {
-<<<<<<< HEAD
       return true;
     } else {
       return false;
-=======
-      return TRUE;
-    } else {
-      return FALSE;
->>>>>>> satellite
     }
   }
 
@@ -382,11 +340,7 @@ class Server {
    */
   public function renderTile($tileset, $z, $y, $x, $ext) {
     if ($this->isDBLayer($tileset)) {
-<<<<<<< HEAD
       if ($this->isModified($tileset) == true) {
-=======
-      if ($this->isModified($tileset) == TRUE) {
->>>>>>> satellite
         header('Access-Control-Allow-Origin: *');
         header('HTTP/1.1 304 Not Modified');
         die;
@@ -401,29 +355,17 @@ class Server {
       }
       $result = $this->db->query('select tile_data as t from tiles where zoom_level=' . $z . ' and tile_column=' . $x . ' and tile_row=' . $y);
       $data = $result->fetchColumn();
-<<<<<<< HEAD
       if (!isset($data) || $data === false) {
-=======
-      if (!isset($data) || $data === FALSE) {
->>>>>>> satellite
         //if tile doesn't exist
         //select scale of tile (for retina tiles)
         $result = $this->db->query('select value from metadata where name="scale"');
         $resultdata = $result->fetchColumn();
-<<<<<<< HEAD
         $scale = isset($resultdata) && $resultdata !== false ? $resultdata : 1;
-=======
-        $scale = isset($resultdata) && $resultdata !== FALSE ? $resultdata : 1;
->>>>>>> satellite
         $this->getCleanTile($scale, $ext);
       } else {
         $result = $this->db->query('select value from metadata where name="format"');
         $resultdata = $result->fetchColumn();
-<<<<<<< HEAD
         $format = isset($resultdata) && $resultdata !== false ? $resultdata : 'png';
-=======
-        $format = isset($resultdata) && $resultdata !== FALSE ? $resultdata : 'png';
->>>>>>> satellite
         if ($format == 'jpg') {
           $format = 'jpeg';
         }
@@ -439,19 +381,11 @@ class Server {
     } elseif ($this->isFileLayer($tileset)) {
       $name = './' . $tileset . '/' . $z . '/' . $x . '/' . $y;
       $mime = 'image/';
-<<<<<<< HEAD
       if($ext != null){
         $name .= '.' . $ext;
       }
       if ($fp = @fopen($name, 'rb')) {
         if($ext != null){
-=======
-      if($ext != NULL){
-        $name .= '.' . $ext;
-      }
-      if ($fp = @fopen($name, 'rb')) {
-        if($ext != NULL){
->>>>>>> satellite
           $mime .= $ext;
         }else{
           //detect image type from file
@@ -488,10 +422,6 @@ class Server {
         header('Access-Control-Allow-Origin: *');
         header('HTTP/1.1 204 No Content');
         header('Content-Type: application/json; charset=utf-8');
-<<<<<<< HEAD
-=======
-        echo '{"message":"Tile does not exist"}';
->>>>>>> satellite
         break;
       case 'webp':
         header('Access-Control-Allow-Origin: *');
@@ -521,15 +451,9 @@ class Server {
    * @param integer $y
    * @param integer $x
    */
-<<<<<<< HEAD
   public function renderUTFGrid($tileset, $z, $y, $x, $flip = true) {
     if ($this->isDBLayer($tileset)) {
       if ($this->isModified($tileset) == true) {
-=======
-  public function renderUTFGrid($tileset, $z, $y, $x, $flip = TRUE) {
-    if ($this->isDBLayer($tileset)) {
-      if ($this->isModified($tileset) == TRUE) {
->>>>>>> satellite
         header('HTTP/1.1 304 Not Modified');
       }
       if ($flip) {
@@ -543,11 +467,7 @@ class Server {
         $result = $this->db->query($query);
         $data = $result->fetch(PDO::FETCH_ASSOC);
 
-<<<<<<< HEAD
         if ($data !== false) {
-=======
-        if ($data !== FALSE) {
->>>>>>> satellite
           $grid = gzuncompress($data['grid']);
           $grid = substr(trim($grid), 0, -1);
 
@@ -837,11 +757,7 @@ class Wmts extends Server {
    */
   public function get() {
     $request = $this->getGlobal('Request');
-<<<<<<< HEAD
     if ($request !== false && $request == 'gettile') {
-=======
-    if ($request !== FALSE && $request == 'gettile') {
->>>>>>> satellite
       $this->getTile();
     } else {
       parent::setDatasets();
@@ -1164,11 +1080,7 @@ class Wmts extends Server {
   public function getTile() {
     $request = $this->getGlobal('Request');
     if ($request) {
-<<<<<<< HEAD
       if (strpos('/', $_GET['Format']) !== false) {
-=======
-      if (strpos('/', $_GET['Format']) !== FALSE) {
->>>>>>> satellite
         $format = explode('/', $_GET['Format']);
         $format = $format[1];
       } else {
@@ -1381,11 +1293,7 @@ class Router {
       if (!isset($config['baseUrls'][0])) {
         $config['baseUrls'][0] = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
       }
-<<<<<<< HEAD
       if (strpos($_SERVER['REQUEST_URI'], '=') != false) {
-=======
-      if (strpos($_SERVER['REQUEST_URI'], '=') != FALSE) {
->>>>>>> satellite
         $kvp = explode('=', $_SERVER['REQUEST_URI']);
         $_GET['callback'] = $kvp[1];
         $params[0] = 'index';
