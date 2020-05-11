@@ -77,12 +77,22 @@
   with_fileglob:
         - assets/*
 
+- name: Remove any file that might inhibit creating a link
+  file:
+      path: "{{ vector_map_path }}/maplist/assets/bboxes.geojson"
+      state: absent
+
 - name: Place a link to bboxes.geojson for Admin Console
   file: 
       src: "{{ vector_map_path }}/viewer/assets/bboxes.geojson"
       dest: "{{ vector_map_path }}/maplist/assets/bboxes.geojson"
       state: link
       
+- name: Remove any file that might inhibit creating a link
+  file:
+      path: "{{ vector_map_path }}/maplist/assets/countries.json"
+      state: absent
+
 - name: Place a link to countries.json for Admin Console
   file: 
       src: "{{ vector_map_path }}/viewer/assets/countries.json"

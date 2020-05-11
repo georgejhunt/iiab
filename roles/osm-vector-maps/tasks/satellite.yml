@@ -43,11 +43,21 @@
      - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/main.js'
      - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/planet_z0-z5.mbtiles'
      
-- name: Creaate link for vector detail.mbtiles
+- name: Remove any file which would conflict with creating a link
+  file:
+     state: absent
+     path: '{{ satellite_dir }}detail.mbtiles'
+
+- name: Create link for vector detail.mbtiles
   file:
     src: '{{ satellite_dir }}planet_z0-z5.mbtiles'
     dest: '{{ satellite_dir }}detail.mbtiles'
     state: link
+
+- name: Remove any file which would conflict with creating a link
+  file:
+     state: absent
+     path: '{{ satellite_dir }}regions.json'  
 
 - name: Create a link for regions.json
   file:
