@@ -16,7 +16,7 @@
      dest: '{{ satellite_dir }}{{ item }}'
   with_items:
      - tileserver.php
-     - style_osm.json 
+     - style-osm.json
      - .htaccess
      - index.html
      - map.css
