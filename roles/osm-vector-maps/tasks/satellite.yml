@@ -25,6 +25,7 @@
   copy:
      src: /opt/iiab/iiab-admin-console/roles/console/files/js/map_functions.js
      dest: '{{ satellite_dir }}'
+     state: link
 
 - name: Get the javascript bundle from unleashkids.org
   get_url:
