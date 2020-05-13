@@ -32,11 +32,19 @@
     dest: '{{ vector_map_path }}/viewer/cities1000.sqlite'
   when: not cities_installed.stat.exists
 
+- name: Create a link to old osm catalog in original place
+  file:
+    src: "/etc/iiab/regionsjson"
+    dest: "{{ vector_map_path }}/maplist/assets/regions.json"
+    state: link
+    force: True
+
 - name: Create a link to osm catalog in /common/assets
   file:
     src: "/etc/iiab/map-catalog.json"
     dest: "{{ doc_root }}/common/assets/map-catalog.json"
     state: link
+    force: True
 
 - name: Create a link to osm catalog in {{ vector_map_path }}/maplist/assets
   file:
@@ -108,14 +116,21 @@
   with_fileglob:
         - fonts/*
 
+- name: Set the tileserver.php doc_root for templating 
+  set_fact:
+      - ts_doc_root: '/library/www/osm-vector-maps/viewer/tiles'
+
 - name: Copy the php tile server for the general purpose map viewer
+  template:
+    src: tileserver.php
+    dest: "{{ vector_map_path }}/viewer/"
+
   copy: src={{ item }}
         dest="{{ vector_map_path }}/viewer/"
         mode=0644
         owner=root
         group=root
   with_items:
-      - tileserver.php
       - searchapi.php
       - mbtileinfo.php
 

@@ -13,4 +13,3 @@ archive_org_url: https://archive.org/download
 satellite_version: satellite_z0-z9_v3.mbtiles
 satellite_dir:  "{{ content_base }}/www/osm-vector-maps/satellite/"
 sat_download_url: "http://download.iiab.io"
-
