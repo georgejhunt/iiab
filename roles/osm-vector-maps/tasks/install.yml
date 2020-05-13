@@ -16,6 +16,10 @@
     state: directory
     mode: '0755'
 
+  get_url:
+    url: "{{ iiab_map_url }}/assets/regions.json"    # http://download.iiab.io/content/OSM/vector-tiles/maplist/hidden
+    dest: "{{ iiab_etc_path }}"
+
 - name: Copy the map catalog to /etc/iiab/map-catalog.json
   copy:
     src: "map-catalog.json"
