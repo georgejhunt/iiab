@@ -3,7 +3,7 @@
     path: '{{ satellite_dir }}'
     state: directory
 
-- name: Get the paackages
+- name: Get the packages
   package:
     name:
       - python3-geojson
@@ -22,9 +22,10 @@
      - map.css
 
 - name: Get the map_functions version used by admin-console, work toward unification
-  copy:
+  file:
      src: /opt/iiab/iiab-admin-console/roles/console/files/js/map_functions.js
-     dest: '{{ satellite_dir }}'
+     dest: '{{ satellite_dir }}/map_functions.js'
+     force: True
      state: link
 
 - name: Get the javascript bundle from unleashkids.org
@@ -65,3 +66,4 @@
     src: /etc/iiab/regions.json
     dest: '{{ satellite_dir }}regions.json'  
     state: link
+    force: True
