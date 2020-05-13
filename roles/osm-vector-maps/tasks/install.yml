@@ -16,6 +16,7 @@
     state: directory
     mode: '0755'
 
+- name: Fetch the old regions.json for backward compatibility
   get_url:
     url: "{{ iiab_map_url }}/assets/regions.json"    # http://download.iiab.io/content/OSM/vector-tiles/maplist/hidden
     dest: "{{ iiab_etc_path }}"
@@ -122,13 +123,14 @@
 
 - name: Set the tileserver.php doc_root for templating 
   set_fact:
-      - ts_doc_root: '/library/www/osm-vector-maps/viewer/tiles'
+     ts_doc_root= '{{ vector_map_path }}/viewer/tiles'
 
-- name: Copy the php tile server for the general purpose map viewer
+- name: Place the php tile server for the general purpose map viewer
   template:
     src: tileserver.php
     dest: "{{ vector_map_path }}/viewer/"
 
+- name: Install php utilities used by main.js for search and to get sqlite info
   copy: src={{ item }}
         dest="{{ vector_map_path }}/viewer/"
         mode=0644

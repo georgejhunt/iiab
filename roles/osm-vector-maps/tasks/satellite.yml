@@ -22,7 +22,7 @@
 
 - name: Set the tileserver.php doc_root for templating 
   set_fact:
-      - ts_doc_root: '/library/www/osm-vector-maps/satellite'
+     ts_doc_root= '/library/www/osm-vector-maps/satellite'
 
 - name: Copy the php tile server for the general purpose map viewer
   template:
