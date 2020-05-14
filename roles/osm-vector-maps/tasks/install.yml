@@ -121,24 +121,19 @@
   with_fileglob:
         - fonts/*
 
-- name: Set the tileserver.php doc_root for templating 
-  set_fact:
-     ts_doc_root= '{{ vector_map_path }}/viewer/tiles'
-
-- name: Place the php tile server for the general purpose map viewer
-  template:
-    src: tileserver.php
-    dest: "{{ vector_map_path }}/viewer/"
-
 - name: Install php utilities used by main.js for search and to get sqlite info
-  copy: src={{ item }}
-        dest="{{ vector_map_path }}/viewer/"
-        mode=0644
-        owner=root
-        group=root
+  copy: 
+    src: '{{ item }}'
+    dest: '{{ vector_map_path }}/viewer'
   with_items:
       - searchapi.php
       - mbtileinfo.php
+
+- name: Put the tileserver.php 
+  copy:
+     src: 'tileserver_viewer.php' 
+     dest: '{{ vector_map_path }}/viewer/tileserver.php'
+
 
 - name: Install the script to update osm catalog
   template:
