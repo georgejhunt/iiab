@@ -16,6 +16,7 @@
     state: directory
     mode: '0755'
 
+- name: Fetch the old regions.json for backward compatibility
   get_url:
     url: "{{ iiab_map_url }}/assets/regions.json"    # http://download.iiab.io/content/OSM/vector-tiles/maplist/hidden
     dest: "{{ iiab_etc_path }}"
@@ -36,11 +37,19 @@
     dest: '{{ vector_map_path }}/viewer/cities1000.sqlite'
   when: not cities_installed.stat.exists
 
+- name: Create a link to old osm catalog in original place
+  file:
+    src: "/etc/iiab/regionsjson"
+    dest: "{{ vector_map_path }}/maplist/assets/regions.json"
+    state: link
+    force: True
+
 - name: Create a link to osm catalog in /common/assets
   file:
     src: "/etc/iiab/map-catalog.json"
     dest: "{{ doc_root }}/common/assets/map-catalog.json"
     state: link
+    force: True
 
 - name: Create a link to osm catalog in {{ vector_map_path }}/maplist/assets
   file:
@@ -112,16 +121,19 @@
   with_fileglob:
         - fonts/*
 
-- name: Copy the php tile server for the general purpose map viewer
-  copy: src={{ item }}
-        dest="{{ vector_map_path }}/viewer/"
-        mode=0644
-        owner=root
-        group=root
+- name: Install php utilities used by main.js for search and to get sqlite info
+  copy: 
+    src: '{{ item }}'
+    dest: '{{ vector_map_path }}/viewer'
   with_items:
-      - tileserver.php
       - searchapi.php
       - mbtileinfo.php
+
+- name: Put the tileserver.php 
+  copy:
+     src: 'tileserver_viewer.php' 
+     dest: '{{ vector_map_path }}/viewer/tileserver.php'
+
 
 - name: Install the script to update osm catalog
   template:

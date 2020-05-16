@@ -15,11 +15,15 @@
      src: '{{ item }}'
      dest: '{{ satellite_dir }}{{ item }}'
   with_items:
-     - tileserver.php
      - style-osm.json
      - .htaccess
      - index.html
      - map.css
+
+- name: Put the tileserver.php for satellite 
+  copy:
+     src: 'tileserver_sat.php'
+     dest: '{{ vector_map_path }}/satellite/tileserver.php'
 
 - name: Get the map_functions version used by admin-console, work toward unification
   file:
@@ -45,25 +49,23 @@
      - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/main.js'
      - 'http://download.iiab.io/content/OSM/vector-tiles/satellite/planet_z0-z5.mbtiles'
      
-- name: Remove any file which would conflict with creating a link
-  file:
-     state: absent
-     path: '{{ satellite_dir }}detail.mbtiles'
-
 - name: Create link for vector detail.mbtiles
   file:
     src: '{{ satellite_dir }}planet_z0-z5.mbtiles'
     dest: '{{ satellite_dir }}detail.mbtiles'
     state: link
-
-- name: Remove any file which would conflict with creating a link
-  file:
-     state: absent
-     path: '{{ satellite_dir }}regions.json'  
+    force: True
 
 - name: Create a link for regions.json
   file:
     src: /etc/iiab/regions.json
     dest: '{{ satellite_dir }}regions.json'  
+    state: link
+    force: True
+
+- name: Create a link for map-catalog.json
+  file:
+    src: /etc/iiab/map-catalog.json
+    dest: '{{ satellite_dir }}map-catalog.json'
     state: link
     force: True
