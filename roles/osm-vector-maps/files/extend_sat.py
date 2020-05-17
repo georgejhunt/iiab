@@ -455,7 +455,7 @@ def dhms_from_seconds(s):
    hours, remainder = divmod(remainder, 3600)
    minutes, remainder = divmod(remainder, 60)
    seconds, remainder = divmod(remainder, 60)
-   return (days, hours, minutes, seconds)
+   return (int(days), int(hours), int(minutes), int(seconds))
 
 def debug_one_tile():
    if not args.x:
@@ -658,6 +658,7 @@ def replace_tile(src,zoom,tileX,tileY):
             sys.exit()
          #raw_input("PRESS ENTER")
          mbTiles.SetTile(zoom, tileX, tileY, r.data)
+         total_tiles += 1
          returned = mbTiles.GetTile(zoom, tileX, tileY)
          if bytearray(returned) != r.data:
             print('read verify in replace_tile failed')
@@ -674,8 +675,10 @@ def download_tiles(src,lat_deg,lon_deg,zoom,radius):
    tileX_min,tileX_max,tileY_min,tileY_max = get_bounds(lat_deg,lon_deg,radius,zoom)
    for tileX in range(tileX_min,tileX_max+1):
       for tileY in range(tileY_min,tileY_max+1):
-         if (start - time.time()) % 10 == 0:
-            print('tileX:%s tileY:%s zoom:%s added:%s'%(tileX,tileY,zoom,total_tiles))
+         seconds = time.time() - start
+         if (total_files % 50) == 0:
+            d,h,m,s = dhms_from_seconds(seconds)
+            print('tileX:%s tileY:%s zoom:%s added:%s %s:%s:%s'%(tileX,tileY,zoom,total_tiles,h,m,s))
          replace_tile(src,zoom,tileX,tileY)
 
 def set_up_target_db(name='sentinel'):
