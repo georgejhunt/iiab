@@ -42,7 +42,7 @@ ATTRIBUTION = os.environ.get('METADATA_ATTRIBUTION', '<a href="http://openmaptil
 VERSION = os.environ.get('METADATA_VERSION', '3.3')
 
 work_dir = '/library/working/maps'
-osm_dir = 'library/www/osm-vector-maps/maplist/assets'
+osm_dir = '/library/www/osm-vector-maps/maplist/assets'
 sat_dir = '/library/www/osm-vector-maps/viewer/tiles'
 
 # Translates between lat/long and the slippy-map tile numbering scheme
@@ -77,7 +77,7 @@ class Tools(object):
      return(int(x),int(y))
 
    def xy2latlon(self,x,y,z):
-     n = numTiles(z)
+     n = self.numTiles(z)
      relY = y / n
      lat = self.mercatorToLat(pi * (1 - 2 * relY))
      lon = -180.0 + 360.0 * x / n
@@ -105,7 +105,7 @@ class Tools(object):
      return((lat2, lon1, lat1, lon2)) # S,W,N,E
 
    def mercatorToLat(self,mercatorY):
-     return(degrees(atan(sinh(self.mercatorY))))
+     return(degrees(atan(sinh(mercatorY))))
 
    def tileSizePixels(self):
      return(256)
@@ -455,7 +455,7 @@ def dhms_from_seconds(s):
    hours, remainder = divmod(remainder, 3600)
    minutes, remainder = divmod(remainder, 60)
    seconds, remainder = divmod(remainder, 60)
-   return (days, hours, minutes, seconds)
+   return (int(days), int(hours), int(minutes), int(seconds))
 
 def debug_one_tile():
    if not args.x:
@@ -546,7 +546,7 @@ def coordinates2WmtsTilesNumbers(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
   return (xtile, ytile)
 
-def sat_bbox(lat_deg,lon_deg,zoom,radius):
+def sat_bboxes(lat_deg,lon_deg,zoom,radius):
    # Adds a bounding box for the current location, radius
    magic_number = int(lat_deg * lon_deg * radius)
    bboxes = osm_dir + "/bboxes.geojson"
@@ -658,6 +658,7 @@ def replace_tile(src,zoom,tileX,tileY):
             sys.exit()
          #raw_input("PRESS ENTER")
          mbTiles.SetTile(zoom, tileX, tileY, r.data)
+         total_tiles += 1
          returned = mbTiles.GetTile(zoom, tileX, tileY)
          if bytearray(returned) != r.data:
             print('read verify in replace_tile failed')
@@ -674,8 +675,10 @@ def download_tiles(src,lat_deg,lon_deg,zoom,radius):
    tileX_min,tileX_max,tileY_min,tileY_max = get_bounds(lat_deg,lon_deg,radius,zoom)
    for tileX in range(tileX_min,tileX_max+1):
       for tileY in range(tileY_min,tileY_max+1):
-         if (start - time.time()) % 10 == 0:
-            print('tileX:%s tileY:%s zoom:%s added:%s'%(tileX,tileY,zoom,total_tiles))
+         seconds = time.time() - start
+         if (total_files % 50) == 0:
+            d,h,m,s = dhms_from_seconds(seconds)
+            print('tileX:%s tileY:%s zoom:%s added:%s %s:%s:%s'%(tileX,tileY,zoom,total_tiles,h,m,s))
          replace_tile(src,zoom,tileX,tileY)
 
 def set_up_target_db(name='sentinel'):
@@ -711,12 +714,12 @@ def do_downloads():
       sys.exit(1)
    set_up_target_db(args.name)
    start = time.time()
-   sat_bboxes(args.lat,args.lon,args.zoom.args.radius)
+   sat_bboxes(args.lat, args.lon, args.zoom, args.radius)
    for zoom in range(args.zoom,14):
       print("new zoom level:%s"%zoom)
       download_tiles(src,args.lat,args.lon,zoom,args.radius)
    seconds =(time.time()-start)
-   d,h,m.s = dhms_from_seconds(seconds)
+   d,h,m,s = dhms_from_seconds(seconds)
    print('Total time:%s:%s:%s hr:min:sec Total_tiles Added:%s'%(h,m,s,total_tiles))
 
 def main():
