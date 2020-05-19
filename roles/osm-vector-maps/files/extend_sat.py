@@ -25,6 +25,7 @@ import uuid
 import io
 from PIL import Image
 #import ipdb; ipdb.set_trace()
+import glob
 
 # GLOBALS
 mbTiles = object
@@ -36,6 +37,7 @@ src = object
 config = {}
 config_fn = 'config.json'
 total_tiles = 0
+skipped = 0
 bad_ref = 0
 
 ATTRIBUTION = os.environ.get('METADATA_ATTRIBUTION', '<a href="http://openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="http://www.openstreetmap.org/about/" target="_blank">&copy; OpenStreetMap contributors</a>')
@@ -672,11 +674,16 @@ def download_tiles(src,lat_deg,lon_deg,zoom,radius):
    global mbTiles
    global total_tiles
    global start
+   global skipped
    tileX_min,tileX_max,tileY_min,tileY_max = get_bounds(lat_deg,lon_deg,radius,zoom)
    for tileX in range(tileX_min,tileX_max+1):
       for tileY in range(tileY_min,tileY_max+1):
+         tile_index = mbTiles.TileExists(zoom,tileX,tileY)
+         if tile_index != None: 
+            skipped += 1
+            continue
          seconds = time.time() - start
-         if (total_files % 50) == 0:
+         if (total_tiles % 50) == 0:
             d,h,m,s = dhms_from_seconds(seconds)
             print('tileX:%s tileY:%s zoom:%s added:%s %s:%s:%s'%(tileX,tileY,zoom,total_tiles,h,m,s))
          replace_tile(src,zoom,tileX,tileY)
@@ -686,6 +693,8 @@ def set_up_target_db(name='sentinel'):
    global work_dir
    mbTiles = None
 
+   """
+   # as early deveopment option, I was writing to a new database
    # attach to the correct output database
    dbname = 'sat-%s-z0_13.mbtiles'%name
    if not os.path.isdir(work_dir):
@@ -695,6 +704,9 @@ def set_up_target_db(name='sentinel'):
    if not os.path.exists(dbpath):
    #if True:
       shutil.copyfile('%s/satellite.mbtiles'%sat_dir,dbpath) 
+   """
+   # now just connect to the satellite database in use
+   dbpath = args.mbtiles
    mbTiles = MBTiles(dbpath)
    mbTiles.CheckSchema()
    mbTiles.get_bounds()
@@ -720,7 +732,7 @@ def do_downloads():
       download_tiles(src,args.lat,args.lon,zoom,args.radius)
    seconds =(time.time()-start)
    d,h,m,s = dhms_from_seconds(seconds)
-   print('Total time:%s:%s:%s hr:min:sec Total_tiles Added:%s'%(h,m,s,total_tiles))
+   print('Total time:%s:%s:%s hr:min:sec Total_tiles Added:%s Skipped:%s'%(h,m,s,total_tiles,skipped))
 
 def main():
    global args
@@ -734,7 +746,8 @@ def main():
    if not os.path.isdir('./work'):
       os.mkdir('./work')
    if not args.mbtiles:
-      args.mbtiles = sat_dir +'/satellite.mbtiles'
+      args.mbtiles = glob.glob(sat_dir + '/sat*')[0]
+      #args.mbtiles = sat_dir +'/satellite.mbtiles'
    print('mbtiles SOURCE filename:%s'%args.mbtiles)
    if os.path.isfile(args.mbtiles):
       mbTiles  = MBTiles(args.mbtiles)
