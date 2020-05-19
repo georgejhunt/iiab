@@ -457,7 +457,7 @@ def dhms_from_seconds(s):
    hours, remainder = divmod(remainder, 3600)
    minutes, remainder = divmod(remainder, 60)
    seconds, remainder = divmod(remainder, 60)
-   return (int(days), int(hours), int(minutes), int(seconds))
+   return (int(days), int(hours), int(minutes), int(remainder))
 
 def debug_one_tile():
    if not args.x:
