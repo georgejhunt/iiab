@@ -32,6 +32,7 @@ mbTiles = object
 args = object
 bounds = object
 earth_circum = 40075.0 # in km
+earth_radius_km = 6371
 bbox_limits = {} # set by sat_bbox_limits, read by download
 src = object
 config = {}
@@ -548,9 +549,9 @@ def coordinates2WmtsTilesNumbers(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
   return (xtile, ytile)
 
-def sat_bboxes(lat_deg,lon_deg,zoom,radius):
-   # Adds a bounding box for the current location, radius
-   magic_number = int(lat_deg * lon_deg * radius)
+def sat_bboxes(lat_deg,lon_deg,zoom,box_radius):
+   # Adds a bounding box for the current location, box_radius
+   magic_number = int(lat_deg * lon_deg * box_radius)
    bboxes = osm_dir + "/bboxes.geojson"
    with open(bboxes,"r") as bounding_geojson:
       data = geojson.load(bounding_geojson)
@@ -559,13 +560,21 @@ def sat_bboxes(lat_deg,lon_deg,zoom,radius):
       for feature in data['features']:
          if feature['properties'].get('magic_number') == magic_number:
             magic_number_found = True
-   features = [] 
-   (west, south, east, north) = get_degree_extent(lat_deg,lon_deg,radius,zoom)
+   # get the xy of the center -- y is distance from equator in km
+   y_km = earth_radius_km * radians(lat_deg)
+   x_km = earth_radius_km * radians(lon_deg) * cos(radians(lat_deg))
+   west_km = x_km - box_radius
+   east_km = x_km + box_radius
+   north_km = y_km + box_radius
+   south_km = y_km - box_radius
+   #(west, south, east, north) = get_degree_extent(lat_deg,lon_deg,box_radius,zoom)
+   print('west_km:%s, south_km:%s, east_km:%s, nort_km:%s'%(west_km, south_km, east_km, north_km))
+   west=degrees(west_km /earth_radius_km / cos(radians(lat_deg)))
+   east=degrees(east_km /earth_radius_km / cos(radians(lat_deg)))
+   south=degrees(south_km / earth_radius_km)
+   north=degrees(north_km / earth_radius_km)
    print('west:%s, south:%s, east:%s, north:%s'%(west, south, east, north))
-   west=float(west)
-   south=float(south)
-   east=float(east)
-   north=float(north)
+   #sys.exit(0)
    poly = Polygon([[[west,south],[east,south],[east,north],[west,north],[west,south]]])
    if not magic_number_found:
       data['features'].append(Feature(geometry=poly,properties={"name":'satellite',\
