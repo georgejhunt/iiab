@@ -46,3 +46,7 @@
       dest: '{{ doc_root }}/info/videos/'
       src: '{{ doc_root }}/info/videos/videos.zip'
       creates:  '{{ doc_root }}/info/videos/group4-Rpi'
+
+- name: Update the menu.json file to include the offline videos
+  command: "{{ iiab_dir }}/roles/video-player/files/iiab-videos-update.py"
+      
