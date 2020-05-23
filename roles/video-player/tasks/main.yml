@@ -1,0 +1,17 @@
+- name: Install video_player if 'video_player_installed' not defined, e.g. in {{ iiab_state_file }}    # /etc/iiab/iiab_state.yml
+  include_tasks: install.yml
+  when: video_player_installed is undefined
+
+- name: Add 'video_player' variable values to {{ iiab_ini_file }}
+  ini_file:
+    path: "{{ iiab_ini_file }}"    # /etc/iiab/iiab.ini
+    section: apache
+    option: "{{ item.option }}"
+    value: "{{ item.value | string }}"
+  with_items:
+    - option: name
+      value: "Video Player"
+    - option: description
+      value: '"Offline Javascript Video Players with Translated Caption Function"'
+    - option: apache_install
+      value: "{{ video_player_install }}"

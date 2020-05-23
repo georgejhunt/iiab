@@ -315,6 +315,8 @@ iiab_usb_lib_show_all: True
 # Toggle iiab-refresh-wiki-docs scraping for offline docs (http://box/info)
 nodocs: False
 
+# Enable installation of offline videos
+video_player_install: True
 
 # 5-XO-SERVICES
 
