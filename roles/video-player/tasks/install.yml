@@ -38,14 +38,15 @@
 
 - name: Get saved zipped archive of videos
   get_url:
-      url: '{{ iiab_download_url }}/../content/videos/videos.zip'
-      dest: '{{ doc_root }}/info/videos/videos.zip'
+      url: '{{ iiab_download_url }}/../content/videos/videos_{{ video_date }}.zip'
+      dest: '{{ doc_root }}/info/videos/videos_{{ video_date }}.zip'
+  register: result
 
 - name: Extract the videos
   unarchive:
       dest: '{{ doc_root }}/info/videos/'
-      src: '{{ doc_root }}/info/videos/videos.zip'
-      creates:  '{{ doc_root }}/info/videos/group4-Rpi'
+      src: '{{ doc_root }}/info/videos/videos_{{ video_date }}.zip'
+  when: result.changed | bool
 
 - name: Update the menu.json file to include the offline videos
   command: "{{ iiab_dir }}/roles/video-player/files/iiab-videos-update.py"

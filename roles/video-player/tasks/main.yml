@@ -13,5 +13,3 @@
       value: "Video Player"
     - option: description
       value: '"Offline Javascript Video Players with Translated Caption Function"'
-    - option: apache_install
-      value: "{{ video_player_install }}"
