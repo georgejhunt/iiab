@@ -1,6 +1,6 @@
 - name: Enable http://box/moodle via NGINX, by installing {{ nginx_conf_dir }}/moodle-nginx.conf from template
   template:
-    src: moodle-nginx.conf.j2
+    src: moodle-nginx.conf.j2.native
     dest: "{{ nginx_conf_dir }}/moodle-nginx.conf"    # /etc/nginx/conf.d
   when: moodle_enabled | bool
 
