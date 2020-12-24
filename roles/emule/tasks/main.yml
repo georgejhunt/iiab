@@ -15,10 +15,34 @@
 - name: Create a directory for exim4 data
   file:
       state: directory
-      path: /var/spool/exim4/bsmtp
+      path: '{{ content_base }}/exim4/bsmtp'
       owner: Debian-exim
       group: Debian-exim
        
+- name: Copy devcot config files where they belong
+  copy:
+    src: "{{ item }}"
+    dest: /etc/devcot
+    recurse: True
+  with_fileglob:
+    - dovcot
+
+- name: Copy exim config files where they belong
+  copy:
+    src: "{{ item }}"
+    dest: /etc/exim4/
+    recurse: True
+  with_fileglob:
+    - exim4-conf
+
+- name: Copy roundcube config files where they belong
+  copy:
+    src: "{{ item }}"
+    dest: /etc/roundcube/
+    recurse: True
+  with_fileglob:
+    - roundcube
+
 # 0. INSTALL/ASSERT PREREQ #1: MongoDB
 
 # 3 stanzas moved up from install.yml, so Debian-or-any-OS-where-MongoDB-fails
