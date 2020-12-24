@@ -1,0 +1,58 @@
+- name: Get the linux packages that run on IIAB for local mail service
+  package:
+    name:
+      - transmission-daemon
+      - transmission-cli
+      - dovecot-imapd
+      - logwatch
+      - roundcube
+      - roundcube-core
+      - roundcube-mysql
+      - roundcube-plugins-extra
+      - roundcube-plugins
+    state: present
+
+- name: Create a directory for exim4 data
+  file:
+      state: directory
+      path: /var/spool/exim4/bsmtp
+      owner: Debian-exim
+      group: Debian-exim
+       
+# 0. INSTALL/ASSERT PREREQ #1: MongoDB
+
+# 3 stanzas moved up from install.yml, so Debian-or-any-OS-where-MongoDB-fails
+# still finish their "BIG-sized" IIAB install: (WITH LOUD RED WARNINGS!)
+
+- name: "Set 'mongodb_install: True'"
+  set_fact:
+    mongodb_install: True
+
+- name: 'CAUTION: IF ''mongodb.service'' IS STOPPED FOR ANY REASON, IT WILL IMMEDIATELY CAUSE SUGARIZER TO FAIL ("502 Bad Gateway") !'
+  debug:
+    msg: "/etc/systemd/system/sugarizer.service Line 4 'Requires=mongodb.service' tries to auto-start MongoDB every time Sugarizer starts.  IIAB (roles/mongodb/tasks/enable-or-disable.yml) tries its best to keep Ansible var 'mongodb_enabled' in sync with its systemd equivalent, i.e. the output of 'systemctl is-enabled mongodb' (as of 2020-10-29 both are typically disabled, unless other apps/services/operators choose to use MongoDB)."
+
+- name: MONGODB - run 'mongodb' role (attempt to install MongoDB)
+  include_role:
+    name: mongodb
+
+
+# 3 stanzas moved up to main.yml, so Debian finishes "BIG-sized" IIAB install
+# (WITH LOUD RED WARNINGS!)
+
+
+# 1. INSTALL/ASSERT PREREQ #2: Node.js
+
+- name: "Set 'nodejs_install: True' and 'nodejs_enabled: True'"
+  set_fact:
+    nodejs_install: True
+    nodejs_enabled: True
+
+- name: NODEJS - run 'nodejs' role (attempt to install & enable Node.js)
+  include_role:
+    name: nodejs
+
+- name: FAIL (STOP THE INSTALL) IF 'nodejs_installed is undefined'
+  fail:
+    msg: "eMule install cannot proceed, as Node.js is not installed."
+  when: nodejs_installed is undefined
