@@ -1,0 +1,8 @@
+- name: Get the tools to use the Pico board
+  package:
+    - minicom
+  state: present
+  when: not rpi_model == None and pico_install == True
+
+- name: Get the Pico firmware
+  geturl: 

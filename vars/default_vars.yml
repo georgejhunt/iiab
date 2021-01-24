@@ -612,6 +612,9 @@ calibreweb_url2: /libros    # For SHORT URL http://box/libros (Spanish)
 calibreweb_url3: /livres    # For SHORT URL http://box/livres (French)
 calibreweb_home: "{{ content_base }}/calibre-web"    # /library/calibre-web
 
+# Raspberry Pi Pico interface board
+pico_install == False
+pico_enable == False
 
 # =============================================================================
 # UNMAINTAINED LEGACY VARIABLES: YOU'RE TAKING BIG RISKS IF YOU USE ANY HERE...
