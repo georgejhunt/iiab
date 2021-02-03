@@ -1,0 +1,33 @@
+
+location  /roundcube {
+  root /var/lib/;
+  index index.php index.html index.htm;
+
+  error_log /var/log/nginx/roundcube.error;
+  access_log /var/log/nginx/roundcube.access;
+
+  #try_files $uri $uri/ /index.php;
+}
+
+location ~ ^/(README|INSTALL|LICENSE|CHANGELOG|UPGRADING)$ {
+    deny all;
+}
+
+location ~ ^/(bin|SQL)/ {
+    deny all;
+}
+
+location ~ ^/roundcube/(.*)\.php$ {
+    alias /var/lib/roundcube/$1.php;
+    proxy_set_header X-Real-IP  $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Host $host;
+    fastcgi_pass php;
+    fastcgi_index index.php;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+    fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+    include fastcgi_params;
+}
+
+

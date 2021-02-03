@@ -1,15 +1,13 @@
 - name: Get the linux packages that run on IIAB for local mail service
   package:
     name:
-      - transmission-daemon
-      - transmission-cli
       - dovecot-imapd
       - logwatch
       - roundcube
       - roundcube-core
-      - roundcube-mysql
       - roundcube-plugins-extra
       - roundcube-plugins
+      - roundcube-mysql
     state: present
 
 - name: Create a directory for exim4 data
@@ -25,7 +23,7 @@
     dest: /etc/devcot
     recurse: True
   with_fileglob:
-    - dovcot
+    - dovcot*
 
 - name: Copy exim config files where they belong
   copy:
@@ -33,7 +31,7 @@
     dest: /etc/exim4/
     recurse: True
   with_fileglob:
-    - exim4-conf
+    - exim4-conf*
 
 - name: Copy roundcube config files where they belong
   copy:
@@ -41,31 +39,16 @@
     dest: /etc/roundcube/
     recurse: True
   with_fileglob:
-    - roundcube
-
-# 0. INSTALL/ASSERT PREREQ #1: MongoDB
-
-# 3 stanzas moved up from install.yml, so Debian-or-any-OS-where-MongoDB-fails
-# still finish their "BIG-sized" IIAB install: (WITH LOUD RED WARNINGS!)
+    - roundcube*
 
 - name: "Set 'mongodb_install: True'"
   set_fact:
     mongodb_install: True
 
-- name: 'CAUTION: IF ''mongodb.service'' IS STOPPED FOR ANY REASON, IT WILL IMMEDIATELY CAUSE SUGARIZER TO FAIL ("502 Bad Gateway") !'
-  debug:
-    msg: "/etc/systemd/system/sugarizer.service Line 4 'Requires=mongodb.service' tries to auto-start MongoDB every time Sugarizer starts.  IIAB (roles/mongodb/tasks/enable-or-disable.yml) tries its best to keep Ansible var 'mongodb_enabled' in sync with its systemd equivalent, i.e. the output of 'systemctl is-enabled mongodb' (as of 2020-10-29 both are typically disabled, unless other apps/services/operators choose to use MongoDB)."
-
 - name: MONGODB - run 'mongodb' role (attempt to install MongoDB)
   include_role:
     name: mongodb
 
-
-# 3 stanzas moved up to main.yml, so Debian finishes "BIG-sized" IIAB install
-# (WITH LOUD RED WARNINGS!)
-
-
-# 1. INSTALL/ASSERT PREREQ #2: Node.js
 
 - name: "Set 'nodejs_install: True' and 'nodejs_enabled: True'"
   set_fact:
@@ -80,3 +63,17 @@
   fail:
     msg: "eMule install cannot proceed, as Node.js is not installed."
   when: nodejs_installed is undefined
+
+- name: Install nginx config file for Roundcube
+  template:
+      src: emule.conf.j2
+      dest: '{{ nginx_conf_dir }}/emule.conf'
+
+- name: Tell roundcube where to find the sqlite database
+  template:
+      src: roundcube.conf
+      dest: /etc/dbconfig-common/roundcube.conf
+
+- name: Install a pear module required by roundcube
+  shell: pear install channel://pear.php.net/net_idna2-0.2.0
+

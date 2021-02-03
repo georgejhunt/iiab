@@ -1,0 +1,20 @@
+### transport/40_exim4-config_batchsmtp_appendfile
+#################################
+
+# This transport is used for batching messages using BSMTP when a
+# smarthost is unavailable.
+
+batchsmtp_appendfile:
+  debug_print = "T: batchsmtp_appendfile for $local_part@$domain"
+  driver = appendfile
+  directory = /var/spool/exim4/bsmtp
+  batch_max = 100
+  use_bsmtp
+  user = Debian-exim
+.ifdef REMOTE_SMTP_HEADERS_REWRITE
+  headers_rewrite = REMOTE_SMTP_HEADERS_REWRITE
+.endif
+.ifdef REMOTE_SMTP_RETURN_PATH
+  return_path = REMOTE_SMTP_RETURN_PATH
+.endif
+    
