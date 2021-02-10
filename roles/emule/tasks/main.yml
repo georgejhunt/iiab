@@ -10,6 +10,13 @@
       - roundcube-mysql
     state: present
 
+- name: Create a directory for mail
+  file:
+      state: directory
+      path: '{{ content_base }}/mail
+      owner: dovecot
+      group: dovecot
+       
 - name: Create a directory for exim4 data
   file:
       state: directory
