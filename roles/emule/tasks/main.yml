@@ -13,7 +13,7 @@
 - name: Create a directory for mail
   file:
       state: directory
-      path: '{{ content_base }}/mail
+      path: '{{ content_base }}/mail'
       owner: dovecot
       group: dovecot
        
@@ -81,6 +81,16 @@
       src: roundcube.conf
       dest: /etc/dbconfig-common/roundcube.conf
 
+- name: Check of pear module is installed (fails if it does)
+  stat:
+      path: /usr/share/php/Net/IDNA2.php
+  register: idna2
+
 - name: Install a pear module required by roundcube
   shell: pear install channel://pear.php.net/net_idna2-0.2.0
+  when: not idna2.stat.exists
 
+- name: Execute the shell script which initializes MySQL for dovecot
+  shell:
+     cmd: ./setup_dovecot.sh
+     chdir: '{{ iiab_dir }}/roles/emule/files/dovecot/'
