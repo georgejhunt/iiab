@@ -24,29 +24,26 @@
       owner: Debian-exim
       group: Debian-exim
        
-- name: Copy devcot config files where they belong
+- name: Copy dovecot config files where they belong
   copy:
     src: "{{ item }}"
-    dest: /etc/devcot
-    recurse: True
+    dest: /etc/dovecot/
   with_fileglob:
-    - dovcot*
+    - dovecot/*
 
 - name: Copy exim config files where they belong
   copy:
     src: "{{ item }}"
     dest: /etc/exim4/
-    recurse: True
   with_fileglob:
-    - exim4-conf*
+    - exim4-conf/*
 
 - name: Copy roundcube config files where they belong
   copy:
     src: "{{ item }}"
     dest: /etc/roundcube/
-    recurse: True
   with_fileglob:
-    - roundcube*
+    - roundcube/*
 
 - name: "Set 'mongodb_install: True'"
   set_fact:
