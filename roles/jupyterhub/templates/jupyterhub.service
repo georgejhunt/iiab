@@ -5,7 +5,7 @@ After=syslog.target network.target
 [Service]
 User=jupyter
 Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:{{ jupyterhub_venv }}/bin"
-ExecStart={{ jupyterhub_venv }}/bin/python3 -m jupyterhub -f {{ jupyterhub_venv }}/etc/jupyterhub/jupyterhub_config.py
+ExecStart={{ jupyterhub_venv }}/bin/python3 -m jupyterhub -f {{ jupyterhub_venv }}/etc/jupyterhub/jupyterhub_config.py --debug
 
 [Install]
 WantedBy=multi-user.target

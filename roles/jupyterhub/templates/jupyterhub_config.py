@@ -469,7 +469,8 @@ c.JupyterHub.cookie_secret = b'helloiiabitsrainingb123456789012'
 
 ## File to write PID Useful for daemonizing JupyterHub.
 #  Default: ''
-# c.JupyterHub.pid_file = ''
+c.JupyterHub.pid_file = '/opt/iiab/jupyterhub/jupyterhub.pid'
+c.ConfigurableHTTPProxy.pid_file = "/opt/iiab/jupyterhub/jupyterhub-proxy.pid"
 
 ## The public facing port of the proxy.
 #  
