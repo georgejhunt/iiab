@@ -916,7 +916,7 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 #  Note that this does *not* prevent users from accessing files outside of this
 #  path! They can do so with many other means.
 #  Default: ''
-# c.Spawner.notebook_dir = ''
+c.Spawner.notebook_dir = '/library/jupyterhub'
 
 ## An HTML form for options a user can specify on launching their server.
 #  

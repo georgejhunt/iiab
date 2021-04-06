@@ -1,11 +1,18 @@
+- name: Create user jupyter
+  user:
+    name: jupyter
+    create_home: False
+
 - name: Make the directories to hold jupyter config
   file:
     state: directory
     path: '{{ item }}'
+    owner: jupyter
   with_items:
      - '{{ jupyterhub_venv }}/etc/jupyter'
      - '{{ jupyterhub_venv }}/etc/jupyterhub'
      - '{{ jupyterhub_venv }}/etc/systemd'
+     - /library/jupyterhub
 
 - name: "Set 'nodejs_install: True' and 'nodejs_enabled: True'"
   set_fact:
