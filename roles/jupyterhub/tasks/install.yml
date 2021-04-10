@@ -1,7 +1,6 @@
 - name: Create user jupyter
   user:
     name: jupyter
-    create_home: False
 
 - name: Make the directories to hold jupyter config
   file:
@@ -9,6 +8,7 @@
     path: '{{ item }}'
     owner: jupyter
   with_items:
+     - '{{ jupyterhub_venv }}'
      - '{{ jupyterhub_venv }}/etc/jupyter'
      - '{{ jupyterhub_venv }}/etc/jupyterhub'
      - '{{ jupyterhub_venv }}/etc/systemd'
@@ -34,6 +34,10 @@
       global: yes
       state: latest
 
+- name: Install jupyter as non root
+  become: True
+  become_user: jupyter
+ 
 - name: Use pip to install into a virtual environment
   pip:
     name:
@@ -51,6 +55,9 @@
     extra_args: "--no-cache-dir"
   when: internet_available
     
+- name: Get root back
+  become: True
+
 - name: Install the config file for jupyterhub
   template:
       src: jupyterhub_config.py
