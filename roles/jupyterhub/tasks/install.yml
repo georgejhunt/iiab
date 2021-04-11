@@ -34,10 +34,6 @@
       global: yes
       state: latest
 
-- name: Install jupyter as non root
-  become: True
-  become_user: jupyter
- 
 - name: Use pip to install into a virtual environment
   pip:
     name:
@@ -53,17 +49,17 @@
     virtualenv_command: /usr/bin/virtualenv
     virtualenv_python: python3
     extra_args: "--no-cache-dir"
+  become: True
+  become_user: jupyter
   when: internet_available
     
-- name: Get root back
-  become: True
-
 - name: Install the config file for jupyterhub
   template:
       src: jupyterhub_config.py
       dest: '{{ jupyterhub_venv }}/etc/jupyterhub/'
 
 - name: Use systemd to start jupyterhub
+  become: True
   template:
       src: jupyterhub.service
       dest: /etc/systemd/system/

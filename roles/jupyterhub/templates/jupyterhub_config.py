@@ -202,7 +202,7 @@ c.JupyterHub.cookie_secret = b'helloiiabitsrainingb123456789012'
 
 ## The location of jupyterhub data files (e.g. /usr/local/share/jupyterhub)
 #  Default: '/opt/iiab/jupyter/share/jupyterhub'
-# c.JupyterHub.data_files_path = '/opt/iiab/jupyter/share/jupyterhub'
+c.JupyterHub.data_files_path = '{{ jupyterhub_venv }}/share/jupyterhub'
 
 ## Include any kwargs to pass to the database connection. See
 #  sqlalchemy.create_engine for details.
@@ -211,7 +211,7 @@ c.JupyterHub.cookie_secret = b'helloiiabitsrainingb123456789012'
 
 ## url for the database. e.g. `sqlite:///jupyterhub.sqlite`
 #  Default: 'sqlite:///jupyterhub.sqlite'
-# c.JupyterHub.db_url = 'sqlite:///jupyterhub.sqlite'
+c.JupyterHub.db_url = 'sqlite:///{{ jupyterhub_venv }}/share/jupyterhub/jupyterhub.sqlite'
 
 ## log all database transactions. This has A LOT of output
 #  Default: False
@@ -469,8 +469,8 @@ c.JupyterHub.cookie_secret = b'helloiiabitsrainingb123456789012'
 
 ## File to write PID Useful for daemonizing JupyterHub.
 #  Default: ''
-c.JupyterHub.pid_file = '/opt/iiab/jupyterhub/jupyterhub.pid'
-c.ConfigurableHTTPProxy.pid_file = "/opt/iiab/jupyterhub/jupyterhub-proxy.pid"
+c.JupyterHub.pid_file = '{{ jupyterhub_venv }}/jupyterhub.pid'
+c.ConfigurableHTTPProxy.pid_file = "{{ jupyterhub_venv }}/jupyterhub-proxy.pid"
 
 ## The public facing port of the proxy.
 #  
@@ -1235,5 +1235,5 @@ c.Authenticator.admin_users = set('iiab-admin')
 #  Systemdspawner config
 #------------------------------------------------------------------------------
 c.SystemdSpawner.dynamic_users = True
-c.SystemdSpawner.user_workingdir = '/opt/iiab/notebooks/{USERNAME}'
+# c.SystemdSpawner.user_workingdir = ''
 
