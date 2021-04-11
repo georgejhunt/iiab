@@ -53,6 +53,15 @@
   become_user: jupyter
   when: internet_available
     
+- name: Put a sudoer file to permit systemdspawner to  startup as user:jupyter
+  template:
+     src: 015_jupyterhub.sudoers.d
+     dest: /etc/sudoers.d/015_jupyterhub
+     mode: 0440
+
+- name: Patch the systemdspawner to use {{ jupyterhub_venv }} for it's "/run" directory
+  shell: sed -i -e's|^RUN_ROOT.*|RUN_ROOT = {{ jupyterhub_venv }}|' {{ jupyterhub_venv }}/lib/*/site-packages/systemdspawner/systemdspawner.py
+
 - name: Install the config file for jupyterhub
   template:
       src: jupyterhub_config.py
@@ -63,3 +72,9 @@
   template:
       src: jupyterhub.service
       dest: /etc/systemd/system/
+
+- name: A script to start jupyterhub without systemd for debug
+  template:
+      dest: '{{ jupyterhub_venv }}'
+      src: start-debug
+      mode: 0755

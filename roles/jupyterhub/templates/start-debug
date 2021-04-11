@@ -1,0 +1,2 @@
+/opt/iiab/jupyterhub/bin/jupyterhub -f /opt/iiab/jupyterhub/etc/jupyterhub/jupyterhub_config.py --debug
+

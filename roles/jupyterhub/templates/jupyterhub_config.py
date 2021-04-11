@@ -796,7 +796,7 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 
 ## Enable debug-logging of the single-user server
 #  Default: False
-# c.Spawner.debug = False
+c.Spawner.debug = True
 
 ## The URL the single-user server should start in.
 #  
@@ -809,7 +809,7 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 #  - Start with `/notebooks` instead of `/tree` if `default_url` points to a notebook instead of a directory.
 #  - You can set this to `/lab` to have JupyterLab start by default, rather than Jupyter Notebook.
 #  Default: ''
-# c.Spawner.default_url = ''
+c.Spawner.default_url = '/lab'
 
 ## Disable per-user configuration of single-user servers.
 #  
